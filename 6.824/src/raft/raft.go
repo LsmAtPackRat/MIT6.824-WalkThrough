@@ -86,6 +86,7 @@ type Raft struct {
     matchIndex    []int  // for each server, index of highest log entry known to be replicated on server (initialized to 0, increases monotonically)
 
     state  RaftState  //Follower/Candidate/Leader
+    resetElectionCh chan int   // used to notify the peer to reset its election timeout.
 }
 
 // return currentTerm and whether this server
@@ -96,9 +97,9 @@ func (rf *Raft) GetState() (int, bool) {
 	var isleader bool
 	// Your code here (2A).
     if rf.state == Leader {
-        isLeader = true
+        isleader = true
     } else {
-        isLeader = false
+        isleader = false
     }
 
     term = rf.currentTerm
@@ -192,8 +193,8 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
     // First, we need to detect obsolete information
     if args.Term < rf.currentTerm {
         reply.VoteGranted = false
-        reply.Term = currentTerm
-        returni false
+        reply.Term = rf.currentTerm
+        return
     }
 
     // Then, we should check whether this server has voted for another server in the same term
@@ -201,8 +202,8 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
         rf.votedFor = args.CandidateId  // First-come-first-served
         rf.currentTerm = args.Term
         reply.VoteGranted = true
-        reply.Term = currentTerm
-        return true
+        reply.Term = rf.currentTerm
+        return
     }
 
     /* Section 5.5 : 
@@ -212,24 +213,28 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
     if args.Term == rf.currentTerm {
         if rf.votedFor == args.CandidateId {
             reply.VoteGranted = true
+            rf.resetElectionCh <- 1   // ?? if this peer is the leader??
         } else {
             reply.VoteGranted = false    // First-come-first-served, this server has voted for another server before.
         }
         reply.Term = rf.currentTerm
-        return reply.VoteGranted
+        return
     }
 }
 
 
 // AppendEntries RPC handler
-// FIXME:reset the election timeout! send a value to related channel
+// reset the election timeout! send a value to related channel
 func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply) {
     // 1. detect obsolete information 
     if args.Term < rf.currentTerm {
         reply.Term = rf.currentTerm
         reply.Success = false
-        return false
+        return
     }
+
+    // reset the election timeout
+    rf.resetElectionCh <- 1
     // consistent check
     // 2. Reply false(refuse the new entries) if log doesn't contain an entry at prevLogIndex whose term matches prevLogTerm($5.3)
     if len(rf.log)-1 >= args.PrevLogIndex && rf.log[args.PrevLogIndex].Term != args.Term {
@@ -238,26 +243,26 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
         rf.log = rf.log[:args.PrevLogIndex] // log[i:j] contains i~j-1, and we don't want to reserve log entry at PrevLogIndex. So...
         reply.Term = rf.currentTerm
         reply.Success = false
-        return false
+        return
     }
 
     // 4. Now this peer's log matches the leader's log at PrevLogIndex. Append any new entries not already in the log
     rf.log = rf.log[:args.PrevLogIndex+1]
-    rf.log = append(rf.log, args.Entries[PrevLogIndex+1:]...)
+    rf.log = append(rf.log, args.Entries[args.PrevLogIndex+1:]...)
 
     // 5. If leaderCommit > commitIndex, set commitIndex = min(leaderCommit, index of last new entry)
     if rf.commitIndex < args.LeaderCommit {
         // we need to update commitIndex locally. Explictly update the old entries. See my note upon Figure8.
         // This step will exclude some candidates to be elected as the new leader!
-        if leaderCommit > len(rf.log)-1 {
+        if args.LeaderCommit > len(rf.log)-1 {
             rf.commitIndex = len(rf.log)-1
         } else {
-            rf.commitIndex = leaderCommit
+            rf.commitIndex = args.LeaderCommit
         }
     }
     reply.Term = rf.currentTerm
     reply.Success = true
-    return true
+    return
 }
 
 //
@@ -296,7 +301,7 @@ func (rf *Raft) sendRequestVote(server int, args *RequestVoteArgs, reply *Reques
 
 func (rf *Raft) sendAppendEntries(server int, args *AppendEntriesArgs, reply *AppendEntriesReply) bool {
     ok := rf.peers[server].Call("Raft.AppendEntries", args, reply)
-    // only the leader coule send AppendEntries RPC. And it should handle the situations reflected in reply 
+    // only the leader could send AppendEntries RPC. And it should handle the situations reflected in reply 
     return ok
 }
 //
@@ -351,6 +356,10 @@ func Make(peers []*labrpc.ClientEnd, me int,
 	rf.peers = peers
 	rf.persister = persister
 	rf.me = me
+    rf.state = Follower
+
+    // create a channel in Raft
+    rf.resetElectionCh = make(chan int)
 
 	// Your initialization code here (2A, 2B, 2C).
     // Code for 2A : fill the raft structure
@@ -361,48 +370,15 @@ func Make(peers []*labrpc.ClientEnd, me int,
     rf.lastApplied = 0
     // Create a goroutine that will kick off leader election periodically by sending out RequestVote RPCs when it hasn't heard from another peer for a while
     go func() {
-        // goroutine which is responsible for leader election
-        election_timeout := time.NewTimer(time.Second * 10)  // the time is a dummy.
+        // create some timers here.
         for {
-            // then reset the timer to the expected value, now 300 is the base, and 100 is the interval.
-            select {
-            case <-reset_election_ch:    // reset the timer.
-                election_timeout_interval :=  300 + rand.Intn(100)  // randomized timeouts to ensure that split votes are rare.
-                resetTimer(&election_timeout, election_time_interval)
-            case <-election_timeout.C:
-                // election timeout!
-                // now this peer should converse to a candidate, and kick off a leader election!
-                rf.currentTerm += 1
-                vote_counter := 1        // This peer has voted for itself
-                // reset election timer
-                election_timeout_interval :=  300 + rand.Intn(100)  // randomized timeouts to ensure that split votes are rare.
-                resetTimer(&election_timeout, election_time_interval)
-                // send RequestVote RPCs to each peer. 
-                for i := 0; i < len(rf.peers); i++ {
-                    if i == me {
-                        continue
-                    }
-                    var args RequestVoteArgs
-                    // fill the args
-                    args.Term = rf.currentTerm
-                    args.CandidateId = me   // right?
-                    args.LastLogIndex = len(rf.log)
-                    args.LastLogTerm = rf.log[len(rf.log-1)].Term
-                    var reply RequestVoteReply
-                    ok := rf.sendRequestVote(i, &args, &reply)
-                    if ok == false {
-                        // back to follower, and update the term
-                        rf.currentTerm := reply.Term
-                    } else {
-                        // update the voted counter, if the counter's value > len(peers)/2, this peer becomes the new leader.
-                        vote += 1
-                        if vote > len(rf.peers) / 2 {
-                            // become the new leader of currentTerm! Send heartbeats to establish the authority.
-                            rf.becomeLeader()
-                        }
-                    }
-                }
+            switch rf.state {
+            case Leader:
+                rf.doLeaderLoop()
+            default:
+                rf.doNonLeaderLoop()
             }
+            // then reset the timer to the expected value, now 300 is the base, and 100 is the interval.
         }
     }()
 
@@ -413,29 +389,135 @@ func Make(peers []*labrpc.ClientEnd, me int,
 	return rf
 }
 
-// send heartbeat to all the peers to establish its authority.
+
+// if you are a leader, periodically send heartbeat AppendEntries RPCs to all the peers.
+func (rf *Raft) doLeaderLoop() {
+    // heartbeat per 100ms
+    time.Sleep(100 * time.Millisecond)
+    // send heartbeat AppendEntries RPCs to all the peers.
+    rf.broadcastHeartbeats()
+}
+
+
+// if you are a follower or a candidate, update election timeout under associated cases and may convert to a Candidate.
+func (rf *Raft) doNonLeaderLoop() {
+    //for {
+        election_timeout := time.NewTimer(time.Second * 10)
+        select {
+        // if receiving AppendEntries RPC from current leader or granting vote to candidate, will reset timer
+        case <-rf.resetElectionCh:    // if someone sent sth in the channel, reset the timer.
+            resetElectionTimeout(election_timeout)
+        case <-election_timeout.C:
+            // election timeout!
+            rf.state = Candidate
+            // now this peer should converse to a candidate, and kick off a leader election!
+            rf.currentTerm += 1
+            vote_channel := make(chan bool, len(rf.peers))
+            vote_channel <- true    // This peer has voted for itself
+            // reset election timer
+            resetElectionTimeout(election_timeout)
+            // send RequestVote RPCs to each peer. 
+            for i := 0; i < len(rf.peers); i++ {
+                if i == rf.me {
+                    continue
+                }
+                go func() {
+                    // send RequestVote RPC in a goroutine for each peer 
+                    var args RequestVoteArgs
+                    // fill the args
+                    args.Term = rf.currentTerm
+                    args.CandidateId = rf.me   // right?
+                    args.LastLogIndex = len(rf.log)
+                    args.LastLogTerm = rf.log[len(rf.log)-1].Term
+                    var reply RequestVoteReply
+                    ok := rf.sendRequestVote(i, &args, &reply)
+                    if ok == false {
+                        // if requested peer's term is larger, converse back to follower, and update the term
+                        if reply.Term > rf.currentTerm {
+                            rf.currentTerm = reply.Term
+                            rf.state = Follower
+                        } else  {
+                            // maybe the requested peer has voted for another server, as FCFS, so it didn't vote for you.
+                        }
+                        vote_channel <- false
+                    } else {
+                        vote_channel <- true   // get a vote!
+                    }
+                }()
+            }
+            // start a goroutine to collect the votes.
+            go func() {
+                vote_pos_counter := 0   // how many peers have voted for you
+                vote_all_counter := 0   // how many peers have taken part in this votes
+                // block at a vote_channel
+                for vote_pos_counter <= len(rf.peers) / 2 && vote_all_counter < len(rf.peers) {
+                    vote_content := <-vote_channel
+                    if vote_content == true {
+                        vote_pos_counter++
+                    }
+                    vote_all_counter++
+                }
+
+                if vote_pos_counter > len(rf.peers) / 2 {
+                    rf.becomeLeader()   // FIXME: someone may been voted as the leader??
+                }
+            }()
+        }
+    //}
+}
+
+// send heartbeats to all the peers to establish its authority.
 func (rf *Raft) becomeLeader() {
+    // set the state
+    rf.state = Leader
+}
+
+func (rf *Raft) broadcastHeartbeats() {
     for i := 0; i < len(rf.peers); i++ {
-        if i == me {
+        if i == rf.me {
             continue
         }
         // create a goroutine to send heartbeat for each peer.
         go func(){
             var heartbeat_args AppendEntriesArgs
+            heartbeat_args.Term = rf.currentTerm
+            heartbeat_args.LeaderId = rf.me
+            heartbeat_args.PrevLogIndex = 1
+            heartbeat_args.PrevLogTerm = 1
+            heartbeat_args.Entries = make([]LogEntry, 0)   // needed?
+            heartbeat_args.LeaderCommit = 1
             var heartbeat_reply AppendEntriesReply
             ok := rf.sendAppendEntries(i, &heartbeat_args, &heartbeat_reply)
+            if ok != false {}
         }()
     }
 }
 
-//reset the given Timer to value
-func resetTimer(timer *Timer, value int) {
+// adjust the election timeout interval in this method
+func resetElectionTimeout(timer *time.Timer) {
+    election_timeout_interval :=  300 + rand.Intn(100)  // randomized timeouts to ensure that split votes are rare
+    resetTimer(timer, election_timeout_interval)
+}
+
+// reset the given Timer to value
+func resetTimer(timer *time.Timer, value int) {
     // first stop it.
     if !timer.Stop() {
         select {
         case <-timer.C:
         default:
+        }
     }
     // then reset it.
-    timer.Reset(time.Millisecond * value)
+    timer.Reset(time.Millisecond * time.Duration(value))
 }
+
+/*
+func stopTimer(timer *Timer) {
+    if !timer.Stop() {
+        select {
+        case <-timer.C:
+        default:
+        }
+    }
+}*/
