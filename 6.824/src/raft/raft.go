@@ -90,8 +90,8 @@ type Raft struct {
 	resetElectionCh chan int  // used to notify the peer to reset its election timeout.
     electionTimeoutStartTime time.Time  // nanosecond precision. used for election timeout.
     electionTimeoutInterval  time.Duration  // nanosecond count.
-    nonleaderCh     chan bool
-    leaderCh        chan bool
+    nonleaderCh     chan bool    // block/unblock nonleader's election timeout long-running goroutine
+    leaderCh        chan bool    // block/unblock leader's heartbeat long-running goroutine
 }
 
 // return currentTerm and whether this server
@@ -159,8 +159,8 @@ type RequestVoteArgs struct {
 	// Your data here (2A, 2B).
 	Term         int // candidate's term
 	CandidateId  int // candidate requesting vote
-	LastLogIndex int // index of candidate's last log entry
-	LastLogTerm  int // term of candidate's last log entry
+	//LastLogIndex int // index of candidate's last log entry
+	//LastLogTerm  int // term of candidate's last log entry
 }
 
 //
@@ -176,10 +176,10 @@ type RequestVoteReply struct {
 type AppendEntriesArgs struct {
 	Term         int
 	LeaderId     int
-	PrevLogIndex int
-	PrevLogTerm  int
-	Entries      []LogEntry
-	LeaderCommit int
+	//PrevLogIndex int
+	//PrevLogTerm  int
+	//Entries      []LogEntry
+	//LeaderCommit int
 }
 
 type AppendEntriesReply struct {
@@ -244,6 +244,12 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 	// reset the election timeout
     rf.resetElectionTimeout()
     rf.currentTerm = args.Term
+    /* Can the old Leader received an AppendEntries RPC from the new leader?
+     * I think the answer is yes. 
+     * The old leader's heartbeat packets lost all the time,
+     * and others will be elected as the new leader(may not need this peer's vote, consider a 3 peers cluster), 
+     * then the new leader will heartbeat the old leader. So the old leader will learn this situation and convert to a Follower.
+     */
     if rf.state != Follower {
         DPrintf("peer-%d calm down to a Follower from a Candidate!!!", rf.me)
         rf.state = Follower
@@ -397,13 +403,14 @@ func Make(peers []*labrpc.ClientEnd, me int,
 			} else {
 				// block until be elected as the new leader.
                 //
+                DPrintf("peer-%d leader's heartbeat long-running goroutine. block.", rf.me)
                 <-rf.leaderCh
-                DPrintf("peer-%d leader's heartbeat long-running goroutine. else-loop", rf.me)
+                DPrintf("peer-%d leader's heartbeat long-running goroutine. get up.", rf.me)
 			}
 		}
 	}()
 
-    // test the election timeout.
+    // Nonleader's election timeout long-running goroutine.
     go func() {
         for {
             // check rf.state == Follower
@@ -423,8 +430,7 @@ func Make(peers []*labrpc.ClientEnd, me int,
                     rf.mu.Unlock()
                     rf.resetElectionTimeout()
                     // send RequestVote RPCs to all other peers in seperate goroutines.
-                    // create the copy of the RequestVoteArgs
-                    term_copy := rf.currentTerm
+                    term_copy := rf.currentTerm    // create the copy of the RequestVoteArgs
                     for peer_index, _ := range rf.peers{
                         if peer_index == rf.me {
                             continue
@@ -444,8 +450,8 @@ func Make(peers []*labrpc.ClientEnd, me int,
                             if ok == true {
                                 if reply.VoteGranted == true {
                                     // whether the peer is still a Candidate and the previous term? if yes, increase rf.voteCount; if no, ignore.
+                                    rf.mu.Lock()
                                     if rf.state == Candidate && reply.Term == rf.currentTerm {
-                                        rf.mu.Lock()
                                         rf.voteCount += 1
                                         DPrintf("peer-%d gets a vote!", rf.me)
                                         if rf.voteCount > len(rf.peers) /2 {
@@ -453,8 +459,8 @@ func Make(peers []*labrpc.ClientEnd, me int,
                                             rf.state = Leader
                                             rf.leaderCh <- true
                                         }
-                                        rf.mu.Unlock()
                                     }
+                                    rf.mu.Unlock()
                                 }
                             }
                         }(peer_index)
@@ -463,8 +469,9 @@ func Make(peers []*labrpc.ClientEnd, me int,
             } else {
                 // block until become a Follower or Candidate.
                 //
+                DPrintf("peer-%d non-leader's election timeout long-running goroutine. block.", rf.me)
                 <-rf.nonleaderCh
-                DPrintf("peer-%d non-leader's election timeout long-running goroutine. else-loop", rf.me)
+                DPrintf("peer-%d non-leader's election timeout long-running goroutine. get up.", rf.me)
             }
         }
     }()
