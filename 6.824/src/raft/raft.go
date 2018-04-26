@@ -90,6 +90,8 @@ type Raft struct {
 	resetElectionCh chan int  // used to notify the peer to reset its election timeout.
     electionTimeoutStartTime time.Time  // nanosecond precision. used for election timeout.
     electionTimeoutInterval  time.Duration  // nanosecond count.
+    nonleaderCh     chan bool
+    leaderCh        chan bool
 }
 
 // return currentTerm and whether this server
@@ -99,6 +101,8 @@ func (rf *Raft) GetState() (int, bool) {
 	var term int
 	var isleader bool
 	// Your code here (2A).
+    rf.mu.Lock()
+    defer rf.mu.Unlock()
 	if rf.state == Leader {
 		isleader = true
 	} else {
@@ -214,7 +218,7 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 	 */
 	if args.Term == rf.currentTerm {
 		if rf.votedFor == args.CandidateId {
-            rf.resetElectionTimeout()
+            rf.resetElectionTimeout()   // I follow the Figure2's <Rules for Servers>'s Followers, is this place right?
 			reply.VoteGranted = true
 		} else {
 			reply.VoteGranted = false // First-come-first-served, this server has voted for another server before.
@@ -240,7 +244,8 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 	// reset the election timeout
     rf.resetElectionTimeout()
     rf.currentTerm = args.Term
-    if rf.state == Candidate {
+    if rf.state != Follower {
+        DPrintf("peer-%d calm down to a Follower from a Candidate!!!", rf.me)
         rf.state = Follower
     }
 
@@ -370,6 +375,8 @@ func Make(peers []*labrpc.ClientEnd, me int,
 	// Your initialization code here (2A, 2B, 2C).
 	// create a channel in Raft
 	rf.state = Follower
+    rf.nonleaderCh = make(chan bool)
+    rf.leaderCh = make(chan bool)
     // set election timeout
     rf.voteCount = 0
     rf.resetElectionTimeout()
@@ -390,7 +397,8 @@ func Make(peers []*labrpc.ClientEnd, me int,
 			} else {
 				// block until be elected as the new leader.
                 //
-                DPrintf("peer-%d:leader's heartbeat long-running goroutine. else-loop", rf.me)
+                <-rf.leaderCh
+                DPrintf("peer-%d leader's heartbeat long-running goroutine. else-loop", rf.me)
 			}
 		}
 	}()
@@ -407,7 +415,7 @@ func Make(peers []*labrpc.ClientEnd, me int,
                     // election timeout! kick off an election.
                     // convertion to a Candidate.
                     rf.mu.Lock()
-                    DPrintf("peer-%d becomes a Candidate!\n", rf.me)
+                    DPrintf("peer-%d becomes a Candidate!!!\n", rf.me)
                     rf.state = Candidate
                     rf.currentTerm += 1
                     // vote for itself.
@@ -441,8 +449,9 @@ func Make(peers []*labrpc.ClientEnd, me int,
                                         rf.voteCount += 1
                                         DPrintf("peer-%d gets a vote!", rf.me)
                                         if rf.voteCount > len(rf.peers) /2 {
-                                            DPrintf("peer-%d becomes the new leader.", rf.me)
+                                            DPrintf("peer-%d becomes the new leader!!!", rf.me)
                                             rf.state = Leader
+                                            rf.leaderCh <- true
                                         }
                                         rf.mu.Unlock()
                                     }
@@ -454,7 +463,8 @@ func Make(peers []*labrpc.ClientEnd, me int,
             } else {
                 // block until become a Follower or Candidate.
                 //
-                DPrintf("peer-%d: non-leader's election timeout long-running goroutine. else-loop", rf.me)
+                <-rf.nonleaderCh
+                DPrintf("peer-%d non-leader's election timeout long-running goroutine. else-loop", rf.me)
             }
         }
     }()
@@ -476,7 +486,7 @@ func (rf *Raft) resetElectionTimeout() {
 
 func (rf *Raft) electionTimeout() bool {
     if time.Now().Sub(rf.electionTimeoutStartTime) >= rf.electionTimeoutInterval {
-        DPrintf("peer-%d : election timeout!", rf.me)
+        DPrintf("peer-%d election timeout!", rf.me)
         return true
     } else {
         return false
@@ -484,14 +494,8 @@ func (rf *Raft) electionTimeout() bool {
 }
 
 
-// send heartbeats to all the peers to establish its authority.
-func (rf *Raft) becomeLeader() {
-	// set the state
-	rf.state = Leader
-}
-
 func (rf *Raft) broadcastHeartbeats() {
-    DPrintf("peer-%d broadcast heartbeats!", rf.me)
+    DPrintf("peer-%d broadcast heartbeats.", rf.me)
     term_copy := rf.currentTerm
 	for peer_index, _ := range rf.peers {
 		if peer_index == rf.me {
@@ -514,6 +518,8 @@ func (rf *Raft) broadcastHeartbeats() {
                 if reply.Term > rf.currentTerm {
                     rf.currentTerm = reply.Term
                     rf.state = Follower
+                    DPrintf("peer-%d degenerate from a Leader into a Follower!!!", rf.me)
+                    rf.nonleaderCh <- true
                     rf.resetElectionTimeout()
                 }
                 rf.mu.Unlock()
