@@ -225,6 +225,11 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 	// Then, we should check whether this server has voted for another server in the same term
 	if args.Term > rf.currentTerm {
 		rf.resetElectionTimeout()
+        if rf.state == Leader {
+            DPrintf("Leader vote for sb!!!!!!!!")
+        } else if rf.state == Candidate {
+            DPrintf("Candidate vote for sb!!!!!!!!")
+        }
 		rf.votedFor = args.CandidateId // First-come-first-served
 		rf.currentTerm = args.Term
 		reply.VoteGranted = true
@@ -284,6 +289,7 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
         rf.nonleaderCh <- true
     }
 
+    // when leader's nextIndex[rf.me] == 1, then will cause this case.
     if args.PrevLogIndex == 0 {
         // match!
         if len(args.Entries) > 0 {
@@ -313,8 +319,11 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 	}
 
 	// 4. Now this peer's log matches the leader's log at PrevLogIndex. Append any new entries not already in the log
-	rf.log = rf.log[:args.PrevLogIndex]
-	rf.log = append(rf.log, args.Entries...)
+    DPrintf("peer-%d AppendEntries RPC pass the consistent check at PrevLogIndex = %d!", rf.me, args.PrevLogIndex)
+    if len(args.Entries) > 0 {
+	    rf.log = rf.log[:args.PrevLogIndex]
+	    rf.log = append(rf.log, args.Entries...)
+    }
 	reply.Term = rf.currentTerm
 	reply.Success = true
 
@@ -413,6 +422,9 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 					// sendAppendEntries(server int, args *AppendEntriesArgs, reply *AppendEntriesReply)
 					var args AppendEntriesArgs
 					var reply AppendEntriesReply
+
+                    // Note!! when we fill the args, the leader's raft instance will still go ahead.
+                    // the log[] may grow, and other AppendEntries RPCs will be sent to the same peer concurrently.
 					args.Term = term
 					args.LeaderId = rf.me
 					args.LeaderCommit = rf.commitIndex
@@ -422,6 +434,7 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 					    args.PrevLogTerm = rf.log[args.PrevLogIndex-1].Term
                     }
 					args.Entries = rf.log[rf.nextIndex[i]-1:log_len] // log[nextIndex~end](including nextIndex). Note that the log index start from 1.
+
 					ok := rf.sendAppendEntries(i, &args, &reply)
 					// handle RPC reply in the same goroutine.
 					if ok == true {
@@ -545,10 +558,11 @@ func Make(peers []*labrpc.ClientEnd, me int,
 					rf.currentTerm += 1
 					// vote for itself.
 					rf.voteCount = 1
-					rf.mu.Unlock()
 					rf.resetElectionTimeout()
 					// send RequestVote RPCs to all other peers in seperate goroutines.
 					term_copy := rf.currentTerm // create the copy of the RequestVoteArgs
+                    last_log_index_copy := len(rf.log)
+                    rf.mu.Unlock()
 					for peer_index, _ := range rf.peers {
 						if peer_index == rf.me {
 							continue
@@ -559,10 +573,10 @@ func Make(peers []*labrpc.ClientEnd, me int,
 							var args RequestVoteArgs
 							args.Term = term_copy
 							args.CandidateId = rf.me
-							args.LastLogIndex = len(rf.log)
+							args.LastLogIndex = last_log_index_copy
                             if args.LastLogIndex > 0 {
                                 // not an empty log
-							    args.LastLogTerm = rf.log[len(rf.log)-1].Term
+							    args.LastLogTerm = rf.log[last_log_index_copy-1].Term
                             }
 							var reply RequestVoteReply
 							DPrintf("peer-%d send a sendRequestVote RPC to peer-%d", rf.me, i)
@@ -571,18 +585,16 @@ func Make(peers []*labrpc.ClientEnd, me int,
 							if ok == true {
 								if reply.VoteGranted == true {
 									// whether the peer is still a Candidate and the previous term? if yes, increase rf.voteCount; if no, ignore.
-									rf.mu.Lock()
-									if rf.state == Candidate && reply.Term == rf.currentTerm {
+									if rf.state == Candidate && reply.Term == term_copy {
 										rf.voteCount += 1
 										DPrintf("peer-%d gets a vote!", rf.me)
 										if rf.voteCount > len(rf.peers)/2 {
 											rf.convertToLeader()
 										}
 									}
-									rf.mu.Unlock()
 								} else {
                                     rf.mu.Lock()
-                                    if reply.Term > rf.currentTerm && rf.state == Candidate {
+                                    if reply.Term > term_copy && rf.state == Candidate {
                                         rf.state = Follower
                                         DPrintf("peer-%d calm down from a Candidate to a Follower!!!", rf.me)
                                     }
@@ -609,6 +621,8 @@ func Make(peers []*labrpc.ClientEnd, me int,
 }
 
 func (rf *Raft) convertToLeader() {
+    rf.mu.Lock()
+    defer rf.mu.Unlock()
 	DPrintf("peer-%d becomes the new leader!!!", rf.me)
 	rf.state = Leader
 	// when a leader first comes to power, it initializes all nextIndex values to the index just after the last one in its log. (Section 5.3)
@@ -619,6 +633,7 @@ func (rf *Raft) convertToLeader() {
 		rf.nextIndex[i] = next_index_initval
 		rf.matchIndex[i] = 0 // increases monotonically.
 	}
+    DPrintf("peer-%d Leader's log array's length = %d.", rf.me, len(rf.log))
 	rf.leaderCh <- true
 }
 
@@ -640,7 +655,10 @@ func (rf *Raft) electionTimeout() bool {
 
 func (rf *Raft) broadcastHeartbeats() {
 	DPrintf("peer-%d broadcast heartbeats.", rf.me)
+    rf.mu.Lock()
+    // FIXME: it seems that the bug occurs because the AppendEntries RPC's consistency check fail when the logs match.
 	term_copy := rf.currentTerm
+    rf.mu.Unlock()
 	for peer_index, _ := range rf.peers {
 		if peer_index == rf.me {
 			continue
@@ -660,7 +678,7 @@ func (rf *Raft) broadcastHeartbeats() {
 			ok := rf.sendAppendEntries(i, &args, &reply)
 			// handle the PRC reply in the same goroutine.
 			if ok == true {
-				rf.mu.Lock()
+				//rf.mu.Lock()
 				if reply.Term > rf.currentTerm {
 					rf.currentTerm = reply.Term
 					rf.state = Follower
@@ -668,7 +686,7 @@ func (rf *Raft) broadcastHeartbeats() {
 					rf.nonleaderCh <- true
 					rf.resetElectionTimeout()
 				}
-				rf.mu.Unlock()
+				//rf.mu.Unlock()
 			}
 		}(peer_index)
 	}

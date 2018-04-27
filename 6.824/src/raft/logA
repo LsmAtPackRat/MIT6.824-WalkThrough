@@ -1,0 +1,381 @@
+2018/04/27 15:07:07 peer-1 leader's heartbeat long-running goroutine. block.
+2018/04/27 15:07:07 peer-2 leader's heartbeat long-running goroutine. block.
+2018/04/27 15:07:07 peer-0 leader's heartbeat long-running goroutine. block.
+2018/04/27 15:07:08 peer-0 election timeout!
+2018/04/27 15:07:08 peer-0 kicks off an election!
+2018/04/27 15:07:08 peer-0 becomes a Candidate!!!
+2018/04/27 15:07:08 peer-0 send a sendRequestVote RPC to peer-2
+2018/04/27 15:07:08 peer-2 gets a RequestVote RPC.
+2018/04/27 15:07:08 peer-0 gets a vote!
+2018/04/27 15:07:08 peer-0 send a sendRequestVote RPC to peer-1
+2018/04/27 15:07:08 peer-1 gets a RequestVote RPC.
+2018/04/27 15:07:08 peer-0 election timeout!
+2018/04/27 15:07:08 peer-0 kicks off an election!
+2018/04/27 15:07:09 peer-1 election timeout!
+2018/04/27 15:07:09 peer-1 kicks off an election!
+2018/04/27 15:07:09 peer-1 becomes a Candidate!!!
+2018/04/27 15:07:09 peer-2 election timeout!
+2018/04/27 15:07:09 peer-2 kicks off an election!
+2018/04/27 15:07:09 peer-2 becomes a Candidate!!!
+2018/04/27 15:07:09 peer-1 send a sendRequestVote RPC to peer-0
+2018/04/27 15:07:09 peer-2 send a sendRequestVote RPC to peer-0
+2018/04/27 15:07:09 peer-1 send a sendRequestVote RPC to peer-2
+2018/04/27 15:07:09 peer-2 gets a RequestVote RPC.
+2018/04/27 15:07:09 peer-0 gets a RequestVote RPC.
+2018/04/27 15:07:09 peer-2 send a sendRequestVote RPC to peer-1
+2018/04/27 15:07:09 peer-0 gets a RequestVote RPC.
+2018/04/27 15:07:09 peer-1 gets a RequestVote RPC.
+2018/04/27 15:07:09 peer-2 election timeout!
+2018/04/27 15:07:09 peer-2 kicks off an election!
+2018/04/27 15:07:09 peer-2 becomes a Candidate!!!
+2018/04/27 15:07:09 peer-2 send a sendRequestVote RPC to peer-1
+2018/04/27 15:07:09 peer-2 send a sendRequestVote RPC to peer-0
+2018/04/27 15:07:09 peer-1 gets a RequestVote RPC.
+2018/04/27 15:07:09 Candidate vote for sb!!!!!!!!
+2018/04/27 15:07:09 peer-0 gets a RequestVote RPC.
+2018/04/27 15:07:09 peer-2 gets a vote!
+2018/04/27 15:07:10 peer-2 election timeout!
+2018/04/27 15:07:10 peer-2 kicks off an election!
+2018/04/27 15:07:10 peer-1 election timeout!
+2018/04/27 15:07:10 peer-1 kicks off an election!
+2018/04/27 15:07:10 peer-1 becomes a Candidate!!!
+2018/04/27 15:07:10 peer-1 send a sendRequestVote RPC to peer-2
+2018/04/27 15:07:10 peer-2 gets a RequestVote RPC.
+2018/04/27 15:07:10 peer-1 send a sendRequestVote RPC to peer-0
+2018/04/27 15:07:10 peer-0 gets a RequestVote RPC.
+2018/04/27 15:07:10 peer-1 election timeout!
+2018/04/27 15:07:10 peer-1 kicks off an election!
+2018/04/27 15:07:10 peer-1 becomes a Candidate!!!
+2018/04/27 15:07:10 peer-1 send a sendRequestVote RPC to peer-2
+2018/04/27 15:07:10 peer-1 send a sendRequestVote RPC to peer-0
+2018/04/27 15:07:10 peer-2 gets a RequestVote RPC.
+2018/04/27 15:07:10 peer-0 gets a RequestVote RPC.
+2018/04/27 15:07:11 peer-1 election timeout!
+2018/04/27 15:07:11 peer-1 kicks off an election!
+2018/04/27 15:07:11 peer-1 becomes a Candidate!!!
+2018/04/27 15:07:11 peer-1 send a sendRequestVote RPC to peer-2
+2018/04/27 15:07:11 peer-2 gets a RequestVote RPC.
+2018/04/27 15:07:11 peer-1 send a sendRequestVote RPC to peer-0
+2018/04/27 15:07:11 peer-0 gets a RequestVote RPC.
+2018/04/27 15:07:11 peer-1 election timeout!
+2018/04/27 15:07:11 peer-1 kicks off an election!
+2018/04/27 15:07:11 peer-1 becomes a Candidate!!!
+2018/04/27 15:07:11 peer-1 send a sendRequestVote RPC to peer-0
+2018/04/27 15:07:11 peer-1 send a sendRequestVote RPC to peer-2
+2018/04/27 15:07:11 peer-0 gets a RequestVote RPC.
+2018/04/27 15:07:11 peer-2 gets a RequestVote RPC.
+2018/04/27 15:07:12 peer-1 election timeout!
+2018/04/27 15:07:12 peer-1 kicks off an election!
+2018/04/27 15:07:12 peer-1 becomes a Candidate!!!
+2018/04/27 15:07:12 peer-1 send a sendRequestVote RPC to peer-2
+2018/04/27 15:07:12 peer-1 send a sendRequestVote RPC to peer-0
+2018/04/27 15:07:12 peer-2 gets a RequestVote RPC.
+2018/04/27 15:07:12 peer-0 gets a RequestVote RPC.
+2018/04/27 15:07:12 peer-1 election timeout!
+2018/04/27 15:07:12 peer-1 kicks off an election!
+2018/04/27 15:07:12 peer-1 becomes a Candidate!!!
+2018/04/27 15:07:12 peer-1 send a sendRequestVote RPC to peer-2
+2018/04/27 15:07:12 peer-2 gets a RequestVote RPC.
+2018/04/27 15:07:12 peer-1 send a sendRequestVote RPC to peer-0
+2018/04/27 15:07:12 peer-0 gets a RequestVote RPC.
+2018/04/27 15:07:13 peer-1 election timeout!
+2018/04/27 15:07:13 peer-1 kicks off an election!
+2018/04/27 15:07:13 peer-1 becomes a Candidate!!!
+2018/04/27 15:07:13 peer-1 send a sendRequestVote RPC to peer-2
+2018/04/27 15:07:13 peer-1 send a sendRequestVote RPC to peer-0
+2018/04/27 15:07:13 peer-0 gets a RequestVote RPC.
+2018/04/27 15:07:13 peer-2 gets a RequestVote RPC.
+2018/04/27 15:07:14 peer-1 election timeout!
+2018/04/27 15:07:14 peer-1 kicks off an election!
+2018/04/27 15:07:14 peer-1 becomes a Candidate!!!
+2018/04/27 15:07:14 peer-1 send a sendRequestVote RPC to peer-2
+2018/04/27 15:07:14 peer-2 gets a RequestVote RPC.
+2018/04/27 15:07:14 peer-1 send a sendRequestVote RPC to peer-0
+2018/04/27 15:07:14 peer-0 gets a RequestVote RPC.
+2018/04/27 15:07:14 peer-1 election timeout!
+2018/04/27 15:07:14 peer-1 kicks off an election!
+2018/04/27 15:07:14 peer-1 becomes a Candidate!!!
+2018/04/27 15:07:14 peer-1 send a sendRequestVote RPC to peer-2
+2018/04/27 15:07:14 peer-1 send a sendRequestVote RPC to peer-0
+2018/04/27 15:07:14 peer-2 gets a RequestVote RPC.
+2018/04/27 15:07:14 peer-0 gets a RequestVote RPC.
+2018/04/27 15:07:15 peer-1 election timeout!
+2018/04/27 15:07:15 peer-1 kicks off an election!
+2018/04/27 15:07:15 peer-1 becomes a Candidate!!!
+2018/04/27 15:07:15 peer-1 send a sendRequestVote RPC to peer-2
+2018/04/27 15:07:15 peer-1 send a sendRequestVote RPC to peer-0
+2018/04/27 15:07:15 peer-2 gets a RequestVote RPC.
+2018/04/27 15:07:15 peer-0 gets a RequestVote RPC.
+2018/04/27 15:07:15 peer-1 election timeout!
+2018/04/27 15:07:15 peer-1 kicks off an election!
+2018/04/27 15:07:15 peer-1 becomes a Candidate!!!
+2018/04/27 15:07:15 peer-1 send a sendRequestVote RPC to peer-2
+2018/04/27 15:07:15 peer-2 gets a RequestVote RPC.
+2018/04/27 15:07:15 peer-1 send a sendRequestVote RPC to peer-0
+2018/04/27 15:07:15 peer-0 gets a RequestVote RPC.
+2018/04/27 15:07:16 peer-1 election timeout!
+2018/04/27 15:07:16 peer-1 kicks off an election!
+2018/04/27 15:07:16 peer-1 becomes a Candidate!!!
+2018/04/27 15:07:16 peer-1 send a sendRequestVote RPC to peer-2
+2018/04/27 15:07:16 peer-2 gets a RequestVote RPC.
+2018/04/27 15:07:16 peer-1 send a sendRequestVote RPC to peer-0
+2018/04/27 15:07:16 peer-0 gets a RequestVote RPC.
+2018/04/27 15:07:16 peer-1 election timeout!
+2018/04/27 15:07:16 peer-1 kicks off an election!
+2018/04/27 15:07:16 peer-1 becomes a Candidate!!!
+2018/04/27 15:07:16 peer-1 send a sendRequestVote RPC to peer-2
+2018/04/27 15:07:16 peer-2 gets a RequestVote RPC.
+2018/04/27 15:07:16 peer-1 send a sendRequestVote RPC to peer-0
+2018/04/27 15:07:16 peer-0 gets a RequestVote RPC.
+2018/04/27 15:07:17 peer-1 election timeout!
+2018/04/27 15:07:17 peer-1 kicks off an election!
+2018/04/27 15:07:17 peer-1 becomes a Candidate!!!
+2018/04/27 15:07:17 peer-1 send a sendRequestVote RPC to peer-2
+2018/04/27 15:07:17 peer-1 send a sendRequestVote RPC to peer-0
+2018/04/27 15:07:17 peer-2 gets a RequestVote RPC.
+2018/04/27 15:07:17 peer-0 gets a RequestVote RPC.
+2018/04/27 15:07:17 peer-1 election timeout!
+2018/04/27 15:07:17 peer-1 kicks off an election!
+2018/04/27 15:07:17 peer-1 becomes a Candidate!!!
+2018/04/27 15:07:17 peer-1 send a sendRequestVote RPC to peer-2
+2018/04/27 15:07:17 peer-1 send a sendRequestVote RPC to peer-0
+2018/04/27 15:07:17 peer-2 gets a RequestVote RPC.
+2018/04/27 15:07:17 peer-0 gets a RequestVote RPC.
+2018/04/27 15:07:18 peer-1 election timeout!
+2018/04/27 15:07:18 peer-1 kicks off an election!
+2018/04/27 15:07:18 peer-1 becomes a Candidate!!!
+2018/04/27 15:07:18 peer-1 send a sendRequestVote RPC to peer-2
+2018/04/27 15:07:18 peer-1 send a sendRequestVote RPC to peer-0
+2018/04/27 15:07:18 peer-2 gets a RequestVote RPC.
+2018/04/27 15:07:18 peer-0 gets a RequestVote RPC.
+2018/04/27 15:07:19 peer-1 election timeout!
+2018/04/27 15:07:19 peer-1 kicks off an election!
+2018/04/27 15:07:19 peer-1 becomes a Candidate!!!
+2018/04/27 15:07:19 peer-1 send a sendRequestVote RPC to peer-2
+2018/04/27 15:07:19 peer-1 send a sendRequestVote RPC to peer-0
+2018/04/27 15:07:19 peer-2 gets a RequestVote RPC.
+2018/04/27 15:07:19 peer-0 gets a RequestVote RPC.
+2018/04/27 15:07:19 peer-1 election timeout!
+2018/04/27 15:07:19 peer-1 kicks off an election!
+2018/04/27 15:07:19 peer-1 becomes a Candidate!!!
+2018/04/27 15:07:19 peer-1 send a sendRequestVote RPC to peer-2
+2018/04/27 15:07:19 peer-1 send a sendRequestVote RPC to peer-0
+2018/04/27 15:07:19 peer-0 gets a RequestVote RPC.
+2018/04/27 15:07:19 peer-2 gets a RequestVote RPC.
+2018/04/27 15:07:20 peer-1 election timeout!
+2018/04/27 15:07:20 peer-1 kicks off an election!
+2018/04/27 15:07:20 peer-1 becomes a Candidate!!!
+2018/04/27 15:07:20 peer-1 send a sendRequestVote RPC to peer-2
+2018/04/27 15:07:20 peer-1 send a sendRequestVote RPC to peer-0
+2018/04/27 15:07:20 peer-2 gets a RequestVote RPC.
+2018/04/27 15:07:20 peer-0 gets a RequestVote RPC.
+2018/04/27 15:07:20 peer-1 election timeout!
+2018/04/27 15:07:20 peer-1 kicks off an election!
+2018/04/27 15:07:20 peer-1 becomes a Candidate!!!
+2018/04/27 15:07:20 peer-1 send a sendRequestVote RPC to peer-2
+2018/04/27 15:07:20 peer-1 send a sendRequestVote RPC to peer-0
+2018/04/27 15:07:20 peer-0 gets a RequestVote RPC.
+2018/04/27 15:07:20 peer-2 gets a RequestVote RPC.
+2018/04/27 15:07:21 peer-1 election timeout!
+2018/04/27 15:07:21 peer-1 kicks off an election!
+2018/04/27 15:07:21 peer-1 becomes a Candidate!!!
+2018/04/27 15:07:21 peer-1 send a sendRequestVote RPC to peer-2
+2018/04/27 15:07:21 peer-1 send a sendRequestVote RPC to peer-0
+2018/04/27 15:07:21 peer-2 gets a RequestVote RPC.
+2018/04/27 15:07:21 peer-0 gets a RequestVote RPC.
+2018/04/27 15:07:21 peer-1 election timeout!
+2018/04/27 15:07:21 peer-1 kicks off an election!
+2018/04/27 15:07:21 peer-1 becomes a Candidate!!!
+2018/04/27 15:07:21 peer-1 send a sendRequestVote RPC to peer-2
+2018/04/27 15:07:21 peer-1 send a sendRequestVote RPC to peer-0
+2018/04/27 15:07:21 peer-2 gets a RequestVote RPC.
+2018/04/27 15:07:21 peer-0 gets a RequestVote RPC.
+2018/04/27 15:07:22 peer-1 election timeout!
+2018/04/27 15:07:22 peer-1 kicks off an election!
+2018/04/27 15:07:22 peer-1 becomes a Candidate!!!
+2018/04/27 15:07:22 peer-1 send a sendRequestVote RPC to peer-2
+2018/04/27 15:07:22 peer-2 gets a RequestVote RPC.
+2018/04/27 15:07:22 peer-1 send a sendRequestVote RPC to peer-0
+2018/04/27 15:07:22 peer-0 gets a RequestVote RPC.
+2018/04/27 15:07:22 peer-1 election timeout!
+2018/04/27 15:07:22 peer-1 kicks off an election!
+2018/04/27 15:07:22 peer-1 becomes a Candidate!!!
+2018/04/27 15:07:22 peer-1 send a sendRequestVote RPC to peer-2
+2018/04/27 15:07:22 peer-2 gets a RequestVote RPC.
+2018/04/27 15:07:22 peer-1 send a sendRequestVote RPC to peer-0
+2018/04/27 15:07:22 peer-0 gets a RequestVote RPC.
+2018/04/27 15:07:23 peer-1 election timeout!
+2018/04/27 15:07:23 peer-1 kicks off an election!
+2018/04/27 15:07:23 peer-1 becomes a Candidate!!!
+2018/04/27 15:07:23 peer-1 send a sendRequestVote RPC to peer-2
+2018/04/27 15:07:23 peer-2 gets a RequestVote RPC.
+2018/04/27 15:07:23 peer-1 send a sendRequestVote RPC to peer-0
+2018/04/27 15:07:23 peer-0 gets a RequestVote RPC.
+2018/04/27 15:07:23 peer-1 election timeout!
+2018/04/27 15:07:23 peer-1 kicks off an election!
+2018/04/27 15:07:23 peer-1 becomes a Candidate!!!
+2018/04/27 15:07:23 peer-1 send a sendRequestVote RPC to peer-2
+2018/04/27 15:07:23 peer-2 gets a RequestVote RPC.
+2018/04/27 15:07:23 peer-1 send a sendRequestVote RPC to peer-0
+2018/04/27 15:07:23 peer-0 gets a RequestVote RPC.
+2018/04/27 15:07:24 peer-1 election timeout!
+2018/04/27 15:07:24 peer-1 kicks off an election!
+2018/04/27 15:07:24 peer-1 becomes a Candidate!!!
+2018/04/27 15:07:24 peer-1 send a sendRequestVote RPC to peer-2
+2018/04/27 15:07:24 peer-2 gets a RequestVote RPC.
+2018/04/27 15:07:24 peer-1 send a sendRequestVote RPC to peer-0
+2018/04/27 15:07:24 peer-0 gets a RequestVote RPC.
+2018/04/27 15:07:25 peer-1 election timeout!
+2018/04/27 15:07:25 peer-1 kicks off an election!
+2018/04/27 15:07:25 peer-1 becomes a Candidate!!!
+2018/04/27 15:07:25 peer-1 send a sendRequestVote RPC to peer-2
+2018/04/27 15:07:25 peer-2 gets a RequestVote RPC.
+2018/04/27 15:07:25 peer-1 send a sendRequestVote RPC to peer-0
+2018/04/27 15:07:25 peer-0 gets a RequestVote RPC.
+2018/04/27 15:07:25 peer-1 election timeout!
+2018/04/27 15:07:25 peer-1 kicks off an election!
+2018/04/27 15:07:25 peer-1 becomes a Candidate!!!
+2018/04/27 15:07:25 peer-1 send a sendRequestVote RPC to peer-2
+2018/04/27 15:07:25 peer-1 send a sendRequestVote RPC to peer-0
+2018/04/27 15:07:25 peer-2 gets a RequestVote RPC.
+2018/04/27 15:07:25 peer-0 gets a RequestVote RPC.
+2018/04/27 15:07:26 peer-1 election timeout!
+2018/04/27 15:07:26 peer-1 kicks off an election!
+2018/04/27 15:07:26 peer-1 becomes a Candidate!!!
+2018/04/27 15:07:26 peer-1 send a sendRequestVote RPC to peer-2
+2018/04/27 15:07:26 peer-1 send a sendRequestVote RPC to peer-0
+2018/04/27 15:07:26 peer-2 gets a RequestVote RPC.
+2018/04/27 15:07:26 peer-0 gets a RequestVote RPC.
+2018/04/27 15:07:26 peer-1 election timeout!
+2018/04/27 15:07:26 peer-1 kicks off an election!
+2018/04/27 15:07:26 peer-1 becomes a Candidate!!!
+2018/04/27 15:07:26 peer-1 send a sendRequestVote RPC to peer-2
+2018/04/27 15:07:26 peer-2 gets a RequestVote RPC.
+2018/04/27 15:07:26 peer-1 send a sendRequestVote RPC to peer-0
+2018/04/27 15:07:26 peer-0 gets a RequestVote RPC.
+2018/04/27 15:07:27 peer-1 election timeout!
+2018/04/27 15:07:27 peer-1 kicks off an election!
+2018/04/27 15:07:27 peer-1 becomes a Candidate!!!
+2018/04/27 15:07:27 peer-1 send a sendRequestVote RPC to peer-2
+2018/04/27 15:07:27 peer-1 send a sendRequestVote RPC to peer-0
+2018/04/27 15:07:27 peer-2 gets a RequestVote RPC.
+2018/04/27 15:07:27 peer-0 gets a RequestVote RPC.
+2018/04/27 15:07:27 peer-1 election timeout!
+2018/04/27 15:07:27 peer-1 kicks off an election!
+2018/04/27 15:07:27 peer-1 becomes a Candidate!!!
+2018/04/27 15:07:27 peer-1 send a sendRequestVote RPC to peer-2
+2018/04/27 15:07:27 peer-1 send a sendRequestVote RPC to peer-0
+2018/04/27 15:07:27 peer-2 gets a RequestVote RPC.
+2018/04/27 15:07:27 peer-0 gets a RequestVote RPC.
+2018/04/27 15:07:28 peer-1 election timeout!
+2018/04/27 15:07:28 peer-1 kicks off an election!
+2018/04/27 15:07:28 peer-1 becomes a Candidate!!!
+2018/04/27 15:07:28 peer-1 send a sendRequestVote RPC to peer-2
+2018/04/27 15:07:28 peer-1 send a sendRequestVote RPC to peer-0
+2018/04/27 15:07:28 peer-2 gets a RequestVote RPC.
+2018/04/27 15:07:28 peer-0 gets a RequestVote RPC.
+2018/04/27 15:07:29 peer-1 election timeout!
+2018/04/27 15:07:29 peer-1 kicks off an election!
+2018/04/27 15:07:29 peer-1 becomes a Candidate!!!
+2018/04/27 15:07:29 peer-1 send a sendRequestVote RPC to peer-2
+2018/04/27 15:07:29 peer-1 send a sendRequestVote RPC to peer-0
+2018/04/27 15:07:29 peer-2 gets a RequestVote RPC.
+2018/04/27 15:07:29 peer-0 gets a RequestVote RPC.
+2018/04/27 15:07:29 peer-1 election timeout!
+2018/04/27 15:07:29 peer-1 kicks off an election!
+2018/04/27 15:07:29 peer-1 becomes a Candidate!!!
+2018/04/27 15:07:29 peer-1 send a sendRequestVote RPC to peer-2
+2018/04/27 15:07:29 peer-1 send a sendRequestVote RPC to peer-0
+2018/04/27 15:07:29 peer-2 gets a RequestVote RPC.
+2018/04/27 15:07:29 peer-0 gets a RequestVote RPC.
+2018/04/27 15:07:30 peer-1 election timeout!
+2018/04/27 15:07:30 peer-1 kicks off an election!
+2018/04/27 15:07:30 peer-1 becomes a Candidate!!!
+2018/04/27 15:07:30 peer-1 send a sendRequestVote RPC to peer-2
+2018/04/27 15:07:30 peer-1 send a sendRequestVote RPC to peer-0
+2018/04/27 15:07:30 peer-2 gets a RequestVote RPC.
+2018/04/27 15:07:30 peer-0 gets a RequestVote RPC.
+2018/04/27 15:07:30 peer-1 election timeout!
+2018/04/27 15:07:30 peer-1 kicks off an election!
+2018/04/27 15:07:30 peer-1 becomes a Candidate!!!
+2018/04/27 15:07:30 peer-1 send a sendRequestVote RPC to peer-2
+2018/04/27 15:07:30 peer-2 gets a RequestVote RPC.
+2018/04/27 15:07:30 peer-1 send a sendRequestVote RPC to peer-0
+2018/04/27 15:07:30 peer-0 gets a RequestVote RPC.
+2018/04/27 15:07:31 peer-1 election timeout!
+2018/04/27 15:07:31 peer-1 kicks off an election!
+2018/04/27 15:07:31 peer-1 becomes a Candidate!!!
+2018/04/27 15:07:31 peer-1 send a sendRequestVote RPC to peer-2
+2018/04/27 15:07:31 peer-2 gets a RequestVote RPC.
+2018/04/27 15:07:31 peer-1 send a sendRequestVote RPC to peer-0
+2018/04/27 15:07:31 peer-0 gets a RequestVote RPC.
+2018/04/27 15:07:31 peer-1 election timeout!
+2018/04/27 15:07:31 peer-1 kicks off an election!
+2018/04/27 15:07:31 peer-1 becomes a Candidate!!!
+2018/04/27 15:07:31 peer-1 send a sendRequestVote RPC to peer-2
+2018/04/27 15:07:31 peer-2 gets a RequestVote RPC.
+2018/04/27 15:07:31 peer-1 send a sendRequestVote RPC to peer-0
+2018/04/27 15:07:31 peer-0 gets a RequestVote RPC.
+2018/04/27 15:07:32 peer-1 election timeout!
+2018/04/27 15:07:32 peer-1 kicks off an election!
+2018/04/27 15:07:32 peer-1 becomes a Candidate!!!
+2018/04/27 15:07:32 peer-1 send a sendRequestVote RPC to peer-2
+2018/04/27 15:07:32 peer-2 gets a RequestVote RPC.
+2018/04/27 15:07:32 peer-1 send a sendRequestVote RPC to peer-0
+2018/04/27 15:07:32 peer-0 gets a RequestVote RPC.
+2018/04/27 15:07:32 peer-1 election timeout!
+2018/04/27 15:07:32 peer-1 kicks off an election!
+2018/04/27 15:07:32 peer-1 becomes a Candidate!!!
+2018/04/27 15:07:32 peer-1 send a sendRequestVote RPC to peer-2
+2018/04/27 15:07:32 peer-1 send a sendRequestVote RPC to peer-0
+2018/04/27 15:07:32 peer-2 gets a RequestVote RPC.
+2018/04/27 15:07:32 peer-0 gets a RequestVote RPC.
+2018/04/27 15:07:33 peer-1 election timeout!
+2018/04/27 15:07:33 peer-1 kicks off an election!
+2018/04/27 15:07:33 peer-1 becomes a Candidate!!!
+2018/04/27 15:07:33 peer-1 send a sendRequestVote RPC to peer-2
+2018/04/27 15:07:33 peer-2 gets a RequestVote RPC.
+2018/04/27 15:07:33 peer-1 send a sendRequestVote RPC to peer-0
+2018/04/27 15:07:33 peer-0 gets a RequestVote RPC.
+2018/04/27 15:07:34 peer-1 election timeout!
+2018/04/27 15:07:34 peer-1 kicks off an election!
+2018/04/27 15:07:34 peer-1 becomes a Candidate!!!
+2018/04/27 15:07:34 peer-1 send a sendRequestVote RPC to peer-2
+2018/04/27 15:07:34 peer-2 gets a RequestVote RPC.
+2018/04/27 15:07:34 peer-1 send a sendRequestVote RPC to peer-0
+2018/04/27 15:07:34 peer-0 gets a RequestVote RPC.
+2018/04/27 15:07:34 peer-1 election timeout!
+2018/04/27 15:07:34 peer-1 kicks off an election!
+2018/04/27 15:07:34 peer-1 becomes a Candidate!!!
+2018/04/27 15:07:34 peer-1 send a sendRequestVote RPC to peer-2
+2018/04/27 15:07:34 peer-2 gets a RequestVote RPC.
+2018/04/27 15:07:34 peer-1 send a sendRequestVote RPC to peer-0
+2018/04/27 15:07:34 peer-0 gets a RequestVote RPC.
+2018/04/27 15:07:35 peer-1 election timeout!
+2018/04/27 15:07:35 peer-1 kicks off an election!
+2018/04/27 15:07:35 peer-1 becomes a Candidate!!!
+2018/04/27 15:07:35 peer-1 send a sendRequestVote RPC to peer-2
+2018/04/27 15:07:35 peer-2 gets a RequestVote RPC.
+2018/04/27 15:07:35 peer-1 send a sendRequestVote RPC to peer-0
+2018/04/27 15:07:35 peer-0 gets a RequestVote RPC.
+2018/04/27 15:07:35 peer-1 election timeout!
+2018/04/27 15:07:35 peer-1 kicks off an election!
+2018/04/27 15:07:35 peer-1 becomes a Candidate!!!
+2018/04/27 15:07:35 peer-1 send a sendRequestVote RPC to peer-2
+2018/04/27 15:07:35 peer-2 gets a RequestVote RPC.
+2018/04/27 15:07:35 peer-1 send a sendRequestVote RPC to peer-0
+2018/04/27 15:07:35 peer-0 gets a RequestVote RPC.
+2018/04/27 15:07:36 peer-1 election timeout!
+2018/04/27 15:07:36 peer-1 kicks off an election!
+2018/04/27 15:07:36 peer-1 becomes a Candidate!!!
+2018/04/27 15:07:36 peer-1 send a sendRequestVote RPC to peer-2
+2018/04/27 15:07:36 peer-2 gets a RequestVote RPC.
+2018/04/27 15:07:36 peer-1 send a sendRequestVote RPC to peer-0
+2018/04/27 15:07:36 peer-0 gets a RequestVote RPC.
+2018/04/27 15:07:36 peer-1 election timeout!
+2018/04/27 15:07:36 peer-1 kicks off an election!
+2018/04/27 15:07:36 peer-1 becomes a Candidate!!!
+2018/04/27 15:07:36 peer-1 send a sendRequestVote RPC to peer-2
+2018/04/27 15:07:36 peer-1 send a sendRequestVote RPC to peer-0
+2018/04/27 15:07:36 peer-2 gets a RequestVote RPC.
+2018/04/27 15:07:36 peer-0 gets a RequestVote RPC.
