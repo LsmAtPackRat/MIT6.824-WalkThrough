@@ -410,6 +410,7 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 		newlog.Command = command
 		rf.log = append(rf.log, newlog)
         log_len := len(rf.log)
+        rf_copy := rf     // use rf_copy to fill the AppendEntries RPC args.
         rf.mu.Unlock()
 		// start agreement and return immediately.
 		for peer_index, _ := range rf.peers {
@@ -422,28 +423,29 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 					// sendAppendEntries(server int, args *AppendEntriesArgs, reply *AppendEntriesReply)
 					var args AppendEntriesArgs
 					var reply AppendEntriesReply
-
+                    //-------------------------------------------------------------------------------------
                     // Note!! when we fill the args, the leader's raft instance will still go ahead.
                     // the log[] may grow, and other AppendEntries RPCs will be sent to the same peer concurrently.
-					args.Term = term
+					args.Term = rf_copy.currentTerm
 					args.LeaderId = rf.me
-					args.LeaderCommit = rf.commitIndex
+					args.LeaderCommit = rf_copy.commitIndex
 					// If last log index >= nextIndex for a follower: send AppendEntries RPC with log entries starting at nextIndex
-					args.PrevLogIndex = rf.nextIndex[i] - 1
+					args.PrevLogIndex = rf_copy.nextIndex[i] - 1
                     if args.PrevLogIndex > 0 {
-					    args.PrevLogTerm = rf.log[args.PrevLogIndex-1].Term
+					    args.PrevLogTerm = rf_copy.log[args.PrevLogIndex-1].Term
                     }
-					args.Entries = rf.log[rf.nextIndex[i]-1:log_len] // log[nextIndex~end](including nextIndex). Note that the log index start from 1.
+					args.Entries = rf_copy.log[rf.nextIndex[i]-1:log_len] // log[nextIndex~end](including nextIndex). Note that the log index start from 1.
+                    //-------------------------------------------------------------------------------------
 
 					ok := rf.sendAppendEntries(i, &args, &reply)
 					// handle RPC reply in the same goroutine.
 					if ok == true {
 						if reply.Success == true {
 							// If successful: update nextIndex and matchIndex for follower.
+                            rf.mu.Lock()
 							rf.nextIndex[i] = log_len
 							rf.matchIndex[i] = log_len - 1 // can I do this ??
 							// test whether we can update the leader's commitIndex.
-                            rf.mu.Lock()
 							match_index_to_test := rf.matchIndex[i]
 							if match_index_to_test > rf.commitIndex {
 								count := 0
@@ -469,8 +471,8 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
                                 DPrintf("peer-%d Degenerate from Leader into Follower!!!", rf.me)
                                 rf.nonleaderCh <- true
                             }
-                            rf.mu.Unlock()
 							rf.nextIndex[i] -= 1
+                            rf.mu.Unlock()
 						}
 					} else {
 						// RPC fails. Retry!
@@ -657,7 +659,8 @@ func (rf *Raft) broadcastHeartbeats() {
 	DPrintf("peer-%d broadcast heartbeats.", rf.me)
     rf.mu.Lock()
     // FIXME: it seems that the bug occurs because the AppendEntries RPC's consistency check fail when the logs match.
-	term_copy := rf.currentTerm
+	//term_copy := rf.currentTerm
+    rf_copy := rf
     rf.mu.Unlock()
 	for peer_index, _ := range rf.peers {
 		if peer_index == rf.me {
@@ -666,14 +669,19 @@ func (rf *Raft) broadcastHeartbeats() {
 		// create a goroutine to send heartbeat for each peer.
 		go func(i int) {
 			var args AppendEntriesArgs
-			args.Term = term_copy
+			args.Term = rf_copy.currentTerm
 			args.LeaderId = rf.me
-			args.PrevLogIndex = rf.nextIndex[i] - 1
+            args.PrevLogIndex = rf_copy.nextIndex[i] - 1
             if args.PrevLogIndex > 0 {
-			    args.PrevLogTerm = rf.log[args.PrevLogIndex-1].Term
+                args.PrevLogTerm = rf_copy.log[args.PrevLogIndex-1].Term
             }
+			//args.PrevLogIndex = rf.nextIndex[i] - 1
+            //if args.PrevLogIndex > 0 {
+			//    args.PrevLogTerm = rf.log[args.PrevLogIndex-1].Term
+            //}
 			args.Entries = make([]LogEntry, 0)
-			args.LeaderCommit = rf.commitIndex // section 5.3 metioned.
+            args.LeaderCommit = rf_copy.commitIndex
+			//args.LeaderCommit = rf.commitIndex // section 5.3 metioned.
 			var reply AppendEntriesReply
 			ok := rf.sendAppendEntries(i, &args, &reply)
 			// handle the PRC reply in the same goroutine.
