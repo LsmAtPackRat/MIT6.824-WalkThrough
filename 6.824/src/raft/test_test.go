@@ -140,6 +140,7 @@ func TestFailAgree2B(t *testing.T) {
 }
 
 func TestFailNoAgree2B(t *testing.T) {
+    DPrintf("-------------TestFailNoAgree2B-------------------")
 	servers := 5
 	cfg := make_config(t, servers, false)
 	defer cfg.cleanup()
@@ -150,6 +151,7 @@ func TestFailNoAgree2B(t *testing.T) {
 
 	// 3 of 5 followers disconnect
 	leader := cfg.checkOneLeader()
+    DPrintf("--------------Disconnect 3 servers: server-%d, server-%d, server-%d!-------------", (leader+1)%servers, (leader+2)%servers, (leader+3)%servers)
 	cfg.disconnect((leader + 1) % servers)
 	cfg.disconnect((leader + 2) % servers)
 	cfg.disconnect((leader + 3) % servers)
@@ -191,6 +193,7 @@ func TestFailNoAgree2B(t *testing.T) {
 }
 
 func TestConcurrentStarts2B(t *testing.T) {
+    DPrintf("-------------TestConcurrentStarts2B-------------------")
 	servers := 3
 	cfg := make_config(t, servers, false)
 	defer cfg.cleanup()
@@ -292,6 +295,7 @@ loop:
 }
 
 func TestRejoin2B(t *testing.T) {
+    DPrintf("-------------TestRejoin2B-------------------")
 	servers := 3
 	cfg := make_config(t, servers, false)
 	defer cfg.cleanup()
@@ -330,6 +334,7 @@ func TestRejoin2B(t *testing.T) {
 }
 
 func TestBackup2B(t *testing.T) {
+    DPrintf("-------------TestBackup2B-------------------")
 	servers := 5
 	cfg := make_config(t, servers, false)
 	defer cfg.cleanup()
@@ -402,6 +407,7 @@ func TestBackup2B(t *testing.T) {
 }
 
 func TestCount2B(t *testing.T) {
+    DPrintf("-------------TestCount2B-------------------")
 	servers := 3
 	cfg := make_config(t, servers, false)
 	defer cfg.cleanup()

@@ -445,6 +445,8 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 		rf.log = append(rf.log, newlog)
         log_next_index := make([]int, len(rf.peers))
         copy(log_next_index, rf.nextIndex)
+        log_copy := make([]LogEntry, len(rf.log))
+        copy(log_copy, rf.log)
 		index = len(rf.log)
 		log_len := len(rf.log)
 		rf_copy := rf // use rf_copy to fill the AppendEntries RPC args.
@@ -475,7 +477,7 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 					if args.PrevLogIndex > 0 {
 						args.PrevLogTerm = rf_copy.log[args.PrevLogIndex-1].Term
 					}
-					args.Entries = rf_copy.log[log_next_index[i]-1 : log_len] // log[nextIndex~end](including nextIndex). Note that the log index start from 1.
+					args.Entries = log_copy[log_next_index[i]-1 : log_len] // log[nextIndex~end](including nextIndex). Note that the log index start from 1.
 					//-------------------------------------------------------------------------------------
                     rf.mu.Unlock()
 					ok := rf.sendAppendEntries(i, &args, &reply)
