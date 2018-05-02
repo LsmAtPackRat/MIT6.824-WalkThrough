@@ -425,12 +425,12 @@ func Make(peers []*labrpc.ClientEnd, me int,
                     DPrintf("peer-%d becomes a Candidate!!!\n", rf.me)
                     rf.state = Candidate
                     rf.currentTerm += 1
+                    term_copy := rf.currentTerm    // create a copy of the term and it'll be used in RequestVote RPC.
                     // vote for itself.
                     rf.voteCount = 1
                     rf.mu.Unlock()
                     rf.resetElectionTimeout()
                     // send RequestVote RPCs to all other peers in seperate goroutines.
-                    term_copy := rf.currentTerm    // create the copy of the RequestVoteArgs
                     for peer_index, _ := range rf.peers{
                         if peer_index == rf.me {
                             continue
@@ -451,7 +451,9 @@ func Make(peers []*labrpc.ClientEnd, me int,
                                 if reply.VoteGranted == true {
                                     // whether the peer is still a Candidate and the previous term? if yes, increase rf.voteCount; if no, ignore.
                                     rf.mu.Lock()
-                                    if rf.state == Candidate && reply.Term == rf.currentTerm {
+                                    // now rf.currentTerm is still in the term that "send the RequestVote"(just the peer thinks that!)
+                                    // and it is still a Candidate!
+                                    if rf.state == Candidate && term_copy == rf.currentTerm {
                                         rf.voteCount += 1
                                         DPrintf("peer-%d gets a vote!", rf.me)
                                         if rf.voteCount > len(rf.peers) /2 {
@@ -472,6 +474,7 @@ func Make(peers []*labrpc.ClientEnd, me int,
                 DPrintf("peer-%d non-leader's election timeout long-running goroutine. block.", rf.me)
                 <-rf.nonleaderCh
                 DPrintf("peer-%d non-leader's election timeout long-running goroutine. get up.", rf.me)
+                rf.resetElectionTimeout()
             }
         }
     }()
@@ -488,7 +491,7 @@ func Make(peers []*labrpc.ClientEnd, me int,
 func (rf *Raft) resetElectionTimeout() {
     rf.electionTimeoutStartTime = time.Now()
     // randomize election timeout, 300~400ms
-    rf.electionTimeoutInterval = time.Duration(time.Millisecond * time.Duration(500 + rand.Intn(100)))
+    rf.electionTimeoutInterval = time.Duration(time.Millisecond * time.Duration(900 + rand.Intn(100)))
 }
 
 func (rf *Raft) electionTimeout() bool {
@@ -503,7 +506,9 @@ func (rf *Raft) electionTimeout() bool {
 
 func (rf *Raft) broadcastHeartbeats() {
     DPrintf("peer-%d broadcast heartbeats.", rf.me)
+    rf.mu.Lock()
     term_copy := rf.currentTerm
+    rf.mu.Unlock()
 	for peer_index, _ := range rf.peers {
 		if peer_index == rf.me {
 			continue
@@ -522,12 +527,15 @@ func (rf *Raft) broadcastHeartbeats() {
             // handle the PRC reply in the same goroutine.
 			if ok == true {
                 rf.mu.Lock()
-                if reply.Term > rf.currentTerm {
-                    rf.currentTerm = reply.Term
-                    rf.state = Follower
-                    DPrintf("peer-%d degenerate from a Leader into a Follower!!!", rf.me)
-                    rf.nonleaderCh <- true
-                    rf.resetElectionTimeout()
+                // re-establish the assumption.
+                if rf.state == Leader && rf.currentTerm == term_copy {
+                    // this reply is out-of-date.
+                    if reply.Term > rf.currentTerm {
+                        rf.currentTerm = reply.Term
+                        rf.state = Follower
+                        DPrintf("peer-%d degenerate from a Leader into a Follower!!!", rf.me)
+                        rf.nonleaderCh <- true
+                    }
                 }
                 rf.mu.Unlock()
 			}

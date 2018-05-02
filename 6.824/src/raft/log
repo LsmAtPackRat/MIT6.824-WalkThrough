@@ -1,0 +1,362 @@
+2018/05/03 07:08:53 peer-0 leader's heartbeat long-running goroutine. block.
+2018/05/03 07:08:53 peer-1 leader's heartbeat long-running goroutine. block.
+2018/05/03 07:08:53 peer-2 leader's heartbeat long-running goroutine. block.
+2018/05/03 07:08:53 peer-0 election timeout!
+2018/05/03 07:08:53 peer-0 kicks off an election!
+2018/05/03 07:08:53 peer-0 becomes a Candidate!!!
+2018/05/03 07:08:53 peer-0 send a sendRequestVote RPC to peer-2
+2018/05/03 07:08:53 peer-0 send a sendRequestVote RPC to peer-1
+2018/05/03 07:08:53 peer-2 gets a RequestVote RPC.
+2018/05/03 07:08:53 peer-0 gets a vote!
+2018/05/03 07:08:53 peer-0 becomes the new leader!!!
+2018/05/03 07:08:53 peer-0 leader's heartbeat long-running goroutine. get up.
+2018/05/03 07:08:53 peer-0 broadcast heartbeats.
+2018/05/03 07:08:53 peer-1 gets a RequestVote RPC.
+2018/05/03 07:08:53 peer-2 gets an AppendEntries RPC.
+2018/05/03 07:08:53 peer-1 gets an AppendEntries RPC.
+2018/05/03 07:08:53 peer-0 non-leader's election timeout long-running goroutine. block.
+2018/05/03 07:08:53 peer-0 broadcast heartbeats.
+2018/05/03 07:08:53 peer-2 gets an AppendEntries RPC.
+2018/05/03 07:08:53 peer-1 gets an AppendEntries RPC.
+2018/05/03 07:08:53 peer-0 broadcast heartbeats.
+2018/05/03 07:08:53 peer-2 gets an AppendEntries RPC.
+2018/05/03 07:08:53 peer-1 gets an AppendEntries RPC.
+2018/05/03 07:08:53 peer-0 broadcast heartbeats.
+2018/05/03 07:08:53 peer-2 gets an AppendEntries RPC.
+2018/05/03 07:08:53 peer-1 gets an AppendEntries RPC.
+2018/05/03 07:08:54 peer-0 broadcast heartbeats.
+2018/05/03 07:08:54 peer-1 gets an AppendEntries RPC.
+2018/05/03 07:08:54 peer-2 gets an AppendEntries RPC.
+2018/05/03 07:08:54 peer-0 broadcast heartbeats.
+2018/05/03 07:08:54 peer-2 gets an AppendEntries RPC.
+2018/05/03 07:08:54 peer-1 gets an AppendEntries RPC.
+2018/05/03 07:08:54 peer-0 broadcast heartbeats.
+2018/05/03 07:08:54 peer-2 gets an AppendEntries RPC.
+2018/05/03 07:08:54 peer-1 gets an AppendEntries RPC.
+2018/05/03 07:08:54 peer-0 broadcast heartbeats.
+2018/05/03 07:08:54 peer-2 gets an AppendEntries RPC.
+2018/05/03 07:08:54 peer-1 gets an AppendEntries RPC.
+2018/05/03 07:08:54 peer-0 broadcast heartbeats.
+2018/05/03 07:08:54 peer-1 gets an AppendEntries RPC.
+2018/05/03 07:08:54 peer-2 gets an AppendEntries RPC.
+2018/05/03 07:08:54 peer-0 broadcast heartbeats.
+2018/05/03 07:08:54 peer-2 gets an AppendEntries RPC.
+2018/05/03 07:08:54 peer-1 gets an AppendEntries RPC.
+2018/05/03 07:08:54 peer-0 broadcast heartbeats.
+2018/05/03 07:08:54 peer-2 gets an AppendEntries RPC.
+2018/05/03 07:08:54 peer-1 gets an AppendEntries RPC.
+2018/05/03 07:08:54 peer-0 broadcast heartbeats.
+2018/05/03 07:08:54 peer-2 gets an AppendEntries RPC.
+2018/05/03 07:08:54 peer-1 gets an AppendEntries RPC.
+2018/05/03 07:08:54 peer-0 broadcast heartbeats.
+2018/05/03 07:08:54 peer-2 gets an AppendEntries RPC.
+2018/05/03 07:08:54 peer-1 gets an AppendEntries RPC.
+2018/05/03 07:08:54 peer-0 broadcast heartbeats.
+2018/05/03 07:08:54 peer-2 gets an AppendEntries RPC.
+2018/05/03 07:08:54 peer-1 gets an AppendEntries RPC.
+2018/05/03 07:08:55 peer-0 broadcast heartbeats.
+2018/05/03 07:08:55 peer-1 gets an AppendEntries RPC.
+2018/05/03 07:08:55 peer-2 gets an AppendEntries RPC.
+2018/05/03 07:08:55 peer-0 broadcast heartbeats.
+2018/05/03 07:08:55 peer-1 gets an AppendEntries RPC.
+2018/05/03 07:08:55 peer-2 gets an AppendEntries RPC.
+2018/05/03 07:08:55 peer-0 broadcast heartbeats.
+2018/05/03 07:08:55 peer-2 gets an AppendEntries RPC.
+2018/05/03 07:08:55 peer-1 gets an AppendEntries RPC.
+2018/05/03 07:08:55 peer-0 broadcast heartbeats.
+2018/05/03 07:08:55 peer-1 gets an AppendEntries RPC.
+2018/05/03 07:08:55 peer-2 gets an AppendEntries RPC.
+2018/05/03 07:08:55 peer-0 broadcast heartbeats.
+2018/05/03 07:08:55 peer-1 gets an AppendEntries RPC.
+2018/05/03 07:08:55 peer-2 gets an AppendEntries RPC.
+2018/05/03 07:08:55 peer-0 broadcast heartbeats.
+2018/05/03 07:08:55 peer-2 gets an AppendEntries RPC.
+2018/05/03 07:08:55 peer-1 gets an AppendEntries RPC.
+2018/05/03 07:08:55 peer-0 broadcast heartbeats.
+2018/05/03 07:08:55 peer-2 gets an AppendEntries RPC.
+2018/05/03 07:08:55 peer-1 gets an AppendEntries RPC.
+2018/05/03 07:08:55 peer-0 broadcast heartbeats.
+2018/05/03 07:08:55 peer-2 gets an AppendEntries RPC.
+2018/05/03 07:08:55 peer-1 gets an AppendEntries RPC.
+2018/05/03 07:08:55 peer-0 broadcast heartbeats.
+2018/05/03 07:08:55 peer-2 gets an AppendEntries RPC.
+2018/05/03 07:08:55 peer-1 gets an AppendEntries RPC.
+2018/05/03 07:08:55 peer-0 broadcast heartbeats.
+2018/05/03 07:08:55 peer-1 gets an AppendEntries RPC.
+2018/05/03 07:08:55 peer-2 gets an AppendEntries RPC.
+2018/05/03 07:08:56 peer-0 broadcast heartbeats.
+2018/05/03 07:08:56 peer-2 gets an AppendEntries RPC.
+2018/05/03 07:08:56 peer-1 gets an AppendEntries RPC.
+2018/05/03 07:08:56 peer-0 leader's heartbeat long-running goroutine. block.
+2018/05/03 07:08:56 peer-1 leader's heartbeat long-running goroutine. block.
+2018/05/03 07:08:56 peer-2 leader's heartbeat long-running goroutine. block.
+2018/05/03 07:08:56 peer-0 broadcast heartbeats.
+2018/05/03 07:08:56 peer-0 broadcast heartbeats.
+2018/05/03 07:08:56 peer-0 broadcast heartbeats.
+2018/05/03 07:08:56 peer-0 broadcast heartbeats.
+2018/05/03 07:08:56 peer-0 broadcast heartbeats.
+2018/05/03 07:08:56 peer-2 election timeout!
+2018/05/03 07:08:56 peer-2 kicks off an election!
+2018/05/03 07:08:56 peer-2 becomes a Candidate!!!
+2018/05/03 07:08:56 peer-2 send a sendRequestVote RPC to peer-1
+2018/05/03 07:08:56 peer-2 election timeout!
+2018/05/03 07:08:56 peer-2 kicks off an election!
+2018/05/03 07:08:56 peer-2 becomes a Candidate!!!
+2018/05/03 07:08:56 peer-2 send a sendRequestVote RPC to peer-1
+2018/05/03 07:08:56 peer-2 send a sendRequestVote RPC to peer-0
+2018/05/03 07:08:56 peer-2 send a sendRequestVote RPC to peer-0
+2018/05/03 07:08:56 peer-1 gets a RequestVote RPC.
+2018/05/03 07:08:56 peer-0 gets a RequestVote RPC.
+2018/05/03 07:08:56 peer-2 gets a vote!
+2018/05/03 07:08:56 peer-2 becomes the new leader!!!
+2018/05/03 07:08:56 peer-2 leader's heartbeat long-running goroutine. get up.
+2018/05/03 07:08:56 peer-2 broadcast heartbeats.
+2018/05/03 07:08:56 peer-1 gets an AppendEntries RPC.
+2018/05/03 07:08:56 peer-0 gets an AppendEntries RPC.
+2018/05/03 07:08:56 peer-2 non-leader's election timeout long-running goroutine. block.
+2018/05/03 07:08:56 peer-1 election timeout!
+2018/05/03 07:08:56 peer-1 kicks off an election!
+2018/05/03 07:08:56 peer-1 becomes a Candidate!!!
+2018/05/03 07:08:56 peer-1 send a sendRequestVote RPC to peer-2
+2018/05/03 07:08:56 peer-1 send a sendRequestVote RPC to peer-0
+2018/05/03 07:08:56 peer-0 broadcast heartbeats.
+2018/05/03 07:08:56 peer-2 broadcast heartbeats.
+2018/05/03 07:08:56 peer-1 gets an AppendEntries RPC.
+2018/05/03 07:08:56 peer-0 gets an AppendEntries RPC.
+2018/05/03 07:08:56 peer-0 broadcast heartbeats.
+2018/05/03 07:08:56 peer-2 broadcast heartbeats.
+2018/05/03 07:08:56 peer-1 gets an AppendEntries RPC.
+2018/05/03 07:08:56 peer-0 gets an AppendEntries RPC.
+2018/05/03 07:08:56 peer-0 broadcast heartbeats.
+2018/05/03 07:08:56 peer-2 broadcast heartbeats.
+2018/05/03 07:08:56 peer-1 gets an AppendEntries RPC.
+2018/05/03 07:08:56 peer-0 gets an AppendEntries RPC.
+2018/05/03 07:08:57 peer-0 broadcast heartbeats.
+2018/05/03 07:08:57 peer-2 broadcast heartbeats.
+2018/05/03 07:08:57 peer-0 gets an AppendEntries RPC.
+2018/05/03 07:08:57 peer-1 gets an AppendEntries RPC.
+2018/05/03 07:08:57 peer-0 broadcast heartbeats.
+2018/05/03 07:08:57 peer-1 election timeout!
+2018/05/03 07:08:57 peer-1 kicks off an election!
+2018/05/03 07:08:57 peer-1 becomes a Candidate!!!
+2018/05/03 07:08:57 peer-1 send a sendRequestVote RPC to peer-2
+2018/05/03 07:08:57 peer-2 broadcast heartbeats.
+2018/05/03 07:08:57 peer-1 send a sendRequestVote RPC to peer-0
+2018/05/03 07:08:57 peer-2 election timeout!
+2018/05/03 07:08:57 peer-2 kicks off an election!
+2018/05/03 07:08:57 peer-2 becomes a Candidate!!!
+2018/05/03 07:08:57 peer-2 send a sendRequestVote RPC to peer-1
+2018/05/03 07:08:57 peer-2 send a sendRequestVote RPC to peer-0
+2018/05/03 07:08:57 peer-0 broadcast heartbeats.
+2018/05/03 07:08:57 peer-2 broadcast heartbeats.
+2018/05/03 07:08:57 peer-0 broadcast heartbeats.
+2018/05/03 07:08:57 peer-2 broadcast heartbeats.
+2018/05/03 07:08:57 peer-0 broadcast heartbeats.
+2018/05/03 07:08:57 peer-2 broadcast heartbeats.
+2018/05/03 07:08:57 peer-0 election timeout!
+2018/05/03 07:08:57 peer-0 kicks off an election!
+2018/05/03 07:08:57 peer-0 becomes a Candidate!!!
+2018/05/03 07:08:57 peer-0 send a sendRequestVote RPC to peer-2
+2018/05/03 07:08:57 peer-0 send a sendRequestVote RPC to peer-1
+2018/05/03 07:08:57 peer-1 gets a RequestVote RPC.
+2018/05/03 07:08:57 peer-0 gets a vote!
+2018/05/03 07:08:57 peer-0 becomes the new leader!!!
+2018/05/03 07:08:57 peer-0 leader's heartbeat long-running goroutine. get up.
+2018/05/03 07:08:57 peer-0 broadcast heartbeats.
+2018/05/03 07:08:57 peer-1 gets an AppendEntries RPC.
+2018/05/03 07:08:57 peer-2 broadcast heartbeats.
+2018/05/03 07:08:57 peer-0 broadcast heartbeats.
+2018/05/03 07:08:57 peer-0 non-leader's election timeout long-running goroutine. block.
+2018/05/03 07:08:57 peer-0 broadcast heartbeats.
+2018/05/03 07:08:57 peer-2 gets an AppendEntries RPC.
+2018/05/03 07:08:57 peer-2 calm down to a Follower from a Candidate!!!
+2018/05/03 07:08:57 peer-1 gets an AppendEntries RPC.
+2018/05/03 07:08:57 peer-0 broadcast heartbeats.
+2018/05/03 07:08:57 peer-2 leader's heartbeat long-running goroutine. block.
+2018/05/03 07:08:57 peer-1 election timeout!
+2018/05/03 07:08:57 peer-1 kicks off an election!
+2018/05/03 07:08:57 peer-1 becomes a Candidate!!!
+2018/05/03 07:08:57 peer-1 send a sendRequestVote RPC to peer-2
+2018/05/03 07:08:57 peer-1 send a sendRequestVote RPC to peer-0
+2018/05/03 07:08:57 peer-0 broadcast heartbeats.
+2018/05/03 07:08:57 peer-2 gets an AppendEntries RPC.
+2018/05/03 07:08:57 peer-2 election timeout!
+2018/05/03 07:08:57 peer-2 kicks off an election!
+2018/05/03 07:08:57 peer-2 becomes a Candidate!!!
+2018/05/03 07:08:57 peer-2 send a sendRequestVote RPC to peer-1
+2018/05/03 07:08:57 peer-2 send a sendRequestVote RPC to peer-0
+2018/05/03 07:08:57 peer-1 gets an AppendEntries RPC.
+2018/05/03 07:08:57 peer-0 broadcast heartbeats.
+2018/05/03 07:08:57 peer-0 broadcast heartbeats.
+2018/05/03 07:08:57 peer-2 gets an AppendEntries RPC.
+2018/05/03 07:08:57 peer-1 gets an AppendEntries RPC.
+2018/05/03 07:08:57 peer-0 broadcast heartbeats.
+2018/05/03 07:08:58 peer-0 broadcast heartbeats.
+2018/05/03 07:08:58 peer-2 gets an AppendEntries RPC.
+2018/05/03 07:08:58 peer-1 gets an AppendEntries RPC.
+2018/05/03 07:08:58 peer-0 broadcast heartbeats.
+2018/05/03 07:08:58 peer-0 broadcast heartbeats.
+2018/05/03 07:08:58 peer-2 gets an AppendEntries RPC.
+2018/05/03 07:08:58 peer-1 gets an AppendEntries RPC.
+2018/05/03 07:08:58 peer-0 broadcast heartbeats.
+2018/05/03 07:08:58 peer-0 broadcast heartbeats.
+2018/05/03 07:08:58 peer-0 broadcast heartbeats.
+2018/05/03 07:08:58 peer-1 election timeout!
+2018/05/03 07:08:58 peer-1 kicks off an election!
+2018/05/03 07:08:58 peer-1 becomes a Candidate!!!
+2018/05/03 07:08:58 peer-1 send a sendRequestVote RPC to peer-2
+2018/05/03 07:08:58 peer-1 send a sendRequestVote RPC to peer-0
+2018/05/03 07:08:58 peer-0 broadcast heartbeats.
+2018/05/03 07:08:58 peer-2 election timeout!
+2018/05/03 07:08:58 peer-2 kicks off an election!
+2018/05/03 07:08:58 peer-2 becomes a Candidate!!!
+2018/05/03 07:08:58 peer-2 send a sendRequestVote RPC to peer-1
+2018/05/03 07:08:58 peer-0 broadcast heartbeats.
+2018/05/03 07:08:58 peer-2 send a sendRequestVote RPC to peer-0
+2018/05/03 07:08:58 peer-0 broadcast heartbeats.
+2018/05/03 07:08:58 peer-0 broadcast heartbeats.
+2018/05/03 07:08:58 peer-0 broadcast heartbeats.
+2018/05/03 07:08:58 peer-0 broadcast heartbeats.
+2018/05/03 07:08:58 peer-1 election timeout!
+2018/05/03 07:08:58 peer-1 kicks off an election!
+2018/05/03 07:08:58 peer-1 becomes a Candidate!!!
+2018/05/03 07:08:58 peer-1 send a sendRequestVote RPC to peer-2
+2018/05/03 07:08:58 peer-1 send a sendRequestVote RPC to peer-0
+2018/05/03 07:08:58 peer-0 broadcast heartbeats.
+2018/05/03 07:08:58 peer-0 broadcast heartbeats.
+2018/05/03 07:08:58 peer-0 broadcast heartbeats.
+2018/05/03 07:08:58 peer-0 broadcast heartbeats.
+2018/05/03 07:08:58 peer-1 election timeout!
+2018/05/03 07:08:58 peer-1 kicks off an election!
+2018/05/03 07:08:58 peer-1 becomes a Candidate!!!
+2018/05/03 07:08:58 peer-1 send a sendRequestVote RPC to peer-0
+2018/05/03 07:08:58 peer-1 send a sendRequestVote RPC to peer-2
+2018/05/03 07:08:58 peer-0 broadcast heartbeats.
+2018/05/03 07:08:58 peer-0 broadcast heartbeats.
+2018/05/03 07:08:58 peer-2 election timeout!
+2018/05/03 07:08:58 peer-2 kicks off an election!
+2018/05/03 07:08:58 peer-2 becomes a Candidate!!!
+2018/05/03 07:08:58 peer-2 send a sendRequestVote RPC to peer-1
+2018/05/03 07:08:58 peer-2 send a sendRequestVote RPC to peer-0
+2018/05/03 07:08:58 peer-0 broadcast heartbeats.
+2018/05/03 07:08:58 peer-0 broadcast heartbeats.
+2018/05/03 07:08:59 peer-0 broadcast heartbeats.
+2018/05/03 07:08:59 peer-0 broadcast heartbeats.
+2018/05/03 07:08:59 peer-0 broadcast heartbeats.
+2018/05/03 07:08:59 peer-0 broadcast heartbeats.
+2018/05/03 07:08:59 peer-1 election timeout!
+2018/05/03 07:08:59 peer-1 kicks off an election!
+2018/05/03 07:08:59 peer-1 becomes a Candidate!!!
+2018/05/03 07:08:59 peer-1 send a sendRequestVote RPC to peer-2
+2018/05/03 07:08:59 peer-0 broadcast heartbeats.
+2018/05/03 07:08:59 peer-0 broadcast heartbeats.
+2018/05/03 07:08:59 peer-1 send a sendRequestVote RPC to peer-0
+2018/05/03 07:08:59 peer-1 election timeout!
+2018/05/03 07:08:59 peer-1 kicks off an election!
+2018/05/03 07:08:59 peer-1 becomes a Candidate!!!
+2018/05/03 07:08:59 peer-1 send a sendRequestVote RPC to peer-2
+2018/05/03 07:08:59 peer-1 send a sendRequestVote RPC to peer-0
+2018/05/03 07:08:59 peer-0 broadcast heartbeats.
+2018/05/03 07:08:59 peer-0 broadcast heartbeats.
+2018/05/03 07:08:59 peer-2 election timeout!
+2018/05/03 07:08:59 peer-2 kicks off an election!
+2018/05/03 07:08:59 peer-2 becomes a Candidate!!!
+2018/05/03 07:08:59 peer-2 send a sendRequestVote RPC to peer-1
+2018/05/03 07:08:59 peer-2 send a sendRequestVote RPC to peer-0
+2018/05/03 07:08:59 peer-0 broadcast heartbeats.
+2018/05/03 07:08:59 peer-0 broadcast heartbeats.
+2018/05/03 07:08:59 peer-0 broadcast heartbeats.
+2018/05/03 07:08:59 peer-0 broadcast heartbeats.
+2018/05/03 07:08:59 peer-0 broadcast heartbeats.
+2018/05/03 07:08:59 peer-0 broadcast heartbeats.
+2018/05/03 07:08:59 peer-0 broadcast heartbeats.
+2018/05/03 07:08:59 peer-1 election timeout!
+2018/05/03 07:08:59 peer-1 kicks off an election!
+2018/05/03 07:08:59 peer-1 becomes a Candidate!!!
+2018/05/03 07:08:59 peer-1 send a sendRequestVote RPC to peer-2
+2018/05/03 07:08:59 peer-0 broadcast heartbeats.
+2018/05/03 07:08:59 peer-1 send a sendRequestVote RPC to peer-0
+2018/05/03 07:08:59 peer-1 election timeout!
+2018/05/03 07:08:59 peer-1 kicks off an election!
+2018/05/03 07:08:59 peer-1 becomes a Candidate!!!
+2018/05/03 07:08:59 peer-1 send a sendRequestVote RPC to peer-2
+2018/05/03 07:08:59 peer-1 send a sendRequestVote RPC to peer-0
+2018/05/03 07:09:00 peer-0 broadcast heartbeats.
+2018/05/03 07:09:00 peer-0 broadcast heartbeats.
+2018/05/03 07:09:00 peer-2 election timeout!
+2018/05/03 07:09:00 peer-2 kicks off an election!
+2018/05/03 07:09:00 peer-2 becomes a Candidate!!!
+2018/05/03 07:09:00 peer-2 send a sendRequestVote RPC to peer-1
+2018/05/03 07:09:00 peer-2 send a sendRequestVote RPC to peer-0
+2018/05/03 07:09:00 peer-0 broadcast heartbeats.
+2018/05/03 07:09:00 peer-0 broadcast heartbeats.
+2018/05/03 07:09:00 peer-0 broadcast heartbeats.
+2018/05/03 07:09:00 peer-0 broadcast heartbeats.
+2018/05/03 07:09:00 peer-0 broadcast heartbeats.
+2018/05/03 07:09:00 peer-0 broadcast heartbeats.
+2018/05/03 07:09:00 peer-1 election timeout!
+2018/05/03 07:09:00 peer-1 kicks off an election!
+2018/05/03 07:09:00 peer-1 becomes a Candidate!!!
+2018/05/03 07:09:00 peer-1 send a sendRequestVote RPC to peer-2
+2018/05/03 07:09:00 peer-2 gets a RequestVote RPC.
+2018/05/03 07:09:00 peer-1 gets a vote!
+2018/05/03 07:09:00 peer-1 becomes the new leader!!!
+2018/05/03 07:09:00 peer-1 leader's heartbeat long-running goroutine. get up.
+2018/05/03 07:09:00 peer-1 broadcast heartbeats.
+2018/05/03 07:09:00 peer-2 gets an AppendEntries RPC.
+2018/05/03 07:09:00 peer-1 send a sendRequestVote RPC to peer-0
+2018/05/03 07:09:00 peer-1 non-leader's election timeout long-running goroutine. block.
+2018/05/03 07:09:00 peer-1 broadcast heartbeats.
+2018/05/03 07:09:00 peer-2 gets an AppendEntries RPC.
+2018/05/03 07:09:00 peer-1 election timeout!
+2018/05/03 07:09:00 peer-1 kicks off an election!
+2018/05/03 07:09:00 peer-1 becomes a Candidate!!!
+2018/05/03 07:09:00 peer-1 send a sendRequestVote RPC to peer-2
+2018/05/03 07:09:00 peer-2 election timeout!
+2018/05/03 07:09:00 peer-2 kicks off an election!
+2018/05/03 07:09:00 peer-2 becomes a Candidate!!!
+2018/05/03 07:09:00 peer-2 send a sendRequestVote RPC to peer-1
+2018/05/03 07:09:00 peer-0 broadcast heartbeats.
+2018/05/03 07:09:00 peer-0 broadcast heartbeats.
+2018/05/03 07:09:00 peer-1 send a sendRequestVote RPC to peer-0
+2018/05/03 07:09:00 peer-2 send a sendRequestVote RPC to peer-0
+2018/05/03 07:09:00 peer-1 broadcast heartbeats.
+2018/05/03 07:09:00 peer-2 gets an AppendEntries RPC.
+2018/05/03 07:09:00 peer-0 broadcast heartbeats.
+2018/05/03 07:09:00 peer-2 gets an AppendEntries RPC.
+2018/05/03 07:09:00 peer-0 degenerate from a Leader into a Follower!!!
+2018/05/03 07:09:00 peer-0 non-leader's election timeout long-running goroutine. get up.
+2018/05/03 07:09:00 peer-0 broadcast heartbeats.
+2018/05/03 07:09:00 peer-0 gets an AppendEntries RPC.
+2018/05/03 07:09:00 peer-1 gets an AppendEntries RPC.
+2018/05/03 07:09:00 peer-1 broadcast heartbeats.
+2018/05/03 07:09:00 peer-0 leader's heartbeat long-running goroutine. block.
+2018/05/03 07:09:00 peer-0 broadcast heartbeats.
+2018/05/03 07:09:00 peer-2 gets an AppendEntries RPC.
+2018/05/03 07:09:00 peer-0 gets an AppendEntries RPC.
+2018/05/03 07:09:01 peer-0 broadcast heartbeats.
+2018/05/03 07:09:01 peer-1 broadcast heartbeats.
+2018/05/03 07:09:01 peer-0 gets an AppendEntries RPC.
+2018/05/03 07:09:01 peer-2 gets an AppendEntries RPC.
+2018/05/03 07:09:01 peer-1 election timeout!
+2018/05/03 07:09:01 peer-1 kicks off an election!
+2018/05/03 07:09:01 peer-1 becomes a Candidate!!!
+2018/05/03 07:09:01 peer-1 send a sendRequestVote RPC to peer-2
+2018/05/03 07:09:01 peer-1 send a sendRequestVote RPC to peer-0
+2018/05/03 07:09:01 peer-0 broadcast heartbeats.
+2018/05/03 07:09:01 peer-1 broadcast heartbeats.
+2018/05/03 07:09:01 peer-2 gets an AppendEntries RPC.
+2018/05/03 07:09:01 peer-0 gets an AppendEntries RPC.
+2018/05/03 07:09:01 peer-2 election timeout!
+2018/05/03 07:09:01 peer-2 kicks off an election!
+2018/05/03 07:09:01 peer-2 becomes a Candidate!!!
+2018/05/03 07:09:01 peer-2 send a sendRequestVote RPC to peer-1
+2018/05/03 07:09:01 peer-2 send a sendRequestVote RPC to peer-0
+2018/05/03 07:09:01 peer-1 broadcast heartbeats.
+2018/05/03 07:09:01 peer-0 broadcast heartbeats.
+2018/05/03 07:09:01 peer-2 gets an AppendEntries RPC.
+2018/05/03 07:09:01 peer-0 gets an AppendEntries RPC.
+2018/05/03 07:09:01 peer-0 broadcast heartbeats.
+2018/05/03 07:09:01 peer-1 broadcast heartbeats.
+2018/05/03 07:09:01 peer-2 gets an AppendEntries RPC.
+2018/05/03 07:09:01 peer-0 gets an AppendEntries RPC.
