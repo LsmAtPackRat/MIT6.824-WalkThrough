@@ -93,6 +93,7 @@ type Raft struct {
 	electionTimeoutInterval  time.Duration // nanosecond count.
 	nonleaderCh              chan bool     // block/unblock nonleader's election timeout long-running goroutine
 	leaderCh                 chan bool     // block/unblock leader's heartbeat long-running goroutine
+    applyCh                  chan ApplyMsg
 }
 
 // return currentTerm and whether this server
@@ -203,6 +204,15 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 		return
 	}
 
+	setdown := false
+	// step down and convert to follower, adopt the args.Term
+	if args.Term > rf.currentTerm {
+		rf.currentTerm = args.Term
+		rf.state = Follower
+		rf.votedFor = -1
+		setdown = true
+	}
+
 	// 5.4.1 Election restriction : if the requester's log isn't more up-to-date than this peer's, don't vote for it.
 	// check whether the requester's log is more up-to-date.(5.4.1 last paragraph)
 	if len(rf.log) > 0 { // At first, there's no log entry in rf.log
@@ -220,18 +230,13 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 			}
 		}
 	}
-	// requester's log is more up-to-date than requester's.
 
+	// requester's log is more up-to-date than requester's.
 	// Then, we should check whether this server has voted for another server in the same term
-	if args.Term > rf.currentTerm {
+	if setdown {
 		rf.resetElectionTimeout()
-        if rf.state == Leader {
-            DPrintf("Leader vote for sb!!!!!!!!")
-        } else if rf.state == Candidate {
-            DPrintf("Candidate vote for sb!!!!!!!!")
-        }
+		// now we need to reset the election timer.
 		rf.votedFor = args.CandidateId // First-come-first-served
-		rf.currentTerm = args.Term
 		reply.VoteGranted = true
 		reply.Term = rf.currentTerm
 		return
@@ -241,27 +246,31 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 	 * The server may crash after it completing an RPC but before responsing, then it will receive the same RPC again after it restarts.
 	 * Raft RPCs are idempotent, so this causes no harm.
 	 */
-	if args.Term == rf.currentTerm {
-		if rf.votedFor == args.CandidateId {
-			rf.resetElectionTimeout() // I follow the Figure2's <Rules for Servers>'s Followers, is this place right?
-			reply.VoteGranted = true
-		} else {
-			reply.VoteGranted = false // First-come-first-served, this server has voted for another server before.
-		}
-		reply.Term = rf.currentTerm
-		return
+	if rf.votedFor == -1 || rf.votedFor == args.CandidateId {
+		rf.votedFor = args.CandidateId
+		//rf.resetElectionTimeout() // I follow the Figure2's <Rules for Servers>'s Followers, is this place right?
+		reply.VoteGranted = true
+	} else {
+		reply.VoteGranted = false // First-come-first-served, this server has voted for another server before.
 	}
+	reply.Term = rf.currentTerm
+	return
 }
 
 // AppendEntries RPC handler
 // reset the election timeout! send a value to related channel
 func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply) {
-	DPrintf("peer-%d gets an AppendEntries RPC(args.PrevLogIndex = %d).", rf.me, args.PrevLogIndex)
+	if len(args.Entries) > 0 {
+		DPrintf("peer-%d gets an AppendEntries RPC(args.PrevLogIndex = %d, args.LeaderCommit = %d).", rf.me, args.PrevLogIndex, args.LeaderCommit)
+	} else {
+		DPrintf("peer-%d gets an heartbeat.", rf.me)
+	}
+	DPrintf("peer-%d log[]'s length is %d.", rf.me, len(rf.log))
 	rf.mu.Lock()
 	defer rf.mu.Unlock()
 	// 1. detect obsolete information, this can filter out old leader's heartbeat.
 	if args.Term < rf.currentTerm {
-        DPrintf("peer-%d got an obsolete AppendEntries RPC..., ignore it.", rf.me)
+		DPrintf("peer-%d got an obsolete AppendEntries RPC..., ignore it.", rf.me)
 		reply.Term = rf.currentTerm
 		reply.Success = false
 		return
@@ -280,25 +289,14 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 
 	if rf.state == Candidate {
 		DPrintf("peer-%d calm down to a Follower from a Candidate!!!", rf.me)
-	    rf.resetElectionTimeout()
+		rf.resetElectionTimeout()
 		rf.state = Follower
 	} else if rf.state == Leader {
 		DPrintf("peer-%d degenerate from a Leader to a Follower!!!", rf.me)
-        rf.state = Follower
-        rf.resetElectionTimeout()
-        rf.nonleaderCh <- true
-    }
-
-    // when leader's nextIndex[rf.me] == 1, then will cause this case.
-    if args.PrevLogIndex == 0 {
-        // match!
-        if len(args.Entries) > 0 {
-            rf.log = append(rf.log, args.Entries...)
-        }
-        reply.Term = rf.currentTerm
-        reply.Success = true
-        return
-    }
+		rf.state = Follower
+		rf.resetElectionTimeout()
+		rf.nonleaderCh <- true
+	}
 
 	// consistent check
 	// 2. Reply false(refuse the new entries) if log doesn't contain an entry at prevLogIndex whose term matches prevLogTerm($5.3)
@@ -309,21 +307,46 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 		return
 	}
 
-	// 3. If an existing entry conflicts with a new one(same index but different terms), delete the existing entry and all that follow it.
-	if rf.log[args.PrevLogIndex-1].Term != args.PrevLogTerm {
+	if args.PrevLogIndex > 0 && rf.log[args.PrevLogIndex-1].Term != args.PrevLogTerm {
+		// 3. If an existing entry conflicts with a new one(same index but different terms), delete the existing entry and all that follow it.
 		// delete the log entries from PrevLogIndex to end(including PrevLogIndex).
+        DPrintf("peer-%d fail to pass the consistency check.", rf.me)
 		rf.log = rf.log[:args.PrevLogIndex-1] // log[i:j] contains i~j-1, and we don't want to reserve log entry at PrevLogIndex. So...
+		rf.log = append(rf.log, args.Entries...)
 		reply.Term = rf.currentTerm
 		reply.Success = false
 		return
 	}
 
 	// 4. Now this peer's log matches the leader's log at PrevLogIndex. Append any new entries not already in the log
-    DPrintf("peer-%d AppendEntries RPC pass the consistent check at PrevLogIndex = %d!", rf.me, args.PrevLogIndex)
-    if len(args.Entries) > 0 {
-	    rf.log = rf.log[:args.PrevLogIndex]
-	    rf.log = append(rf.log, args.Entries...)
-    }
+	DPrintf("peer-%d AppendEntries RPC pass the consistent check at PrevLogIndex = %d!", rf.me, args.PrevLogIndex)
+	// now logs match at PrevLogIndex
+	// NOTE: only if the logs don't match at PrevLogIndex, truncate the rf.log.
+	pos := args.PrevLogIndex // pos is the index of the slice just after the element at PrevLogIndex.
+	i := 0
+	mismatch := false
+	for pos < len(rf.log) && i < len(args.Entries) {
+		if rf.log[pos].Term == args.Entries[i].Term {
+			i++
+			pos++
+		} else {
+			// conflict!
+			mismatch = true
+			break
+		}
+	}
+	if mismatch {
+		// need adjustment. rf.log[pos].Term != args.Entries[i].Term
+		// truncate the rf.log and append entries.
+		rf.log = rf.log[:pos]
+		rf.log = append(rf.log, args.Entries[i:]...)
+	} else {
+		// there some elements in entries but not in rf.log
+		if pos == len(rf.log) && i < len(args.Entries) {
+			rf.log = append(rf.log, args.Entries[i:]...)
+		}
+	}
+	// now the log is consistent with the leader's.
 	reply.Term = rf.currentTerm
 	reply.Success = true
 
@@ -331,13 +354,23 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 	if rf.commitIndex < args.LeaderCommit {
 		// we need to update commitIndex locally. Explictly update the old entries. See my note upon Figure8.
 		// This step will exclude some candidates to be elected as the new leader!
+        // commit!
         old_commit_index := rf.commitIndex
-        if args.LeaderCommit <= len(rf.log) {
-            rf.commitIndex = args.LeaderCommit
-        } else  {
-            rf.commitIndex = len(rf.log)
+		//old_commit_index := rf.commitIndex
+		if args.LeaderCommit <= len(rf.log) {
+			rf.commitIndex = args.LeaderCommit
+		} else {
+			rf.commitIndex = len(rf.log)
+		}
+        for i := old_commit_index+1; i <= rf.commitIndex; i++ {
+            DPrintf("peer-%d(not the leader) apply the command() at index %d!!!!!!!!", rf.me, old_commit_index)
+            var committed_log ApplyMsg
+            committed_log.CommandValid = true
+            committed_log.Command = rf.log[old_commit_index].Command
+            committed_log.CommandIndex = old_commit_index
+            rf.applyCh <- committed_log
         }
-        DPrintf("peer-%d Nonleader update its commitIndex from %d to %d. And it's len(rf.log) = %d.", rf.me, old_commit_index, rf.commitIndex, len(rf.log))
+		DPrintf("peer-%d Nonleader update its commitIndex from %d to %d. And it's len(rf.log) = %d.", rf.me, old_commit_index, rf.commitIndex, len(rf.log))
 	}
 	return
 }
@@ -396,6 +429,7 @@ func (rf *Raft) sendAppendEntries(server int, args *AppendEntriesArgs, reply *Ap
 // the leader.
 //
 func (rf *Raft) Start(command interface{}) (int, int, bool) {
+    DPrintf("peer-%d ----------------------Start()-----------------------", rf.me)
 	index := -1
 	term := -1
 	isLeader := true
@@ -404,75 +438,83 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 	term, isLeader = rf.GetState()
 	if isLeader {
 		// Append the command into its own rf.log
-        rf.mu.Lock()
+		rf.mu.Lock()
 		var newlog LogEntry
 		newlog.Term = rf.currentTerm
 		newlog.Command = command
 		rf.log = append(rf.log, newlog)
-        log_len := len(rf.log)
-        rf_copy := rf     // use rf_copy to fill the AppendEntries RPC args.
-        rf.mu.Unlock()
+        index = len(rf.log) - 1
+		log_len := len(rf.log)
+		rf_copy := rf // use rf_copy to fill the AppendEntries RPC args.
+		rf.mu.Unlock()
 		// start agreement and return immediately.
 		for peer_index, _ := range rf.peers {
-            if peer_index == rf.me {
-                continue
-            }
+			if peer_index == rf.me {
+				continue
+			}
 			// send AppendEntries RPC to each peer. And decide when it is safe to apply a log entry to the state machine.
 			go func(i int) {
 				for {
 					// sendAppendEntries(server int, args *AppendEntriesArgs, reply *AppendEntriesReply)
 					var args AppendEntriesArgs
 					var reply AppendEntriesReply
-                    //-------------------------------------------------------------------------------------
-                    // Note!! when we fill the args, the leader's raft instance will still go ahead.
-                    // the log[] may grow, and other AppendEntries RPCs will be sent to the same peer concurrently.
+					//-------------------------------------------------------------------------------------
+					// Note!! when we fill the args, the leader's raft instance will still go ahead.
+					// the log[] may grow, and other AppendEntries RPCs will be sent to the same peer concurrently.
 					args.Term = rf_copy.currentTerm
 					args.LeaderId = rf.me
 					args.LeaderCommit = rf_copy.commitIndex
 					// If last log index >= nextIndex for a follower: send AppendEntries RPC with log entries starting at nextIndex
 					args.PrevLogIndex = rf_copy.nextIndex[i] - 1
-                    if args.PrevLogIndex > 0 {
-					    args.PrevLogTerm = rf_copy.log[args.PrevLogIndex-1].Term
-                    }
-					args.Entries = rf_copy.log[rf.nextIndex[i]-1:log_len] // log[nextIndex~end](including nextIndex). Note that the log index start from 1.
-                    //-------------------------------------------------------------------------------------
+					if args.PrevLogIndex > 0 {
+						args.PrevLogTerm = rf_copy.log[args.PrevLogIndex-1].Term
+					}
+					args.Entries = rf_copy.log[rf.nextIndex[i]-1 : log_len] // log[nextIndex~end](including nextIndex). Note that the log index start from 1.
+					//-------------------------------------------------------------------------------------
 
 					ok := rf.sendAppendEntries(i, &args, &reply)
 					// handle RPC reply in the same goroutine.
 					if ok == true {
 						if reply.Success == true {
 							// If successful: update nextIndex and matchIndex for follower.
-                            rf.mu.Lock()
+							rf.mu.Lock()
 							rf.nextIndex[i] = log_len
 							rf.matchIndex[i] = log_len - 1 // can I do this ??
 							// test whether we can update the leader's commitIndex.
 							match_index_to_test := rf.matchIndex[i]
 							if match_index_to_test > rf.commitIndex {
 								count := 0
-                                for _, val := range rf.matchIndex {
-                                    if val >= match_index_to_test {
-                                        count++
-                                    }
-                                }
+								for _, val := range rf.matchIndex {
+									if val >= match_index_to_test {
+										count++
+									}
+								}
 								// update leader's commitIndex!
-							    if count > len(rf.peers) / 2 {
-                                    DPrintf("peer-%d Leader moves its commitIndex from %d to %d.",rf.me, rf.commitIndex, match_index_to_test)
-								    rf.commitIndex = match_index_to_test
-                                }
+								if count > len(rf.peers)/2 {
+									DPrintf("peer-%d Leader moves its commitIndex from %d to %d.", rf.me, rf.commitIndex, match_index_to_test)
+									rf.commitIndex = match_index_to_test
+                                    // FIXME: apply the log!
+                                    DPrintf("peer-%d(the leader) apply the command() at index %d!!!!!!!!", rf.me, index)
+                                    var committed_log ApplyMsg
+                                    committed_log.CommandValid = true
+                                    committed_log.Command = command
+                                    committed_log.CommandIndex = index
+                                    rf.applyCh <- committed_log
+								}
 							}
-                            rf.mu.Unlock()
+							rf.mu.Unlock()
 							break // jump out of the loop.
 						} else {
 							// AppendEntries RPC fails because of log inconsistency: Decrement nextIndex and retry
-                            rf.mu.Lock()
-                            if (reply.Term > rf.currentTerm) {
-                                rf.currentTerm = reply.Term
-                                rf.state = Follower
-                                DPrintf("peer-%d Degenerate from Leader into Follower!!!", rf.me)
-                                rf.nonleaderCh <- true
-                            }
+							rf.mu.Lock()
+							if reply.Term > rf.currentTerm {
+								rf.currentTerm = reply.Term
+								rf.state = Follower
+								DPrintf("peer-%d Degenerate from Leader into Follower!!!", rf.me)
+								rf.nonleaderCh <- true
+							}
 							rf.nextIndex[i] -= 1
-                            rf.mu.Unlock()
+							rf.mu.Unlock()
 						}
 					} else {
 						// RPC fails. Retry!
@@ -515,6 +557,7 @@ func Make(peers []*labrpc.ClientEnd, me int,
 
 	// Your initialization code here (2A, 2B, 2C).
 	// create a channel in Raft
+    rf.applyCh = applyCh
 	rf.state = Follower
 	rf.nonleaderCh = make(chan bool)
 	rf.leaderCh = make(chan bool)
@@ -525,7 +568,7 @@ func Make(peers []*labrpc.ClientEnd, me int,
 	// Initialize volatile state on all servers.
 	rf.commitIndex = 0
 	rf.lastApplied = 0
-    rf.log = make([]LogEntry, 0)
+	rf.log = make([]LogEntry, 0)
 	// Leader's heartbeat long-running goroutine.
 	go func() {
 		for {
@@ -563,8 +606,8 @@ func Make(peers []*labrpc.ClientEnd, me int,
 					rf.resetElectionTimeout()
 					// send RequestVote RPCs to all other peers in seperate goroutines.
 					term_copy := rf.currentTerm // create the copy of the RequestVoteArgs
-                    last_log_index_copy := len(rf.log)
-                    rf.mu.Unlock()
+					last_log_index_copy := len(rf.log)
+					rf.mu.Unlock()
 					for peer_index, _ := range rf.peers {
 						if peer_index == rf.me {
 							continue
@@ -576,10 +619,10 @@ func Make(peers []*labrpc.ClientEnd, me int,
 							args.Term = term_copy
 							args.CandidateId = rf.me
 							args.LastLogIndex = last_log_index_copy
-                            if args.LastLogIndex > 0 {
-                                // not an empty log
-							    args.LastLogTerm = rf.log[last_log_index_copy-1].Term
-                            }
+							if args.LastLogIndex > 0 {
+								// not an empty log
+								args.LastLogTerm = rf.log[last_log_index_copy-1].Term
+							}
 							var reply RequestVoteReply
 							DPrintf("peer-%d send a sendRequestVote RPC to peer-%d", rf.me, i)
 							ok := rf.sendRequestVote(i, &args, &reply)
@@ -595,13 +638,13 @@ func Make(peers []*labrpc.ClientEnd, me int,
 										}
 									}
 								} else {
-                                    rf.mu.Lock()
-                                    if reply.Term > term_copy && rf.state == Candidate {
-                                        rf.state = Follower
-                                        DPrintf("peer-%d calm down from a Candidate to a Follower!!!", rf.me)
-                                    }
-                                    rf.mu.Unlock()
-                                }
+									rf.mu.Lock()
+									if reply.Term > term_copy && rf.state == Candidate {
+										rf.state = Follower
+										DPrintf("peer-%d calm down from a Candidate to a Follower!!!", rf.me)
+									}
+									rf.mu.Unlock()
+								}
 							}
 						}(peer_index)
 					}
@@ -623,8 +666,8 @@ func Make(peers []*labrpc.ClientEnd, me int,
 }
 
 func (rf *Raft) convertToLeader() {
-    rf.mu.Lock()
-    defer rf.mu.Unlock()
+	rf.mu.Lock()
+	defer rf.mu.Unlock()
 	DPrintf("peer-%d becomes the new leader!!!", rf.me)
 	rf.state = Leader
 	// when a leader first comes to power, it initializes all nextIndex values to the index just after the last one in its log. (Section 5.3)
@@ -635,7 +678,7 @@ func (rf *Raft) convertToLeader() {
 		rf.nextIndex[i] = next_index_initval
 		rf.matchIndex[i] = 0 // increases monotonically.
 	}
-    DPrintf("peer-%d Leader's log array's length = %d.", rf.me, len(rf.log))
+	DPrintf("peer-%d Leader's log array's length = %d.", rf.me, len(rf.log))
 	rf.leaderCh <- true
 }
 
@@ -657,11 +700,11 @@ func (rf *Raft) electionTimeout() bool {
 
 func (rf *Raft) broadcastHeartbeats() {
 	DPrintf("peer-%d broadcast heartbeats.", rf.me)
-    rf.mu.Lock()
-    // FIXME: it seems that the bug occurs because the AppendEntries RPC's consistency check fail when the logs match.
+	rf.mu.Lock()
+	// FIXME: it seems that the bug occurs because the AppendEntries RPC's consistency check fail when the logs match.
 	//term_copy := rf.currentTerm
-    rf_copy := rf
-    rf.mu.Unlock()
+	rf_copy := rf
+	rf.mu.Unlock()
 	for peer_index, _ := range rf.peers {
 		if peer_index == rf.me {
 			continue
@@ -671,16 +714,16 @@ func (rf *Raft) broadcastHeartbeats() {
 			var args AppendEntriesArgs
 			args.Term = rf_copy.currentTerm
 			args.LeaderId = rf.me
-            args.PrevLogIndex = rf_copy.nextIndex[i] - 1
-            if args.PrevLogIndex > 0 {
-                args.PrevLogTerm = rf_copy.log[args.PrevLogIndex-1].Term
-            }
+			args.PrevLogIndex = rf_copy.nextIndex[i] - 1
+			if args.PrevLogIndex > 0 {
+				args.PrevLogTerm = rf_copy.log[args.PrevLogIndex-1].Term
+			}
 			//args.PrevLogIndex = rf.nextIndex[i] - 1
-            //if args.PrevLogIndex > 0 {
+			//if args.PrevLogIndex > 0 {
 			//    args.PrevLogTerm = rf.log[args.PrevLogIndex-1].Term
-            //}
+			//}
 			args.Entries = make([]LogEntry, 0)
-            args.LeaderCommit = rf_copy.commitIndex
+			args.LeaderCommit = rf_copy.commitIndex
 			//args.LeaderCommit = rf.commitIndex // section 5.3 metioned.
 			var reply AppendEntriesReply
 			ok := rf.sendAppendEntries(i, &args, &reply)

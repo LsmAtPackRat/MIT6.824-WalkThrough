@@ -453,7 +453,7 @@ func (cfg *config) one(cmd int, expectedServers int, retry bool) int {
 			for time.Since(t1).Seconds() < 2 {
 				nd, cmd1 := cfg.nCommitted(index)
 				if nd > 0 && nd >= expectedServers {
-					// committed
+					// committed, cmd1 is type interface{}, so use cmd1.(int) to get its value
 					if cmd2, ok := cmd1.(int); ok && cmd2 == cmd {
 						// and it was the command we submitted.
 						return index
@@ -462,9 +462,11 @@ func (cfg *config) one(cmd int, expectedServers int, retry bool) int {
 				time.Sleep(20 * time.Millisecond)
 			}
 			if retry == false {
+                DPrintf("one(%v) failed to reach agreement at index: %d.", cmd, index)
 				cfg.t.Fatalf("one(%v) failed to reach agreement", cmd)
 			}
 		} else {
+            //fmt.Printf("one(%v) haven't reached agreement, wait 50ms!\n", cmd)
 			time.Sleep(50 * time.Millisecond)
 		}
 	}

@@ -81,6 +81,7 @@ func TestReElection2A(t *testing.T) {
 }
 
 func TestBasicAgree2B(t *testing.T) {
+    DPrintf("-------------TestBasicAgree2B-------------------")
 	servers := 5
 	cfg := make_config(t, servers, false)
 	defer cfg.cleanup()
@@ -91,10 +92,11 @@ func TestBasicAgree2B(t *testing.T) {
 	for index := 1; index < iters+1; index++ {
 		nd, _ := cfg.nCommitted(index)
 		if nd > 0 {
+            // cfg.one() will call Start() to append an entry and begin agreement, so.
 			t.Fatalf("some have committed before Start()")
 		}
 
-		xindex := cfg.one(index*100, servers, false)
+		xindex := cfg.one(index*100, servers, false)  // start agreement.
 		if xindex != index {
 			t.Fatalf("got index %v but expected %v", xindex, index)
 		}
@@ -104,6 +106,7 @@ func TestBasicAgree2B(t *testing.T) {
 }
 
 func TestFailAgree2B(t *testing.T) {
+    DPrintf("-------------TestFailAgree2B-------------------")
 	servers := 3
 	cfg := make_config(t, servers, false)
 	defer cfg.cleanup()
