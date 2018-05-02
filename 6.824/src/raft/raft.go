@@ -85,6 +85,7 @@ type Raft struct {
 	// Volatile state on leaders:
 	nextIndex  []int // for each server, index of the next log entry to send to that server (initialized to leader last log index + 1)
 	matchIndex []int // for each server, index of highest log entry known to be replicated on server (initialized to 0, increases monotonically)
+	repCount   []int // repCount[i] is the count of log[i] in all of the replicas.
 
 	state                    RaftState // Follower/Candidate/Leader
 	voteCount                int
@@ -93,7 +94,7 @@ type Raft struct {
 	electionTimeoutInterval  time.Duration // nanosecond count.
 	nonleaderCh              chan bool     // block/unblock nonleader's election timeout long-running goroutine
 	leaderCh                 chan bool     // block/unblock leader's heartbeat long-running goroutine
-    applyCh                  chan ApplyMsg
+	applyCh                  chan ApplyMsg
 }
 
 // return currentTerm and whether this server
@@ -310,7 +311,7 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 	if args.PrevLogIndex > 0 && rf.log[args.PrevLogIndex-1].Term != args.PrevLogTerm {
 		// 3. If an existing entry conflicts with a new one(same index but different terms), delete the existing entry and all that follow it.
 		// delete the log entries from PrevLogIndex to end(including PrevLogIndex).
-        DPrintf("peer-%d fail to pass the consistency check.", rf.me)
+		DPrintf("peer-%d fail to pass the consistency check.", rf.me)
 		rf.log = rf.log[:args.PrevLogIndex-1] // log[i:j] contains i~j-1, and we don't want to reserve log entry at PrevLogIndex. So...
 		rf.log = append(rf.log, args.Entries...)
 		reply.Term = rf.currentTerm
@@ -354,22 +355,22 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 	if rf.commitIndex < args.LeaderCommit {
 		// we need to update commitIndex locally. Explictly update the old entries. See my note upon Figure8.
 		// This step will exclude some candidates to be elected as the new leader!
-        // commit!
-        old_commit_index := rf.commitIndex
+		// commit!
+		old_commit_index := rf.commitIndex
 		//old_commit_index := rf.commitIndex
 		if args.LeaderCommit <= len(rf.log) {
 			rf.commitIndex = args.LeaderCommit
 		} else {
 			rf.commitIndex = len(rf.log)
 		}
-        for i := old_commit_index+1; i <= rf.commitIndex; i++ {
-            DPrintf("peer-%d(not the leader) apply the command() at index %d!!!!!!!!", rf.me, old_commit_index)
-            var committed_log ApplyMsg
-            committed_log.CommandValid = true
-            committed_log.Command = rf.log[old_commit_index].Command
-            committed_log.CommandIndex = old_commit_index
-            rf.applyCh <- committed_log
-        }
+		for i := old_commit_index + 1; i <= rf.commitIndex; i++ {
+			DPrintf("peer-%d (not the leader) apply the command() at index %d!!!!!!!!", rf.me, i)
+			var committed_log ApplyMsg
+			committed_log.CommandValid = true
+			committed_log.Command = rf.log[i-1].Command
+			committed_log.CommandIndex = i
+			rf.applyCh <- committed_log
+		}
 		DPrintf("peer-%d Nonleader update its commitIndex from %d to %d. And it's len(rf.log) = %d.", rf.me, old_commit_index, rf.commitIndex, len(rf.log))
 	}
 	return
@@ -429,7 +430,7 @@ func (rf *Raft) sendAppendEntries(server int, args *AppendEntriesArgs, reply *Ap
 // the leader.
 //
 func (rf *Raft) Start(command interface{}) (int, int, bool) {
-    DPrintf("peer-%d ----------------------Start()-----------------------", rf.me)
+	DPrintf("peer-%d ----------------------Start()-----------------------", rf.me)
 	index := -1
 	term := -1
 	isLeader := true
@@ -443,9 +444,12 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 		newlog.Term = rf.currentTerm
 		newlog.Command = command
 		rf.log = append(rf.log, newlog)
-        index = len(rf.log) - 1
+		index = len(rf.log)
 		log_len := len(rf.log)
 		rf_copy := rf // use rf_copy to fill the AppendEntries RPC args.
+		if len(rf.repCount) < log_len {
+			rf.repCount = append(rf.repCount, 1)
+		}
 		rf.mu.Unlock()
 		// start agreement and return immediately.
 		for peer_index, _ := range rf.peers {
@@ -476,31 +480,24 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 					// handle RPC reply in the same goroutine.
 					if ok == true {
 						if reply.Success == true {
+							DPrintf("peer-%d AppendEntries success!", rf.me)
 							// If successful: update nextIndex and matchIndex for follower.
 							rf.mu.Lock()
 							rf.nextIndex[i] = log_len
 							rf.matchIndex[i] = log_len - 1 // can I do this ??
 							// test whether we can update the leader's commitIndex.
-							match_index_to_test := rf.matchIndex[i]
-							if match_index_to_test > rf.commitIndex {
-								count := 0
-								for _, val := range rf.matchIndex {
-									if val >= match_index_to_test {
-										count++
-									}
-								}
-								// update leader's commitIndex!
-								if count > len(rf.peers)/2 {
-									DPrintf("peer-%d Leader moves its commitIndex from %d to %d.", rf.me, rf.commitIndex, match_index_to_test)
-									rf.commitIndex = match_index_to_test
-                                    // FIXME: apply the log!
-                                    DPrintf("peer-%d(the leader) apply the command() at index %d!!!!!!!!", rf.me, index)
-                                    var committed_log ApplyMsg
-                                    committed_log.CommandValid = true
-                                    committed_log.Command = command
-                                    committed_log.CommandIndex = index
-                                    rf.applyCh <- committed_log
-								}
+							//match_index_to_test := rf.matchIndex[i]
+							rf.repCount[index-1]++
+							// update leader's commitIndex!
+							if rf.repCount[index-1] > len(rf.peers)/2 && rf.commitIndex < index {
+								DPrintf("peer-%d Leader moves its commitIndex from %d to %d.", rf.me, rf.commitIndex, index)
+								rf.commitIndex = index
+								// FIXME: apply the log!
+								var committed_log ApplyMsg
+								committed_log.CommandValid = true
+								committed_log.Command = command
+								committed_log.CommandIndex = index
+								rf.applyCh <- committed_log
 							}
 							rf.mu.Unlock()
 							break // jump out of the loop.
@@ -557,7 +554,7 @@ func Make(peers []*labrpc.ClientEnd, me int,
 
 	// Your initialization code here (2A, 2B, 2C).
 	// create a channel in Raft
-    rf.applyCh = applyCh
+	rf.applyCh = applyCh
 	rf.state = Follower
 	rf.nonleaderCh = make(chan bool)
 	rf.leaderCh = make(chan bool)
@@ -569,6 +566,7 @@ func Make(peers []*labrpc.ClientEnd, me int,
 	rf.commitIndex = 0
 	rf.lastApplied = 0
 	rf.log = make([]LogEntry, 0)
+	rf.repCount = make([]int, 0)
 	// Leader's heartbeat long-running goroutine.
 	go func() {
 		for {
@@ -592,7 +590,7 @@ func Make(peers []*labrpc.ClientEnd, me int,
 			// check rf.state == Follower
 			if rf.state != Leader {
 				// begin tic-toc
-				time.Sleep(time.Millisecond * time.Duration(10))
+				//time.Sleep(time.Millisecond * time.Duration(10))
 				if rf.electionTimeout() {
 					DPrintf("peer-%d kicks off an election!\n", rf.me)
 					// election timeout! kick off an election.
@@ -686,7 +684,7 @@ func (rf *Raft) convertToLeader() {
 func (rf *Raft) resetElectionTimeout() {
 	rf.electionTimeoutStartTime = time.Now()
 	// randomize election timeout, 300~400ms
-	rf.electionTimeoutInterval = time.Duration(time.Millisecond * time.Duration(500+rand.Intn(100)))
+	rf.electionTimeoutInterval = time.Duration(time.Millisecond * time.Duration(800+rand.Intn(200)))
 }
 
 func (rf *Raft) electionTimeout() bool {
