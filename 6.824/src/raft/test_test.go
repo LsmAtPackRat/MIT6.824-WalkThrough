@@ -172,6 +172,7 @@ func TestFailNoAgree2B(t *testing.T) {
 	}
 
 	// repair
+    DPrintf("--------------Reconnect 3 servers: server-%d, server-%d, server-%d!-------------", (leader+1)%servers, (leader+2)%servers, (leader+3)%servers)
 	cfg.connect((leader + 1) % servers)
 	cfg.connect((leader + 2) % servers)
 	cfg.connect((leader + 3) % servers)
@@ -306,6 +307,7 @@ func TestRejoin2B(t *testing.T) {
 
 	// leader network failure
 	leader1 := cfg.checkOneLeader()
+    DPrintf("------------Disconnect 1st leader-%d--------------------", leader1)
 	cfg.disconnect(leader1)
 
 	// make old leader try to agree on some entries
@@ -318,15 +320,18 @@ func TestRejoin2B(t *testing.T) {
 
 	// new leader network failure
 	leader2 := cfg.checkOneLeader()
+    DPrintf("------------Disconnect 2nd leader-%d--------------------", leader1)
 	cfg.disconnect(leader2)
 
 	// old leader connected again
+    DPrintf("------------Reconnect 1st leader-%d--------------------", leader1)
 	cfg.connect(leader1)
 
 	cfg.one(104, 2, true)
 
 	// all together now
 	cfg.connect(leader2)
+    DPrintf("------------Reconnect 2nd leader-%d--------------------", leader1)
 
 	cfg.one(105, servers, true)
 

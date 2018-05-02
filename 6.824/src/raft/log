@@ -1,263 +1,1203 @@
-2018/05/02 17:29:46 -------------TestFailNoAgree2B-------------------
-2018/05/02 17:29:46 peer-0 leader's heartbeat long-running goroutine. block.
-2018/05/02 17:29:46 peer-1 leader's heartbeat long-running goroutine. block.
-2018/05/02 17:29:46 peer-2 leader's heartbeat long-running goroutine. block.
-2018/05/02 17:29:46 peer-1 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-2 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-3 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-4 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-0 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-3 leader's heartbeat long-running goroutine. block.
-2018/05/02 17:29:46 peer-4 leader's heartbeat long-running goroutine. block.
-2018/05/02 17:29:46 peer-1 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-2 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-3 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-4 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-0 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-1 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-2 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-3 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-4 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-0 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-1 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-2 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-3 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-4 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-0 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-1 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-2 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-3 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-4 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-0 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-1 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-2 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-3 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-4 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-0 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-1 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-2 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-3 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-4 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-0 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-1 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-2 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-3 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-4 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-0 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-1 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-2 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-3 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-4 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-0 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-1 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-2 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-3 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-4 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-0 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-1 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-2 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-3 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-4 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-0 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-1 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-2 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-3 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-4 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-0 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-1 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-2 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-3 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-4 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-0 ----------------------Start()-----------------------
-2018/05/02 17:29:46 peer-1 election timeout!
-2018/05/02 17:29:46 peer-1 kicks off an election!
-2018/05/02 17:29:46 peer-1 becomes a Candidate!!!
-2018/05/02 17:29:46 peer-1 send a sendRequestVote RPC to peer-4
-2018/05/02 17:29:46 peer-4 gets a RequestVote RPC.
-2018/05/02 17:29:46 peer-1 gets a vote!
-2018/05/02 17:29:46 peer-1 send a sendRequestVote RPC to peer-0
-2018/05/02 17:29:46 peer-0 gets a RequestVote RPC.
-2018/05/02 17:29:46 peer-1 gets a vote!
-2018/05/02 17:29:46 peer-1 becomes the new leader!!!
-2018/05/02 17:29:46 peer-1 Leader's log array's length = 0.
-2018/05/02 17:29:46 peer-1 leader's heartbeat long-running goroutine. get up.
-2018/05/02 17:29:46 peer-1 broadcast heartbeats.
-2018/05/02 17:29:46 peer-4 gets an heartbeat(args.PrevLogIndex = 0, args.LeaderCommit = 0).
-2018/05/02 17:29:46 peer-4 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
-2018/05/02 17:29:46 peer-1 send a sendRequestVote RPC to peer-2
-2018/05/02 17:29:46 peer-2 gets a RequestVote RPC.
-2018/05/02 17:29:46 peer-1 send a sendRequestVote RPC to peer-3
-2018/05/02 17:29:46 peer-3 gets a RequestVote RPC.
-2018/05/02 17:29:46 peer-0 gets an heartbeat(args.PrevLogIndex = 0, args.LeaderCommit = 0).
-2018/05/02 17:29:46 peer-0 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
-2018/05/02 17:29:46 peer-2 gets an heartbeat(args.PrevLogIndex = 0, args.LeaderCommit = 0).
-2018/05/02 17:29:46 peer-2 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
-2018/05/02 17:29:46 peer-3 gets an heartbeat(args.PrevLogIndex = 0, args.LeaderCommit = 0).
-2018/05/02 17:29:46 peer-3 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
-2018/05/02 17:29:46 peer-1 non-leader's election timeout long-running goroutine. block.
-2018/05/02 17:29:46 peer-3 election timeout!
-2018/05/02 17:29:46 peer-3 kicks off an election!
-2018/05/02 17:29:46 peer-3 becomes a Candidate!!!
-2018/05/02 17:29:47 peer-3 send a sendRequestVote RPC to peer-4
-2018/05/02 17:29:47 peer-1 ----------------------Start()-----------------------
-2018/05/02 17:29:47 peer-4 gets a RequestVote RPC.
-2018/05/02 17:29:47 peer-3 gets a vote!
-2018/05/02 17:29:47 peer-3 send a sendRequestVote RPC to peer-0
-2018/05/02 17:29:47 peer-4 gets an AppendEntries RPC(args.PrevLogIndex = 0, args.LeaderCommit = 0, args.Term = 1).
-2018/05/02 17:29:47 peer-4 got an obsolete AppendEntries RPC..., ignore it.(args.Term = 1, rf.currentTerm = 2.)
-2018/05/02 17:29:47 peer-0 gets a RequestVote RPC.
-2018/05/02 17:29:47 peer-1 Degenerate from Leader into Follower!!!
-2018/05/02 17:29:47 peer-3 gets a vote!
-2018/05/02 17:29:47 peer-3 becomes the new leader!!!
-2018/05/02 17:29:47 peer-3 Leader's log array's length = 0.
-2018/05/02 17:29:47 peer-3 leader's heartbeat long-running goroutine. get up.
-2018/05/02 17:29:47 peer-3 broadcast heartbeats.
-2018/05/02 17:29:47 peer-4 gets an AppendEntries RPC(args.PrevLogIndex = 0, args.LeaderCommit = 0, args.Term = 2).
-2018/05/02 17:29:47 peer-4 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
-2018/05/02 17:29:47 peer-4 gets an heartbeat(args.PrevLogIndex = 0, args.LeaderCommit = 0).
-2018/05/02 17:29:47 peer-4 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
-2018/05/02 17:29:47 peer-1 AppendEntries success!
-2018/05/02 17:29:47 peer-3 send a sendRequestVote RPC to peer-1
-2018/05/02 17:29:47 peer-0 gets an AppendEntries RPC(args.PrevLogIndex = 0, args.LeaderCommit = 0, args.Term = 2).
-2018/05/02 17:29:47 peer-0 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
-2018/05/02 17:29:47 peer-1 gets a RequestVote RPC.
-2018/05/02 17:29:47 peer-1 AppendEntries success!
-2018/05/02 17:29:47 peer-1 Leader moves its commitIndex from 0 to 1.
-2018/05/02 17:29:47 peer-3 send a sendRequestVote RPC to peer-2
-2018/05/02 17:29:47 peer-2 gets a RequestVote RPC.
-2018/05/02 17:29:47 peer-2 gets an AppendEntries RPC(args.PrevLogIndex = 0, args.LeaderCommit = 1, args.Term = 2).
-2018/05/02 17:29:47 peer-2 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
-2018/05/02 17:29:47 peer-2 (not the leader) apply the command() at index 1!!!!!!!!
-2018/05/02 17:29:47 peer-2 Nonleader update its commitIndex from 0 to 1. And it's len(rf.log) = 1.
-2018/05/02 17:29:47 peer-1 AppendEntries success!
-2018/05/02 17:29:47 peer-0 gets an heartbeat(args.PrevLogIndex = 0, args.LeaderCommit = 0).
-2018/05/02 17:29:47 peer-0 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
-2018/05/02 17:29:47 peer-3 gets an AppendEntries RPC(args.PrevLogIndex = 0, args.LeaderCommit = 1, args.Term = 2).
-2018/05/02 17:29:47 peer-3 degenerate from a Leader to a Follower!!!
-2018/05/02 17:29:47 peer-1 non-leader's election timeout long-running goroutine. get up.
-2018/05/02 17:29:47 peer-1 gets an heartbeat(args.PrevLogIndex = 0, args.LeaderCommit = 0).
-2018/05/02 17:29:47 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
-2018/05/02 17:29:47 peer-2 gets an heartbeat(args.PrevLogIndex = 0, args.LeaderCommit = 0).
-2018/05/02 17:29:47 peer-2 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
-2018/05/02 17:29:47 peer-1 leader's heartbeat long-running goroutine. block.
-2018/05/02 17:29:47 peer-3 leader's heartbeat long-running goroutine. block.
-2018/05/02 17:29:47 peer-1 election timeout!
-2018/05/02 17:29:47 peer-1 kicks off an election!
-2018/05/02 17:29:47 peer-1 becomes a Candidate!!!
-2018/05/02 17:29:47 peer-1 send a sendRequestVote RPC to peer-4
-2018/05/02 17:29:47 peer-4 gets a RequestVote RPC.
-2018/05/02 17:29:47 peer-1 gets a vote!
-2018/05/02 17:29:47 peer-1 send a sendRequestVote RPC to peer-0
-2018/05/02 17:29:47 peer-0 gets a RequestVote RPC.
-2018/05/02 17:29:47 peer-1 gets a vote!
-2018/05/02 17:29:47 peer-1 becomes the new leader!!!
-2018/05/02 17:29:47 peer-1 Leader's log array's length = 1.
-2018/05/02 17:29:47 peer-1 leader's heartbeat long-running goroutine. get up.
-2018/05/02 17:29:47 peer-1 broadcast heartbeats.
-2018/05/02 17:29:47 peer-4 gets an heartbeat(args.PrevLogIndex = 1, args.LeaderCommit = 1).
-2018/05/02 17:29:47 peer-4 AppendEntries RPC pass the consistent check at PrevLogIndex = 1!
-2018/05/02 17:29:47 peer-4 (not the leader) apply the command() at index 1!!!!!!!!
-2018/05/02 17:29:47 peer-4 Nonleader update its commitIndex from 0 to 1. And it's len(rf.log) = 1.
-2018/05/02 17:29:47 peer-1 send a sendRequestVote RPC to peer-2
-2018/05/02 17:29:47 peer-2 gets a RequestVote RPC.
-2018/05/02 17:29:47 peer-1 send a sendRequestVote RPC to peer-3
-2018/05/02 17:29:47 peer-3 gets a RequestVote RPC.
-2018/05/02 17:29:47 peer-1 non-leader's election timeout long-running goroutine. block.
-2018/05/02 17:29:47 peer-0 gets an heartbeat(args.PrevLogIndex = 1, args.LeaderCommit = 1).
-2018/05/02 17:29:47 peer-0 AppendEntries RPC pass the consistent check at PrevLogIndex = 1!
-2018/05/02 17:29:47 peer-0 (not the leader) apply the command() at index 1!!!!!!!!
-2018/05/02 17:29:47 peer-0 Nonleader update its commitIndex from 0 to 1. And it's len(rf.log) = 1.
-2018/05/02 17:29:47 peer-2 gets an heartbeat(args.PrevLogIndex = 1, args.LeaderCommit = 1).
-2018/05/02 17:29:47 peer-2 AppendEntries RPC pass the consistent check at PrevLogIndex = 1!
-2018/05/02 17:29:47 peer-3 gets an heartbeat(args.PrevLogIndex = 1, args.LeaderCommit = 1).
-2018/05/02 17:29:47 peer-3 election timeout!
-2018/05/02 17:29:47 peer-3 kicks off an election!
-2018/05/02 17:29:47 peer-1 broadcast heartbeats.
-2018/05/02 17:29:47 peer-4 gets an heartbeat(args.PrevLogIndex = 1, args.LeaderCommit = 1).
-2018/05/02 17:29:47 peer-4 AppendEntries RPC pass the consistent check at PrevLogIndex = 1!
-2018/05/02 17:29:47 peer-0 gets an heartbeat(args.PrevLogIndex = 1, args.LeaderCommit = 1).
-2018/05/02 17:29:47 peer-0 AppendEntries RPC pass the consistent check at PrevLogIndex = 1!
-2018/05/02 17:29:47 peer-2 gets an heartbeat(args.PrevLogIndex = 1, args.LeaderCommit = 1).
-2018/05/02 17:29:47 peer-2 AppendEntries RPC pass the consistent check at PrevLogIndex = 1!
-2018/05/02 17:29:47 peer-3 gets an heartbeat(args.PrevLogIndex = 1, args.LeaderCommit = 1).
-2018/05/02 17:29:48 peer-1 broadcast heartbeats.
-2018/05/02 17:29:48 peer-4 gets an heartbeat(args.PrevLogIndex = 1, args.LeaderCommit = 1).
-2018/05/02 17:29:48 peer-4 AppendEntries RPC pass the consistent check at PrevLogIndex = 1!
-2018/05/02 17:29:48 peer-0 gets an heartbeat(args.PrevLogIndex = 1, args.LeaderCommit = 1).
-2018/05/02 17:29:48 peer-0 AppendEntries RPC pass the consistent check at PrevLogIndex = 1!
-2018/05/02 17:29:48 peer-2 gets an heartbeat(args.PrevLogIndex = 1, args.LeaderCommit = 1).
-2018/05/02 17:29:48 peer-2 AppendEntries RPC pass the consistent check at PrevLogIndex = 1!
-2018/05/02 17:29:48 peer-3 gets an heartbeat(args.PrevLogIndex = 1, args.LeaderCommit = 1).
-2018/05/02 17:29:48 peer-1 broadcast heartbeats.
-2018/05/02 17:29:48 peer-4 gets an heartbeat(args.PrevLogIndex = 1, args.LeaderCommit = 1).
-2018/05/02 17:29:48 peer-4 AppendEntries RPC pass the consistent check at PrevLogIndex = 1!
-2018/05/02 17:29:48 peer-0 gets an heartbeat(args.PrevLogIndex = 1, args.LeaderCommit = 1).
-2018/05/02 17:29:48 peer-0 AppendEntries RPC pass the consistent check at PrevLogIndex = 1!
-2018/05/02 17:29:48 peer-2 gets an heartbeat(args.PrevLogIndex = 1, args.LeaderCommit = 1).
-2018/05/02 17:29:48 peer-2 AppendEntries RPC pass the consistent check at PrevLogIndex = 1!
-2018/05/02 17:29:48 peer-3 gets an heartbeat(args.PrevLogIndex = 1, args.LeaderCommit = 1).
-2018/05/02 17:29:48 peer-1 broadcast heartbeats.
-2018/05/02 17:29:48 peer-4 gets an heartbeat(args.PrevLogIndex = 1, args.LeaderCommit = 1).
-2018/05/02 17:29:48 peer-4 AppendEntries RPC pass the consistent check at PrevLogIndex = 1!
-2018/05/02 17:29:48 peer-0 gets an heartbeat(args.PrevLogIndex = 1, args.LeaderCommit = 1).
-2018/05/02 17:29:48 peer-0 AppendEntries RPC pass the consistent check at PrevLogIndex = 1!
-2018/05/02 17:29:48 peer-2 gets an heartbeat(args.PrevLogIndex = 1, args.LeaderCommit = 1).
-2018/05/02 17:29:48 peer-2 AppendEntries RPC pass the consistent check at PrevLogIndex = 1!
-2018/05/02 17:29:48 peer-3 gets an heartbeat(args.PrevLogIndex = 1, args.LeaderCommit = 1).
-2018/05/02 17:29:48 peer-1 broadcast heartbeats.
-2018/05/02 17:29:48 peer-4 gets an heartbeat(args.PrevLogIndex = 1, args.LeaderCommit = 1).
-2018/05/02 17:29:48 peer-4 AppendEntries RPC pass the consistent check at PrevLogIndex = 1!
-2018/05/02 17:29:48 peer-0 gets an heartbeat(args.PrevLogIndex = 1, args.LeaderCommit = 1).
-2018/05/02 17:29:48 peer-0 AppendEntries RPC pass the consistent check at PrevLogIndex = 1!
-2018/05/02 17:29:48 peer-2 gets an heartbeat(args.PrevLogIndex = 1, args.LeaderCommit = 1).
-2018/05/02 17:29:48 peer-2 AppendEntries RPC pass the consistent check at PrevLogIndex = 1!
-2018/05/02 17:29:48 peer-3 gets an heartbeat(args.PrevLogIndex = 1, args.LeaderCommit = 1).
-2018/05/02 17:29:48 peer-1 broadcast heartbeats.
-2018/05/02 17:29:48 peer-4 gets an heartbeat(args.PrevLogIndex = 1, args.LeaderCommit = 1).
-2018/05/02 17:29:48 peer-4 AppendEntries RPC pass the consistent check at PrevLogIndex = 1!
-2018/05/02 17:29:48 peer-0 gets an heartbeat(args.PrevLogIndex = 1, args.LeaderCommit = 1).
-2018/05/02 17:29:48 peer-0 AppendEntries RPC pass the consistent check at PrevLogIndex = 1!
-2018/05/02 17:29:48 peer-2 gets an heartbeat(args.PrevLogIndex = 1, args.LeaderCommit = 1).
-2018/05/02 17:29:48 peer-2 AppendEntries RPC pass the consistent check at PrevLogIndex = 1!
-2018/05/02 17:29:48 peer-3 gets an heartbeat(args.PrevLogIndex = 1, args.LeaderCommit = 1).
-2018/05/02 17:29:48 peer-1 broadcast heartbeats.
-2018/05/02 17:29:48 peer-4 gets an heartbeat(args.PrevLogIndex = 1, args.LeaderCommit = 1).
-2018/05/02 17:29:48 peer-4 AppendEntries RPC pass the consistent check at PrevLogIndex = 1!
-2018/05/02 17:29:48 peer-0 gets an heartbeat(args.PrevLogIndex = 1, args.LeaderCommit = 1).
-2018/05/02 17:29:48 peer-0 AppendEntries RPC pass the consistent check at PrevLogIndex = 1!
-2018/05/02 17:29:48 peer-2 gets an heartbeat(args.PrevLogIndex = 1, args.LeaderCommit = 1).
-2018/05/02 17:29:48 peer-2 AppendEntries RPC pass the consistent check at PrevLogIndex = 1!
-2018/05/02 17:29:48 peer-3 gets an heartbeat(args.PrevLogIndex = 1, args.LeaderCommit = 1).
-2018/05/02 17:29:48 peer-1 broadcast heartbeats.
-2018/05/02 17:29:48 peer-4 gets an heartbeat(args.PrevLogIndex = 1, args.LeaderCommit = 1).
-2018/05/02 17:29:48 peer-4 AppendEntries RPC pass the consistent check at PrevLogIndex = 1!
-2018/05/02 17:29:48 peer-0 gets an heartbeat(args.PrevLogIndex = 1, args.LeaderCommit = 1).
-2018/05/02 17:29:48 peer-0 AppendEntries RPC pass the consistent check at PrevLogIndex = 1!
-2018/05/02 17:29:48 peer-2 gets an heartbeat(args.PrevLogIndex = 1, args.LeaderCommit = 1).
-2018/05/02 17:29:48 peer-2 AppendEntries RPC pass the consistent check at PrevLogIndex = 1!
-2018/05/02 17:29:48 peer-3 gets an heartbeat(args.PrevLogIndex = 1, args.LeaderCommit = 1).
-2018/05/02 17:29:48 peer-1 broadcast heartbeats.
-2018/05/02 17:29:48 peer-4 gets an heartbeat(args.PrevLogIndex = 1, args.LeaderCommit = 1).
-2018/05/02 17:29:48 peer-4 AppendEntries RPC pass the consistent check at PrevLogIndex = 1!
-2018/05/02 17:29:48 peer-0 gets an heartbeat(args.PrevLogIndex = 1, args.LeaderCommit = 1).
-2018/05/02 17:29:48 peer-0 AppendEntries RPC pass the consistent check at PrevLogIndex = 1!
-2018/05/02 17:29:48 peer-2 gets an heartbeat(args.PrevLogIndex = 1, args.LeaderCommit = 1).
-2018/05/02 17:29:48 peer-2 AppendEntries RPC pass the consistent check at PrevLogIndex = 1!
-2018/05/02 17:29:48 peer-3 gets an heartbeat(args.PrevLogIndex = 1, args.LeaderCommit = 1).
-2018/05/02 17:29:48 peer-1 broadcast heartbeats.
-2018/05/02 17:29:48 peer-4 gets an heartbeat(args.PrevLogIndex = 1, args.LeaderCommit = 1).
-2018/05/02 17:29:48 peer-4 AppendEntries RPC pass the consistent check at PrevLogIndex = 1!
-2018/05/02 17:29:48 peer-0 gets an heartbeat(args.PrevLogIndex = 1, args.LeaderCommit = 1).
-2018/05/02 17:29:48 peer-0 AppendEntries RPC pass the consistent check at PrevLogIndex = 1!
-2018/05/02 17:29:48 peer-2 gets an heartbeat(args.PrevLogIndex = 1, args.LeaderCommit = 1).
-2018/05/02 17:29:48 peer-2 AppendEntries RPC pass the consistent check at PrevLogIndex = 1!
-2018/05/02 17:29:48 peer-3 gets an heartbeat(args.PrevLogIndex = 1, args.LeaderCommit = 1).
-2018/05/02 17:29:48 peer-1 broadcast heartbeats.
-2018/05/02 17:29:48 peer-4 gets an heartbeat(args.PrevLogIndex = 1, args.LeaderCommit = 1).
-2018/05/02 17:29:48 peer-4 AppendEntries RPC pass the consistent check at PrevLogIndex = 1!
-2018/05/02 17:29:48 peer-0 gets an heartbeat(args.PrevLogIndex = 1, args.LeaderCommit = 1).
-2018/05/02 17:29:48 peer-0 AppendEntries RPC pass the consistent check at PrevLogIndex = 1!
-2018/05/02 17:29:48 peer-2 gets an heartbeat(args.PrevLogIndex = 1, args.LeaderCommit = 1).
-2018/05/02 17:29:48 peer-2 AppendEntries RPC pass the consistent check at PrevLogIndex = 1!
-2018/05/02 17:29:48 peer-3 gets an heartbeat(args.PrevLogIndex = 1, args.LeaderCommit = 1).
-2018/05/02 17:29:49 one(10) failed to reach agreement at index: 1.
+2018/05/02 21:09:19 peer-0 leader's heartbeat long-running goroutine. block.
+2018/05/02 21:09:19 peer-1 leader's heartbeat long-running goroutine. block.
+2018/05/02 21:09:19 peer-2 leader's heartbeat long-running goroutine. block.
+2018/05/02 21:09:20 peer-0 election timeout!
+2018/05/02 21:09:20 peer-0 kicks off an election!
+2018/05/02 21:09:20 peer-0 becomes a Candidate!!!
+2018/05/02 21:09:20 peer-0 send a sendRequestVote RPC to peer-2
+2018/05/02 21:09:20 peer-0 send a sendRequestVote RPC to peer-1
+2018/05/02 21:09:20 peer-2 gets a RequestVote RPC.
+2018/05/02 21:09:20 peer-1 gets a RequestVote RPC.
+2018/05/02 21:09:20 peer-0 gets a vote!
+2018/05/02 21:09:20 peer-0 becomes the new leader!!!
+2018/05/02 21:09:20 peer-0 Leader's log array's length = 0.
+2018/05/02 21:09:20 peer-0 leader's heartbeat long-running goroutine. get up.
+2018/05/02 21:09:20 peer-0 broadcast heartbeats.
+2018/05/02 21:09:20 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 1, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:20 peer-2 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:20 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 1, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:20 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:20 peer-0 non-leader's election timeout long-running goroutine. block.
+2018/05/02 21:09:20 peer-0 broadcast heartbeats.
+2018/05/02 21:09:20 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 1, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:20 peer-2 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:20 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 1, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:20 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:20 peer-0 broadcast heartbeats.
+2018/05/02 21:09:20 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 1, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:20 peer-2 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:20 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 1, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:20 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:21 peer-0 broadcast heartbeats.
+2018/05/02 21:09:21 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 1, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:21 peer-2 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:21 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 1, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:21 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:21 peer-0 broadcast heartbeats.
+2018/05/02 21:09:21 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 1, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:21 peer-2 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:21 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 1, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:21 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:21 peer-0 broadcast heartbeats.
+2018/05/02 21:09:21 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 1, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:21 peer-2 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:21 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 1, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:21 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:21 peer-0 broadcast heartbeats.
+2018/05/02 21:09:21 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 1, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:21 peer-2 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:21 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 1, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:21 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:21 peer-0 broadcast heartbeats.
+2018/05/02 21:09:21 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 1, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:21 peer-2 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:21 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 1, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:21 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:22 peer-0 broadcast heartbeats.
+2018/05/02 21:09:22 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 1, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:22 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:22 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 1, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:22 peer-2 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:22 peer-0 broadcast heartbeats.
+2018/05/02 21:09:22 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 1, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:22 peer-2 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:22 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 1, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:22 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:22 peer-0 broadcast heartbeats.
+2018/05/02 21:09:22 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 1, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:22 peer-2 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:22 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 1, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:22 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:22 peer-0 leader's heartbeat long-running goroutine. block.
+2018/05/02 21:09:22 peer-1 leader's heartbeat long-running goroutine. block.
+2018/05/02 21:09:22 peer-2 leader's heartbeat long-running goroutine. block.
+2018/05/02 21:09:22 peer-0 broadcast heartbeats.
+2018/05/02 21:09:22 peer-0 broadcast heartbeats.
+2018/05/02 21:09:23 peer-0 broadcast heartbeats.
+2018/05/02 21:09:23 peer-1 election timeout!
+2018/05/02 21:09:23 peer-1 kicks off an election!
+2018/05/02 21:09:23 peer-1 becomes a Candidate!!!
+2018/05/02 21:09:23 peer-1 send a sendRequestVote RPC to peer-2
+2018/05/02 21:09:23 peer-0 broadcast heartbeats.
+2018/05/02 21:09:23 peer-1 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:23 peer-2 election timeout!
+2018/05/02 21:09:23 peer-2 kicks off an election!
+2018/05/02 21:09:23 peer-2 becomes a Candidate!!!
+2018/05/02 21:09:23 peer-2 send a sendRequestVote RPC to peer-1
+2018/05/02 21:09:23 peer-2 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:23 peer-0 election timeout!
+2018/05/02 21:09:23 peer-0 kicks off an election!
+2018/05/02 21:09:23 peer-0 becomes a Candidate!!!
+2018/05/02 21:09:23 peer-0 send a sendRequestVote RPC to peer-2
+2018/05/02 21:09:23 peer-2 gets a RequestVote RPC.
+2018/05/02 21:09:23 peer-0 gets a vote!
+2018/05/02 21:09:23 peer-0 becomes the new leader!!!
+2018/05/02 21:09:23 peer-0 Leader's log array's length = 0.
+2018/05/02 21:09:23 peer-0 leader's heartbeat long-running goroutine. get up.
+2018/05/02 21:09:23 peer-0 broadcast heartbeats.
+2018/05/02 21:09:23 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 1, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:23 peer-2 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:23 peer-1 election timeout!
+2018/05/02 21:09:23 peer-1 kicks off an election!
+2018/05/02 21:09:23 peer-1 becomes a Candidate!!!
+2018/05/02 21:09:23 peer-1 send a sendRequestVote RPC to peer-2
+2018/05/02 21:09:23 peer-2 gets a RequestVote RPC.
+2018/05/02 21:09:23 peer-0 send a sendRequestVote RPC to peer-1
+2018/05/02 21:09:23 peer-1 gets a RequestVote RPC.
+2018/05/02 21:09:23 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 1, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:23 peer-1 calm down from a Candidate to a Follower!!!
+2018/05/02 21:09:23 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:23 peer-1 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:23 peer-0 gets a RequestVote RPC.
+2018/05/02 21:09:23 peer-0 non-leader's election timeout long-running goroutine. block.
+2018/05/02 21:09:23 peer-0 broadcast heartbeats.
+2018/05/02 21:09:23 peer-0 broadcast heartbeats.
+2018/05/02 21:09:23 peer-0 broadcast heartbeats.
+2018/05/02 21:09:23 peer-0 broadcast heartbeats.
+2018/05/02 21:09:23 peer-0 broadcast heartbeats.
+2018/05/02 21:09:24 peer-0 broadcast heartbeats.
+2018/05/02 21:09:24 peer-0 broadcast heartbeats.
+2018/05/02 21:09:24 peer-1 election timeout!
+2018/05/02 21:09:24 peer-1 kicks off an election!
+2018/05/02 21:09:24 peer-1 becomes a Candidate!!!
+2018/05/02 21:09:24 peer-1 send a sendRequestVote RPC to peer-2
+2018/05/02 21:09:24 peer-1 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:24 peer-0 broadcast heartbeats.
+2018/05/02 21:09:24 peer-2 election timeout!
+2018/05/02 21:09:24 peer-2 kicks off an election!
+2018/05/02 21:09:24 peer-2 becomes a Candidate!!!
+2018/05/02 21:09:24 peer-2 send a sendRequestVote RPC to peer-1
+2018/05/02 21:09:24 peer-2 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:24 peer-0 broadcast heartbeats.
+2018/05/02 21:09:24 peer-2 election timeout!
+2018/05/02 21:09:24 peer-2 kicks off an election!
+2018/05/02 21:09:24 peer-2 becomes a Candidate!!!
+2018/05/02 21:09:24 peer-2 send a sendRequestVote RPC to peer-1
+2018/05/02 21:09:24 peer-1 gets a RequestVote RPC.
+2018/05/02 21:09:24 peer-2 gets a vote!
+2018/05/02 21:09:24 peer-2 becomes the new leader!!!
+2018/05/02 21:09:24 peer-2 Leader's log array's length = 0.
+2018/05/02 21:09:24 peer-2 leader's heartbeat long-running goroutine. get up.
+2018/05/02 21:09:24 peer-2 broadcast heartbeats.
+2018/05/02 21:09:24 peer-1 gets an heartbeat(args.LeaderId = 2, args.Term = 2, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:24 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:24 peer-2 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:24 peer-2 non-leader's election timeout long-running goroutine. block.
+2018/05/02 21:09:24 peer-0 broadcast heartbeats.
+2018/05/02 21:09:24 peer-0 broadcast heartbeats.
+2018/05/02 21:09:24 peer-2 broadcast heartbeats.
+2018/05/02 21:09:24 peer-1 gets an heartbeat(args.LeaderId = 2, args.Term = 2, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:24 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:24 peer-0 broadcast heartbeats.
+2018/05/02 21:09:24 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 1, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:24 peer-1 got an obsolete AppendEntries RPC..., ignore it.(args.Term = 1, rf.currentTerm = 2.)
+2018/05/02 21:09:24 peer-0 degenerate from a Leader into a Follower!!!
+2018/05/02 21:09:24 peer-0 non-leader's election timeout long-running goroutine. get up.
+2018/05/02 21:09:24 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 1, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:24 peer-2 got an obsolete AppendEntries RPC..., ignore it.(args.Term = 1, rf.currentTerm = 2.)
+2018/05/02 21:09:24 peer-0 broadcast heartbeats.
+2018/05/02 21:09:24 peer-2 broadcast heartbeats.
+2018/05/02 21:09:24 peer-1 gets an heartbeat(args.LeaderId = 2, args.Term = 2, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:24 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:24 peer-0 gets an heartbeat(args.LeaderId = 2, args.Term = 2, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:24 peer-0 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:24 peer-0 leader's heartbeat long-running goroutine. block.
+2018/05/02 21:09:24 peer-0 broadcast heartbeats.
+2018/05/02 21:09:24 peer-2 broadcast heartbeats.
+2018/05/02 21:09:24 peer-0 gets an heartbeat(args.LeaderId = 2, args.Term = 2, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:24 peer-0 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:24 peer-1 gets an heartbeat(args.LeaderId = 2, args.Term = 2, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:24 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:25 peer-1 election timeout!
+2018/05/02 21:09:25 peer-1 kicks off an election!
+2018/05/02 21:09:25 peer-1 becomes a Candidate!!!
+2018/05/02 21:09:25 peer-1 send a sendRequestVote RPC to peer-2
+2018/05/02 21:09:25 peer-1 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:25 peer-0 broadcast heartbeats.
+2018/05/02 21:09:25 peer-2 broadcast heartbeats.
+2018/05/02 21:09:25 peer-2 election timeout!
+2018/05/02 21:09:25 peer-2 kicks off an election!
+2018/05/02 21:09:25 peer-2 becomes a Candidate!!!
+2018/05/02 21:09:25 peer-2 send a sendRequestVote RPC to peer-1
+2018/05/02 21:09:25 peer-2 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:25 peer-0 broadcast heartbeats.
+2018/05/02 21:09:25 peer-2 broadcast heartbeats.
+2018/05/02 21:09:25 peer-0 broadcast heartbeats.
+2018/05/02 21:09:25 peer-2 broadcast heartbeats.
+2018/05/02 21:09:25 peer-0 broadcast heartbeats.
+2018/05/02 21:09:25 peer-2 broadcast heartbeats.
+2018/05/02 21:09:25 peer-0 election timeout!
+2018/05/02 21:09:25 peer-0 kicks off an election!
+2018/05/02 21:09:25 peer-0 becomes a Candidate!!!
+2018/05/02 21:09:25 peer-0 send a sendRequestVote RPC to peer-2
+2018/05/02 21:09:25 peer-0 send a sendRequestVote RPC to peer-1
+2018/05/02 21:09:25 peer-1 election timeout!
+2018/05/02 21:09:25 peer-1 kicks off an election!
+2018/05/02 21:09:25 peer-1 becomes a Candidate!!!
+2018/05/02 21:09:25 peer-1 send a sendRequestVote RPC to peer-2
+2018/05/02 21:09:25 peer-1 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:25 peer-1 election timeout!
+2018/05/02 21:09:25 peer-1 kicks off an election!
+2018/05/02 21:09:25 peer-1 becomes a Candidate!!!
+2018/05/02 21:09:25 peer-1 send a sendRequestVote RPC to peer-2
+2018/05/02 21:09:25 peer-1 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:26 peer-2 broadcast heartbeats.
+2018/05/02 21:09:26 peer-0 broadcast heartbeats.
+2018/05/02 21:09:26 peer-0 broadcast heartbeats.
+2018/05/02 21:09:26 peer-2 broadcast heartbeats.
+2018/05/02 21:09:26 peer-2 election timeout!
+2018/05/02 21:09:26 peer-2 kicks off an election!
+2018/05/02 21:09:26 peer-2 becomes a Candidate!!!
+2018/05/02 21:09:26 peer-2 send a sendRequestVote RPC to peer-1
+2018/05/02 21:09:26 peer-2 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:26 peer-0 broadcast heartbeats.
+2018/05/02 21:09:26 peer-2 broadcast heartbeats.
+2018/05/02 21:09:26 peer-2 broadcast heartbeats.
+2018/05/02 21:09:26 peer-0 broadcast heartbeats.
+2018/05/02 21:09:26 peer-1 election timeout!
+2018/05/02 21:09:26 peer-1 kicks off an election!
+2018/05/02 21:09:26 peer-1 becomes a Candidate!!!
+2018/05/02 21:09:26 peer-1 send a sendRequestVote RPC to peer-2
+2018/05/02 21:09:26 peer-1 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:26 peer-0 election timeout!
+2018/05/02 21:09:26 peer-0 kicks off an election!
+2018/05/02 21:09:26 peer-0 becomes a Candidate!!!
+2018/05/02 21:09:26 peer-0 send a sendRequestVote RPC to peer-2
+2018/05/02 21:09:26 peer-0 send a sendRequestVote RPC to peer-1
+2018/05/02 21:09:26 peer-0 broadcast heartbeats.
+2018/05/02 21:09:26 peer-2 broadcast heartbeats.
+2018/05/02 21:09:26 peer-1 election timeout!
+2018/05/02 21:09:26 peer-1 kicks off an election!
+2018/05/02 21:09:26 peer-1 becomes a Candidate!!!
+2018/05/02 21:09:26 peer-1 send a sendRequestVote RPC to peer-2
+2018/05/02 21:09:26 peer-1 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:27 peer-2 broadcast heartbeats.
+2018/05/02 21:09:27 peer-0 broadcast heartbeats.
+2018/05/02 21:09:27 peer-2 election timeout!
+2018/05/02 21:09:27 peer-2 kicks off an election!
+2018/05/02 21:09:27 peer-2 becomes a Candidate!!!
+2018/05/02 21:09:27 peer-2 send a sendRequestVote RPC to peer-1
+2018/05/02 21:09:27 peer-2 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:27 peer-2 broadcast heartbeats.
+2018/05/02 21:09:27 peer-0 broadcast heartbeats.
+2018/05/02 21:09:27 peer-0 broadcast heartbeats.
+2018/05/02 21:09:27 peer-2 broadcast heartbeats.
+2018/05/02 21:09:27 peer-2 broadcast heartbeats.
+2018/05/02 21:09:27 peer-1 election timeout!
+2018/05/02 21:09:27 peer-1 kicks off an election!
+2018/05/02 21:09:27 peer-1 becomes a Candidate!!!
+2018/05/02 21:09:27 peer-1 send a sendRequestVote RPC to peer-2
+2018/05/02 21:09:27 peer-0 election timeout!
+2018/05/02 21:09:27 peer-0 kicks off an election!
+2018/05/02 21:09:27 peer-0 becomes a Candidate!!!
+2018/05/02 21:09:27 peer-0 send a sendRequestVote RPC to peer-2
+2018/05/02 21:09:27 peer-0 broadcast heartbeats.
+2018/05/02 21:09:27 peer-1 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:27 peer-0 send a sendRequestVote RPC to peer-1
+2018/05/02 21:09:27 peer-1 gets a RequestVote RPC.
+2018/05/02 21:09:27 peer-0 gets a vote!
+2018/05/02 21:09:27 peer-0 becomes the new leader!!!
+2018/05/02 21:09:27 peer-0 Leader's log array's length = 0.
+2018/05/02 21:09:27 peer-0 leader's heartbeat long-running goroutine. get up.
+2018/05/02 21:09:27 peer-0 broadcast heartbeats.
+2018/05/02 21:09:27 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:27 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:27 peer-0 non-leader's election timeout long-running goroutine. block.
+2018/05/02 21:09:27 peer-0 broadcast heartbeats.
+2018/05/02 21:09:27 peer-2 broadcast heartbeats.
+2018/05/02 21:09:27 peer-1 gets an heartbeat(args.LeaderId = 2, args.Term = 2, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:27 peer-1 got an obsolete AppendEntries RPC..., ignore it.(args.Term = 2, rf.currentTerm = 5.)
+2018/05/02 21:09:27 peer-2 degenerate from a Leader into a Follower!!!
+2018/05/02 21:09:27 peer-2 non-leader's election timeout long-running goroutine. get up.
+2018/05/02 21:09:27 peer-0 broadcast heartbeats.
+2018/05/02 21:09:27 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:27 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:27 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:27 peer-2 election timeout!
+2018/05/02 21:09:27 peer-2 kicks off an election!
+2018/05/02 21:09:27 peer-2 becomes a Candidate!!!
+2018/05/02 21:09:27 peer-2 send a sendRequestVote RPC to peer-1
+2018/05/02 21:09:27 peer-2 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:28 peer-2 leader's heartbeat long-running goroutine. block.
+2018/05/02 21:09:28 peer-0 broadcast heartbeats.
+2018/05/02 21:09:28 peer-0 broadcast heartbeats.
+2018/05/02 21:09:28 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:28 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:28 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:28 peer-0 broadcast heartbeats.
+2018/05/02 21:09:28 peer-0 broadcast heartbeats.
+2018/05/02 21:09:28 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:28 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:28 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:28 peer-0 broadcast heartbeats.
+2018/05/02 21:09:28 peer-0 broadcast heartbeats.
+2018/05/02 21:09:28 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:28 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:28 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:28 peer-1 election timeout!
+2018/05/02 21:09:28 peer-1 kicks off an election!
+2018/05/02 21:09:28 peer-1 becomes a Candidate!!!
+2018/05/02 21:09:28 peer-1 send a sendRequestVote RPC to peer-2
+2018/05/02 21:09:28 peer-1 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:28 peer-0 broadcast heartbeats.
+2018/05/02 21:09:28 peer-0 broadcast heartbeats.
+2018/05/02 21:09:28 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:28 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:28 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:28 peer-2 election timeout!
+2018/05/02 21:09:28 peer-2 kicks off an election!
+2018/05/02 21:09:28 peer-0 broadcast heartbeats.
+2018/05/02 21:09:28 peer-0 broadcast heartbeats.
+2018/05/02 21:09:28 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:28 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:28 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:28 peer-2 election timeout!
+2018/05/02 21:09:28 peer-2 kicks off an election!
+2018/05/02 21:09:28 peer-2 becomes a Candidate!!!
+2018/05/02 21:09:28 peer-2 send a sendRequestVote RPC to peer-1
+2018/05/02 21:09:28 peer-2 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:29 peer-0 broadcast heartbeats.
+2018/05/02 21:09:29 peer-0 broadcast heartbeats.
+2018/05/02 21:09:29 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:29 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:29 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:29 peer-0 broadcast heartbeats.
+2018/05/02 21:09:29 peer-0 broadcast heartbeats.
+2018/05/02 21:09:29 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:29 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:29 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:29 peer-0 broadcast heartbeats.
+2018/05/02 21:09:29 peer-0 broadcast heartbeats.
+2018/05/02 21:09:29 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:29 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:29 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:29 peer-1 election timeout!
+2018/05/02 21:09:29 peer-1 kicks off an election!
+2018/05/02 21:09:29 peer-1 becomes a Candidate!!!
+2018/05/02 21:09:29 peer-1 send a sendRequestVote RPC to peer-2
+2018/05/02 21:09:29 peer-1 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:29 peer-0 broadcast heartbeats.
+2018/05/02 21:09:29 peer-0 broadcast heartbeats.
+2018/05/02 21:09:29 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:29 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:29 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:29 peer-2 election timeout!
+2018/05/02 21:09:29 peer-2 kicks off an election!
+2018/05/02 21:09:29 peer-2 becomes a Candidate!!!
+2018/05/02 21:09:29 peer-2 send a sendRequestVote RPC to peer-1
+2018/05/02 21:09:29 peer-2 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:29 peer-0 broadcast heartbeats.
+2018/05/02 21:09:29 peer-0 broadcast heartbeats.
+2018/05/02 21:09:29 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:29 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:29 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:30 peer-0 broadcast heartbeats.
+2018/05/02 21:09:30 peer-0 broadcast heartbeats.
+2018/05/02 21:09:30 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:30 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:30 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:30 peer-0 broadcast heartbeats.
+2018/05/02 21:09:30 peer-0 broadcast heartbeats.
+2018/05/02 21:09:30 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:30 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:30 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:30 peer-1 election timeout!
+2018/05/02 21:09:30 peer-1 kicks off an election!
+2018/05/02 21:09:30 peer-1 becomes a Candidate!!!
+2018/05/02 21:09:30 peer-1 send a sendRequestVote RPC to peer-2
+2018/05/02 21:09:30 peer-1 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:30 peer-0 broadcast heartbeats.
+2018/05/02 21:09:30 peer-0 broadcast heartbeats.
+2018/05/02 21:09:30 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:30 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:30 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:30 peer-0 broadcast heartbeats.
+2018/05/02 21:09:30 peer-0 broadcast heartbeats.
+2018/05/02 21:09:30 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:30 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:30 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:30 peer-2 election timeout!
+2018/05/02 21:09:30 peer-2 kicks off an election!
+2018/05/02 21:09:30 peer-2 becomes a Candidate!!!
+2018/05/02 21:09:30 peer-2 send a sendRequestVote RPC to peer-1
+2018/05/02 21:09:30 peer-2 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:30 peer-0 broadcast heartbeats.
+2018/05/02 21:09:30 peer-0 broadcast heartbeats.
+2018/05/02 21:09:30 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:30 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:30 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:31 peer-0 broadcast heartbeats.
+2018/05/02 21:09:31 peer-0 broadcast heartbeats.
+2018/05/02 21:09:31 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:31 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:31 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:31 peer-0 broadcast heartbeats.
+2018/05/02 21:09:31 peer-0 broadcast heartbeats.
+2018/05/02 21:09:31 peer-1 election timeout!
+2018/05/02 21:09:31 peer-1 kicks off an election!
+2018/05/02 21:09:31 peer-1 becomes a Candidate!!!
+2018/05/02 21:09:31 peer-1 send a sendRequestVote RPC to peer-2
+2018/05/02 21:09:31 peer-1 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:31 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:31 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:31 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:31 peer-0 broadcast heartbeats.
+2018/05/02 21:09:31 peer-0 broadcast heartbeats.
+2018/05/02 21:09:31 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:31 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:31 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:31 peer-0 broadcast heartbeats.
+2018/05/02 21:09:31 peer-0 broadcast heartbeats.
+2018/05/02 21:09:31 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:31 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:31 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:31 peer-2 election timeout!
+2018/05/02 21:09:31 peer-2 kicks off an election!
+2018/05/02 21:09:31 peer-2 becomes a Candidate!!!
+2018/05/02 21:09:31 peer-2 send a sendRequestVote RPC to peer-1
+2018/05/02 21:09:31 peer-2 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:31 peer-0 broadcast heartbeats.
+2018/05/02 21:09:31 peer-0 broadcast heartbeats.
+2018/05/02 21:09:31 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:31 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:31 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:32 peer-0 broadcast heartbeats.
+2018/05/02 21:09:32 peer-0 broadcast heartbeats.
+2018/05/02 21:09:32 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:32 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:32 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:32 peer-1 election timeout!
+2018/05/02 21:09:32 peer-1 kicks off an election!
+2018/05/02 21:09:32 peer-1 becomes a Candidate!!!
+2018/05/02 21:09:32 peer-1 send a sendRequestVote RPC to peer-2
+2018/05/02 21:09:32 peer-1 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:32 peer-0 broadcast heartbeats.
+2018/05/02 21:09:32 peer-0 broadcast heartbeats.
+2018/05/02 21:09:32 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:32 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:32 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:32 peer-0 broadcast heartbeats.
+2018/05/02 21:09:32 peer-0 broadcast heartbeats.
+2018/05/02 21:09:32 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:32 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:32 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:32 peer-2 election timeout!
+2018/05/02 21:09:32 peer-2 kicks off an election!
+2018/05/02 21:09:32 peer-2 becomes a Candidate!!!
+2018/05/02 21:09:32 peer-2 send a sendRequestVote RPC to peer-1
+2018/05/02 21:09:32 peer-2 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:32 peer-0 broadcast heartbeats.
+2018/05/02 21:09:32 peer-0 broadcast heartbeats.
+2018/05/02 21:09:32 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:32 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:32 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:32 peer-0 broadcast heartbeats.
+2018/05/02 21:09:32 peer-0 broadcast heartbeats.
+2018/05/02 21:09:32 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:32 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:32 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:33 peer-0 broadcast heartbeats.
+2018/05/02 21:09:33 peer-0 broadcast heartbeats.
+2018/05/02 21:09:33 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:33 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:33 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:33 peer-1 election timeout!
+2018/05/02 21:09:33 peer-1 kicks off an election!
+2018/05/02 21:09:33 peer-1 becomes a Candidate!!!
+2018/05/02 21:09:33 peer-1 send a sendRequestVote RPC to peer-2
+2018/05/02 21:09:33 peer-1 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:33 peer-0 broadcast heartbeats.
+2018/05/02 21:09:33 peer-0 broadcast heartbeats.
+2018/05/02 21:09:33 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:33 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:33 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:33 peer-0 broadcast heartbeats.
+2018/05/02 21:09:33 peer-0 broadcast heartbeats.
+2018/05/02 21:09:33 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:33 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:33 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:33 peer-2 election timeout!
+2018/05/02 21:09:33 peer-2 kicks off an election!
+2018/05/02 21:09:33 peer-2 becomes a Candidate!!!
+2018/05/02 21:09:33 peer-2 send a sendRequestVote RPC to peer-1
+2018/05/02 21:09:33 peer-2 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:33 peer-0 broadcast heartbeats.
+2018/05/02 21:09:33 peer-0 broadcast heartbeats.
+2018/05/02 21:09:33 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:33 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:33 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:33 peer-0 broadcast heartbeats.
+2018/05/02 21:09:33 peer-0 broadcast heartbeats.
+2018/05/02 21:09:33 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:33 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:33 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:34 peer-1 election timeout!
+2018/05/02 21:09:34 peer-1 kicks off an election!
+2018/05/02 21:09:34 peer-1 becomes a Candidate!!!
+2018/05/02 21:09:34 peer-1 send a sendRequestVote RPC to peer-2
+2018/05/02 21:09:34 peer-1 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:34 peer-0 broadcast heartbeats.
+2018/05/02 21:09:34 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:34 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:34 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:34 peer-0 broadcast heartbeats.
+2018/05/02 21:09:34 peer-0 broadcast heartbeats.
+2018/05/02 21:09:34 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:34 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:34 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:34 peer-0 broadcast heartbeats.
+2018/05/02 21:09:34 peer-0 broadcast heartbeats.
+2018/05/02 21:09:34 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:34 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:34 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:34 peer-0 broadcast heartbeats.
+2018/05/02 21:09:34 peer-2 election timeout!
+2018/05/02 21:09:34 peer-2 kicks off an election!
+2018/05/02 21:09:34 peer-2 becomes a Candidate!!!
+2018/05/02 21:09:34 peer-2 send a sendRequestVote RPC to peer-1
+2018/05/02 21:09:34 peer-2 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:34 peer-0 broadcast heartbeats.
+2018/05/02 21:09:34 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:34 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:34 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:34 peer-0 broadcast heartbeats.
+2018/05/02 21:09:34 peer-0 broadcast heartbeats.
+2018/05/02 21:09:34 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:34 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:34 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:34 peer-0 broadcast heartbeats.
+2018/05/02 21:09:35 peer-1 election timeout!
+2018/05/02 21:09:35 peer-1 kicks off an election!
+2018/05/02 21:09:35 peer-1 becomes a Candidate!!!
+2018/05/02 21:09:35 peer-1 send a sendRequestVote RPC to peer-2
+2018/05/02 21:09:35 peer-1 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:35 peer-0 broadcast heartbeats.
+2018/05/02 21:09:35 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:35 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:35 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:35 peer-0 broadcast heartbeats.
+2018/05/02 21:09:35 peer-0 broadcast heartbeats.
+2018/05/02 21:09:35 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:35 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:35 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:35 peer-0 broadcast heartbeats.
+2018/05/02 21:09:35 peer-2 election timeout!
+2018/05/02 21:09:35 peer-2 kicks off an election!
+2018/05/02 21:09:35 peer-2 becomes a Candidate!!!
+2018/05/02 21:09:35 peer-2 send a sendRequestVote RPC to peer-1
+2018/05/02 21:09:35 peer-2 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:35 peer-0 broadcast heartbeats.
+2018/05/02 21:09:35 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:35 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:35 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:35 peer-0 broadcast heartbeats.
+2018/05/02 21:09:35 peer-0 broadcast heartbeats.
+2018/05/02 21:09:35 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:35 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:35 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:35 peer-0 broadcast heartbeats.
+2018/05/02 21:09:35 peer-0 broadcast heartbeats.
+2018/05/02 21:09:35 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:35 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:35 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:35 peer-0 broadcast heartbeats.
+2018/05/02 21:09:35 peer-1 election timeout!
+2018/05/02 21:09:35 peer-1 kicks off an election!
+2018/05/02 21:09:35 peer-1 becomes a Candidate!!!
+2018/05/02 21:09:35 peer-1 send a sendRequestVote RPC to peer-2
+2018/05/02 21:09:35 peer-1 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:36 peer-0 broadcast heartbeats.
+2018/05/02 21:09:36 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:36 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:36 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:36 peer-0 broadcast heartbeats.
+2018/05/02 21:09:36 peer-0 broadcast heartbeats.
+2018/05/02 21:09:36 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:36 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:36 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:36 peer-0 broadcast heartbeats.
+2018/05/02 21:09:36 peer-2 election timeout!
+2018/05/02 21:09:36 peer-2 kicks off an election!
+2018/05/02 21:09:36 peer-2 becomes a Candidate!!!
+2018/05/02 21:09:36 peer-2 send a sendRequestVote RPC to peer-1
+2018/05/02 21:09:36 peer-2 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:36 peer-0 broadcast heartbeats.
+2018/05/02 21:09:36 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:36 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:36 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:36 peer-0 broadcast heartbeats.
+2018/05/02 21:09:36 peer-0 broadcast heartbeats.
+2018/05/02 21:09:36 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:36 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:36 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:36 peer-0 broadcast heartbeats.
+2018/05/02 21:09:36 peer-0 broadcast heartbeats.
+2018/05/02 21:09:36 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:36 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:36 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:36 peer-0 broadcast heartbeats.
+2018/05/02 21:09:36 peer-1 election timeout!
+2018/05/02 21:09:36 peer-1 kicks off an election!
+2018/05/02 21:09:36 peer-1 becomes a Candidate!!!
+2018/05/02 21:09:36 peer-1 send a sendRequestVote RPC to peer-2
+2018/05/02 21:09:36 peer-1 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:37 peer-0 broadcast heartbeats.
+2018/05/02 21:09:37 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:37 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:37 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:37 peer-0 broadcast heartbeats.
+2018/05/02 21:09:37 peer-2 election timeout!
+2018/05/02 21:09:37 peer-2 kicks off an election!
+2018/05/02 21:09:37 peer-2 becomes a Candidate!!!
+2018/05/02 21:09:37 peer-2 send a sendRequestVote RPC to peer-1
+2018/05/02 21:09:37 peer-2 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:37 peer-0 broadcast heartbeats.
+2018/05/02 21:09:37 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:37 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:37 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:37 peer-0 broadcast heartbeats.
+2018/05/02 21:09:37 peer-0 broadcast heartbeats.
+2018/05/02 21:09:37 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:37 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:37 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:37 peer-0 broadcast heartbeats.
+2018/05/02 21:09:37 peer-0 broadcast heartbeats.
+2018/05/02 21:09:37 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:37 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:37 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:37 peer-0 broadcast heartbeats.
+2018/05/02 21:09:37 peer-1 election timeout!
+2018/05/02 21:09:37 peer-1 kicks off an election!
+2018/05/02 21:09:37 peer-1 becomes a Candidate!!!
+2018/05/02 21:09:37 peer-1 send a sendRequestVote RPC to peer-2
+2018/05/02 21:09:37 peer-1 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:37 peer-0 broadcast heartbeats.
+2018/05/02 21:09:37 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:37 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:37 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:37 peer-0 broadcast heartbeats.
+2018/05/02 21:09:38 peer-0 broadcast heartbeats.
+2018/05/02 21:09:38 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:38 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:38 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:38 peer-0 broadcast heartbeats.
+2018/05/02 21:09:38 peer-2 election timeout!
+2018/05/02 21:09:38 peer-2 kicks off an election!
+2018/05/02 21:09:38 peer-2 becomes a Candidate!!!
+2018/05/02 21:09:38 peer-2 send a sendRequestVote RPC to peer-1
+2018/05/02 21:09:38 peer-2 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:38 peer-0 broadcast heartbeats.
+2018/05/02 21:09:38 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:38 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:38 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:38 peer-0 broadcast heartbeats.
+2018/05/02 21:09:38 peer-0 broadcast heartbeats.
+2018/05/02 21:09:38 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:38 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:38 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:38 peer-0 broadcast heartbeats.
+2018/05/02 21:09:38 peer-0 broadcast heartbeats.
+2018/05/02 21:09:38 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:38 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:38 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:38 peer-0 broadcast heartbeats.
+2018/05/02 21:09:38 peer-1 election timeout!
+2018/05/02 21:09:38 peer-1 kicks off an election!
+2018/05/02 21:09:38 peer-1 becomes a Candidate!!!
+2018/05/02 21:09:38 peer-1 send a sendRequestVote RPC to peer-2
+2018/05/02 21:09:38 peer-1 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:38 peer-0 broadcast heartbeats.
+2018/05/02 21:09:38 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:38 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:38 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:38 peer-0 broadcast heartbeats.
+2018/05/02 21:09:38 peer-2 election timeout!
+2018/05/02 21:09:38 peer-2 kicks off an election!
+2018/05/02 21:09:38 peer-2 becomes a Candidate!!!
+2018/05/02 21:09:38 peer-2 send a sendRequestVote RPC to peer-1
+2018/05/02 21:09:38 peer-2 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:39 peer-0 broadcast heartbeats.
+2018/05/02 21:09:39 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:39 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:39 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:39 peer-0 broadcast heartbeats.
+2018/05/02 21:09:39 peer-0 broadcast heartbeats.
+2018/05/02 21:09:39 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:39 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:39 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:39 peer-0 broadcast heartbeats.
+2018/05/02 21:09:39 peer-0 broadcast heartbeats.
+2018/05/02 21:09:39 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:39 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:39 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:39 peer-0 broadcast heartbeats.
+2018/05/02 21:09:39 peer-1 election timeout!
+2018/05/02 21:09:39 peer-1 kicks off an election!
+2018/05/02 21:09:39 peer-1 becomes a Candidate!!!
+2018/05/02 21:09:39 peer-1 send a sendRequestVote RPC to peer-2
+2018/05/02 21:09:39 peer-1 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:39 peer-0 broadcast heartbeats.
+2018/05/02 21:09:39 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:39 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:39 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:39 peer-0 broadcast heartbeats.
+2018/05/02 21:09:39 peer-2 election timeout!
+2018/05/02 21:09:39 peer-2 kicks off an election!
+2018/05/02 21:09:39 peer-2 becomes a Candidate!!!
+2018/05/02 21:09:39 peer-2 send a sendRequestVote RPC to peer-1
+2018/05/02 21:09:39 peer-2 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:39 peer-0 broadcast heartbeats.
+2018/05/02 21:09:39 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:39 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:39 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:39 peer-0 broadcast heartbeats.
+2018/05/02 21:09:40 peer-0 broadcast heartbeats.
+2018/05/02 21:09:40 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:40 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:40 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:40 peer-0 broadcast heartbeats.
+2018/05/02 21:09:40 peer-0 broadcast heartbeats.
+2018/05/02 21:09:40 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:40 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:40 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:40 peer-0 broadcast heartbeats.
+2018/05/02 21:09:40 peer-0 broadcast heartbeats.
+2018/05/02 21:09:40 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:40 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:40 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:40 peer-0 broadcast heartbeats.
+2018/05/02 21:09:40 peer-1 election timeout!
+2018/05/02 21:09:40 peer-1 kicks off an election!
+2018/05/02 21:09:40 peer-1 becomes a Candidate!!!
+2018/05/02 21:09:40 peer-1 send a sendRequestVote RPC to peer-2
+2018/05/02 21:09:40 peer-1 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:40 peer-0 broadcast heartbeats.
+2018/05/02 21:09:40 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:40 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:40 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:40 peer-0 broadcast heartbeats.
+2018/05/02 21:09:40 peer-2 election timeout!
+2018/05/02 21:09:40 peer-2 kicks off an election!
+2018/05/02 21:09:40 peer-2 becomes a Candidate!!!
+2018/05/02 21:09:40 peer-2 send a sendRequestVote RPC to peer-1
+2018/05/02 21:09:40 peer-2 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:40 peer-0 broadcast heartbeats.
+2018/05/02 21:09:40 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:40 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:40 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:40 peer-0 broadcast heartbeats.
+2018/05/02 21:09:41 peer-0 broadcast heartbeats.
+2018/05/02 21:09:41 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:41 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:41 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:41 peer-0 broadcast heartbeats.
+2018/05/02 21:09:41 peer-0 broadcast heartbeats.
+2018/05/02 21:09:41 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:41 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:41 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:41 peer-0 broadcast heartbeats.
+2018/05/02 21:09:41 peer-1 election timeout!
+2018/05/02 21:09:41 peer-1 kicks off an election!
+2018/05/02 21:09:41 peer-1 becomes a Candidate!!!
+2018/05/02 21:09:41 peer-1 send a sendRequestVote RPC to peer-2
+2018/05/02 21:09:41 peer-1 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:41 peer-0 broadcast heartbeats.
+2018/05/02 21:09:41 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:41 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:41 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:41 peer-0 broadcast heartbeats.
+2018/05/02 21:09:41 peer-2 election timeout!
+2018/05/02 21:09:41 peer-2 kicks off an election!
+2018/05/02 21:09:41 peer-2 becomes a Candidate!!!
+2018/05/02 21:09:41 peer-2 send a sendRequestVote RPC to peer-1
+2018/05/02 21:09:41 peer-2 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:41 peer-0 broadcast heartbeats.
+2018/05/02 21:09:41 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:41 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:41 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:41 peer-0 broadcast heartbeats.
+2018/05/02 21:09:41 peer-0 broadcast heartbeats.
+2018/05/02 21:09:41 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:41 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:41 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:41 peer-0 broadcast heartbeats.
+2018/05/02 21:09:42 peer-0 broadcast heartbeats.
+2018/05/02 21:09:42 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:42 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:42 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:42 peer-0 broadcast heartbeats.
+2018/05/02 21:09:42 peer-0 broadcast heartbeats.
+2018/05/02 21:09:42 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:42 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:42 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:42 peer-0 broadcast heartbeats.
+2018/05/02 21:09:42 peer-1 election timeout!
+2018/05/02 21:09:42 peer-1 kicks off an election!
+2018/05/02 21:09:42 peer-1 becomes a Candidate!!!
+2018/05/02 21:09:42 peer-1 send a sendRequestVote RPC to peer-2
+2018/05/02 21:09:42 peer-1 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:42 peer-0 broadcast heartbeats.
+2018/05/02 21:09:42 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:42 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:42 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:42 peer-0 broadcast heartbeats.
+2018/05/02 21:09:42 peer-2 election timeout!
+2018/05/02 21:09:42 peer-2 kicks off an election!
+2018/05/02 21:09:42 peer-2 becomes a Candidate!!!
+2018/05/02 21:09:42 peer-2 send a sendRequestVote RPC to peer-1
+2018/05/02 21:09:42 peer-2 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:42 peer-0 broadcast heartbeats.
+2018/05/02 21:09:42 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:42 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:42 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:42 peer-0 broadcast heartbeats.
+2018/05/02 21:09:42 peer-0 broadcast heartbeats.
+2018/05/02 21:09:42 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:42 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:42 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:42 peer-0 broadcast heartbeats.
+2018/05/02 21:09:43 peer-0 broadcast heartbeats.
+2018/05/02 21:09:43 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:43 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:43 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:43 peer-0 broadcast heartbeats.
+2018/05/02 21:09:43 peer-1 election timeout!
+2018/05/02 21:09:43 peer-1 kicks off an election!
+2018/05/02 21:09:43 peer-1 becomes a Candidate!!!
+2018/05/02 21:09:43 peer-1 send a sendRequestVote RPC to peer-2
+2018/05/02 21:09:43 peer-1 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:43 peer-0 broadcast heartbeats.
+2018/05/02 21:09:43 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:43 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:43 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:43 peer-0 broadcast heartbeats.
+2018/05/02 21:09:43 peer-2 election timeout!
+2018/05/02 21:09:43 peer-2 kicks off an election!
+2018/05/02 21:09:43 peer-2 becomes a Candidate!!!
+2018/05/02 21:09:43 peer-2 send a sendRequestVote RPC to peer-1
+2018/05/02 21:09:43 peer-2 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:43 peer-0 broadcast heartbeats.
+2018/05/02 21:09:43 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:43 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:43 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:43 peer-0 broadcast heartbeats.
+2018/05/02 21:09:43 peer-0 broadcast heartbeats.
+2018/05/02 21:09:43 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:43 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:43 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:43 peer-0 broadcast heartbeats.
+2018/05/02 21:09:43 peer-0 broadcast heartbeats.
+2018/05/02 21:09:43 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:43 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:43 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:43 peer-0 broadcast heartbeats.
+2018/05/02 21:09:44 peer-0 broadcast heartbeats.
+2018/05/02 21:09:44 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:44 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:44 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:44 peer-1 election timeout!
+2018/05/02 21:09:44 peer-1 kicks off an election!
+2018/05/02 21:09:44 peer-1 becomes a Candidate!!!
+2018/05/02 21:09:44 peer-1 send a sendRequestVote RPC to peer-2
+2018/05/02 21:09:44 peer-1 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:44 peer-0 broadcast heartbeats.
+2018/05/02 21:09:44 peer-2 election timeout!
+2018/05/02 21:09:44 peer-2 kicks off an election!
+2018/05/02 21:09:44 peer-2 becomes a Candidate!!!
+2018/05/02 21:09:44 peer-2 send a sendRequestVote RPC to peer-1
+2018/05/02 21:09:44 peer-2 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:44 peer-0 broadcast heartbeats.
+2018/05/02 21:09:44 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:44 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:44 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:44 peer-0 broadcast heartbeats.
+2018/05/02 21:09:44 peer-0 broadcast heartbeats.
+2018/05/02 21:09:44 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:44 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:44 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:44 peer-0 broadcast heartbeats.
+2018/05/02 21:09:44 peer-0 broadcast heartbeats.
+2018/05/02 21:09:44 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:44 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:44 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:44 peer-0 broadcast heartbeats.
+2018/05/02 21:09:44 peer-0 broadcast heartbeats.
+2018/05/02 21:09:44 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:44 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:44 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:44 peer-0 broadcast heartbeats.
+2018/05/02 21:09:44 peer-1 election timeout!
+2018/05/02 21:09:44 peer-1 kicks off an election!
+2018/05/02 21:09:44 peer-1 becomes a Candidate!!!
+2018/05/02 21:09:44 peer-1 send a sendRequestVote RPC to peer-2
+2018/05/02 21:09:44 peer-1 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:45 peer-0 broadcast heartbeats.
+2018/05/02 21:09:45 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:45 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:45 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:45 peer-0 broadcast heartbeats.
+2018/05/02 21:09:45 peer-2 election timeout!
+2018/05/02 21:09:45 peer-2 kicks off an election!
+2018/05/02 21:09:45 peer-2 becomes a Candidate!!!
+2018/05/02 21:09:45 peer-2 send a sendRequestVote RPC to peer-1
+2018/05/02 21:09:45 peer-2 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:45 peer-0 broadcast heartbeats.
+2018/05/02 21:09:45 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:45 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:45 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:45 peer-0 broadcast heartbeats.
+2018/05/02 21:09:45 peer-0 broadcast heartbeats.
+2018/05/02 21:09:45 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:45 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:45 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:45 peer-0 broadcast heartbeats.
+2018/05/02 21:09:45 peer-0 broadcast heartbeats.
+2018/05/02 21:09:45 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:45 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:45 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:45 peer-0 broadcast heartbeats.
+2018/05/02 21:09:45 peer-1 election timeout!
+2018/05/02 21:09:45 peer-1 kicks off an election!
+2018/05/02 21:09:45 peer-1 becomes a Candidate!!!
+2018/05/02 21:09:45 peer-1 send a sendRequestVote RPC to peer-2
+2018/05/02 21:09:45 peer-1 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:45 peer-0 broadcast heartbeats.
+2018/05/02 21:09:45 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:45 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:45 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:45 peer-0 broadcast heartbeats.
+2018/05/02 21:09:46 peer-0 broadcast heartbeats.
+2018/05/02 21:09:46 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:46 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:46 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:46 peer-0 broadcast heartbeats.
+2018/05/02 21:09:46 peer-2 election timeout!
+2018/05/02 21:09:46 peer-2 kicks off an election!
+2018/05/02 21:09:46 peer-2 becomes a Candidate!!!
+2018/05/02 21:09:46 peer-2 send a sendRequestVote RPC to peer-1
+2018/05/02 21:09:46 peer-2 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:46 peer-0 broadcast heartbeats.
+2018/05/02 21:09:46 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:46 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:46 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:46 peer-0 broadcast heartbeats.
+2018/05/02 21:09:46 peer-0 broadcast heartbeats.
+2018/05/02 21:09:46 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:46 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:46 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:46 peer-0 broadcast heartbeats.
+2018/05/02 21:09:46 peer-0 broadcast heartbeats.
+2018/05/02 21:09:46 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:46 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:46 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:46 peer-0 broadcast heartbeats.
+2018/05/02 21:09:46 peer-1 election timeout!
+2018/05/02 21:09:46 peer-1 kicks off an election!
+2018/05/02 21:09:46 peer-1 becomes a Candidate!!!
+2018/05/02 21:09:46 peer-1 send a sendRequestVote RPC to peer-2
+2018/05/02 21:09:46 peer-1 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:46 peer-0 broadcast heartbeats.
+2018/05/02 21:09:46 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:46 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:46 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:46 peer-0 broadcast heartbeats.
+2018/05/02 21:09:47 peer-2 election timeout!
+2018/05/02 21:09:47 peer-2 kicks off an election!
+2018/05/02 21:09:47 peer-2 becomes a Candidate!!!
+2018/05/02 21:09:47 peer-2 send a sendRequestVote RPC to peer-1
+2018/05/02 21:09:47 peer-2 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:47 peer-0 broadcast heartbeats.
+2018/05/02 21:09:47 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:47 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:47 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:47 peer-0 broadcast heartbeats.
+2018/05/02 21:09:47 peer-0 broadcast heartbeats.
+2018/05/02 21:09:47 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:47 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:47 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:47 peer-0 broadcast heartbeats.
+2018/05/02 21:09:47 peer-0 broadcast heartbeats.
+2018/05/02 21:09:47 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:47 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:47 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:47 peer-0 broadcast heartbeats.
+2018/05/02 21:09:47 peer-1 election timeout!
+2018/05/02 21:09:47 peer-1 kicks off an election!
+2018/05/02 21:09:47 peer-1 becomes a Candidate!!!
+2018/05/02 21:09:47 peer-1 send a sendRequestVote RPC to peer-2
+2018/05/02 21:09:47 peer-1 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:47 peer-0 broadcast heartbeats.
+2018/05/02 21:09:47 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:47 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:47 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:47 peer-0 broadcast heartbeats.
+2018/05/02 21:09:47 peer-0 broadcast heartbeats.
+2018/05/02 21:09:47 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:47 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:47 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:47 peer-0 broadcast heartbeats.
+2018/05/02 21:09:48 peer-2 election timeout!
+2018/05/02 21:09:48 peer-2 kicks off an election!
+2018/05/02 21:09:48 peer-2 becomes a Candidate!!!
+2018/05/02 21:09:48 peer-2 send a sendRequestVote RPC to peer-1
+2018/05/02 21:09:48 peer-2 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:48 peer-0 broadcast heartbeats.
+2018/05/02 21:09:48 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:48 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:48 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:48 peer-0 broadcast heartbeats.
+2018/05/02 21:09:48 peer-0 broadcast heartbeats.
+2018/05/02 21:09:48 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:48 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:48 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:48 peer-0 broadcast heartbeats.
+2018/05/02 21:09:48 peer-0 broadcast heartbeats.
+2018/05/02 21:09:48 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:48 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:48 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:48 peer-0 broadcast heartbeats.
+2018/05/02 21:09:48 peer-1 election timeout!
+2018/05/02 21:09:48 peer-1 kicks off an election!
+2018/05/02 21:09:48 peer-1 becomes a Candidate!!!
+2018/05/02 21:09:48 peer-1 send a sendRequestVote RPC to peer-2
+2018/05/02 21:09:48 peer-1 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:48 peer-0 broadcast heartbeats.
+2018/05/02 21:09:48 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:48 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:48 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:48 peer-0 broadcast heartbeats.
+2018/05/02 21:09:48 peer-2 election timeout!
+2018/05/02 21:09:48 peer-2 kicks off an election!
+2018/05/02 21:09:48 peer-2 becomes a Candidate!!!
+2018/05/02 21:09:48 peer-2 send a sendRequestVote RPC to peer-1
+2018/05/02 21:09:48 peer-2 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:48 peer-0 broadcast heartbeats.
+2018/05/02 21:09:48 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:48 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:48 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:49 peer-0 broadcast heartbeats.
+2018/05/02 21:09:49 peer-0 broadcast heartbeats.
+2018/05/02 21:09:49 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:49 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:49 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:49 peer-0 broadcast heartbeats.
+2018/05/02 21:09:49 peer-0 broadcast heartbeats.
+2018/05/02 21:09:49 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:49 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:49 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:49 peer-0 broadcast heartbeats.
+2018/05/02 21:09:49 peer-0 broadcast heartbeats.
+2018/05/02 21:09:49 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:49 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:49 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:49 peer-0 broadcast heartbeats.
+2018/05/02 21:09:49 peer-1 election timeout!
+2018/05/02 21:09:49 peer-1 kicks off an election!
+2018/05/02 21:09:49 peer-1 becomes a Candidate!!!
+2018/05/02 21:09:49 peer-1 send a sendRequestVote RPC to peer-2
+2018/05/02 21:09:49 peer-1 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:49 peer-2 election timeout!
+2018/05/02 21:09:49 peer-2 kicks off an election!
+2018/05/02 21:09:49 peer-2 becomes a Candidate!!!
+2018/05/02 21:09:49 peer-2 send a sendRequestVote RPC to peer-1
+2018/05/02 21:09:49 peer-2 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:49 peer-0 broadcast heartbeats.
+2018/05/02 21:09:49 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:49 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:49 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:49 peer-0 broadcast heartbeats.
+2018/05/02 21:09:50 peer-0 broadcast heartbeats.
+2018/05/02 21:09:50 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:50 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:50 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:50 peer-0 broadcast heartbeats.
+2018/05/02 21:09:50 peer-0 broadcast heartbeats.
+2018/05/02 21:09:50 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:50 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:50 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:50 peer-0 broadcast heartbeats.
+2018/05/02 21:09:50 peer-0 broadcast heartbeats.
+2018/05/02 21:09:50 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:50 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:50 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:50 peer-0 broadcast heartbeats.
+2018/05/02 21:09:50 peer-1 election timeout!
+2018/05/02 21:09:50 peer-1 kicks off an election!
+2018/05/02 21:09:50 peer-1 becomes a Candidate!!!
+2018/05/02 21:09:50 peer-1 send a sendRequestVote RPC to peer-2
+2018/05/02 21:09:50 peer-1 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:50 peer-2 election timeout!
+2018/05/02 21:09:50 peer-2 kicks off an election!
+2018/05/02 21:09:50 peer-2 becomes a Candidate!!!
+2018/05/02 21:09:50 peer-2 send a sendRequestVote RPC to peer-1
+2018/05/02 21:09:50 peer-2 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:50 peer-0 broadcast heartbeats.
+2018/05/02 21:09:50 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:50 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:50 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:50 peer-0 broadcast heartbeats.
+2018/05/02 21:09:50 peer-0 broadcast heartbeats.
+2018/05/02 21:09:50 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:50 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:50 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:50 peer-0 broadcast heartbeats.
+2018/05/02 21:09:51 peer-0 broadcast heartbeats.
+2018/05/02 21:09:51 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:51 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:51 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:51 peer-0 broadcast heartbeats.
+2018/05/02 21:09:51 peer-0 broadcast heartbeats.
+2018/05/02 21:09:51 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:51 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:51 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:51 peer-0 broadcast heartbeats.
+2018/05/02 21:09:51 peer-0 broadcast heartbeats.
+2018/05/02 21:09:51 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:51 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:51 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:51 peer-0 broadcast heartbeats.
+2018/05/02 21:09:51 peer-1 election timeout!
+2018/05/02 21:09:51 peer-1 kicks off an election!
+2018/05/02 21:09:51 peer-1 becomes a Candidate!!!
+2018/05/02 21:09:51 peer-1 send a sendRequestVote RPC to peer-2
+2018/05/02 21:09:51 peer-1 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:51 peer-2 election timeout!
+2018/05/02 21:09:51 peer-2 kicks off an election!
+2018/05/02 21:09:51 peer-2 becomes a Candidate!!!
+2018/05/02 21:09:51 peer-2 send a sendRequestVote RPC to peer-1
+2018/05/02 21:09:51 peer-2 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:51 peer-0 broadcast heartbeats.
+2018/05/02 21:09:51 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:51 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:51 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:51 peer-0 broadcast heartbeats.
+2018/05/02 21:09:51 peer-0 broadcast heartbeats.
+2018/05/02 21:09:51 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:51 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:51 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:51 peer-0 broadcast heartbeats.
+2018/05/02 21:09:52 peer-0 broadcast heartbeats.
+2018/05/02 21:09:52 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:52 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:52 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:52 peer-0 broadcast heartbeats.
+2018/05/02 21:09:52 peer-0 broadcast heartbeats.
+2018/05/02 21:09:52 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:52 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:52 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:52 peer-0 broadcast heartbeats.
+2018/05/02 21:09:52 peer-1 election timeout!
+2018/05/02 21:09:52 peer-1 kicks off an election!
+2018/05/02 21:09:52 peer-1 becomes a Candidate!!!
+2018/05/02 21:09:52 peer-1 send a sendRequestVote RPC to peer-2
+2018/05/02 21:09:52 peer-1 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:52 peer-0 broadcast heartbeats.
+2018/05/02 21:09:52 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:52 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:52 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:52 peer-0 broadcast heartbeats.
+2018/05/02 21:09:52 peer-2 election timeout!
+2018/05/02 21:09:52 peer-2 kicks off an election!
+2018/05/02 21:09:52 peer-2 becomes a Candidate!!!
+2018/05/02 21:09:52 peer-2 send a sendRequestVote RPC to peer-1
+2018/05/02 21:09:52 peer-2 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:52 peer-0 broadcast heartbeats.
+2018/05/02 21:09:52 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:52 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:52 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:52 peer-0 broadcast heartbeats.
+2018/05/02 21:09:52 peer-0 broadcast heartbeats.
+2018/05/02 21:09:52 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:52 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:52 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:52 peer-0 broadcast heartbeats.
+2018/05/02 21:09:53 peer-0 broadcast heartbeats.
+2018/05/02 21:09:53 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:53 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:53 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:53 peer-0 broadcast heartbeats.
+2018/05/02 21:09:53 peer-0 broadcast heartbeats.
+2018/05/02 21:09:53 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:53 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:53 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:53 peer-0 broadcast heartbeats.
+2018/05/02 21:09:53 peer-1 election timeout!
+2018/05/02 21:09:53 peer-1 kicks off an election!
+2018/05/02 21:09:53 peer-1 becomes a Candidate!!!
+2018/05/02 21:09:53 peer-1 send a sendRequestVote RPC to peer-2
+2018/05/02 21:09:53 peer-1 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:53 peer-2 election timeout!
+2018/05/02 21:09:53 peer-2 kicks off an election!
+2018/05/02 21:09:53 peer-2 becomes a Candidate!!!
+2018/05/02 21:09:53 peer-2 send a sendRequestVote RPC to peer-1
+2018/05/02 21:09:53 peer-2 send a sendRequestVote RPC to peer-0
+2018/05/02 21:09:53 peer-0 broadcast heartbeats.
+2018/05/02 21:09:53 peer-0 broadcast heartbeats.
+2018/05/02 21:09:53 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:53 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:53 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
+2018/05/02 21:09:53 peer-0 broadcast heartbeats.
+2018/05/02 21:09:53 peer-0 broadcast heartbeats.
+2018/05/02 21:09:53 peer-2 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:53 peer-1 gets an heartbeat(args.LeaderId = 0, args.Term = 5, args.PrevLogIndex = 0, args.LeaderCommit = 0).
+2018/05/02 21:09:53 peer-1 AppendEntries RPC pass the consistent check at PrevLogIndex = 0!
