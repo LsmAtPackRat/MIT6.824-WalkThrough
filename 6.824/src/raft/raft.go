@@ -496,13 +496,17 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 							if rf.repCount[index-1] > len(rf.peers)/2 && rf.commitIndex < index {
                                 // apply the command.
 								DPrintf("peer-%d Leader moves its commitIndex from %d to %d.", rf.me, rf.commitIndex, index)
+                                // NOTE: the Leader should commit one by one.
+                                old_commit_index := rf.commitIndex
 								rf.commitIndex = index
-								var committed_log ApplyMsg
-								committed_log.CommandValid = true
-								committed_log.Command = command
-								committed_log.CommandIndex = index
-								rf.applyCh <- committed_log
-                                rf.lastApplied = index
+                                for curr_commit_index := old_commit_index + 1; curr_commit_index <= index; curr_commit_index++ {
+								    var committed_log ApplyMsg
+								    committed_log.CommandValid = true
+								    committed_log.Command = rf.log[curr_commit_index-1].Command
+								    committed_log.CommandIndex = curr_commit_index
+								    rf.applyCh <- committed_log
+                                    rf.lastApplied = curr_commit_index
+                                }
 							}
 							rf.mu.Unlock()
 							break // jump out of the loop.
