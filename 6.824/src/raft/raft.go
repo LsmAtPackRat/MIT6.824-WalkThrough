@@ -360,15 +360,16 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 		} else {
 			rf.commitIndex = len(rf.log)
 		}
-		for i := old_commit_index + 1; i <= rf.commitIndex; i++ {
+		for i := rf.lastApplied + 1; i <= rf.commitIndex; i++ {
 			//DPrintf("peer-%d (not the leader) apply the command() at index %d!!!!!!!!", rf.me, i)
             DPrintf("peer-%d apply command-%d at index-%d.", rf.me, rf.log[i-1].Command.(int), i)
 			var committed_log ApplyMsg
 			committed_log.CommandValid = true
 			committed_log.Command = rf.log[i-1].Command
 			committed_log.CommandIndex = i
+            // FIXME: use seperate goroutine to apply command
 			rf.applyCh <- committed_log
-            rf.lastApplied = i
+            rf.lastApplied = i   // update the lastApplied.
 		}
 		DPrintf("peer-%d Nonleader update its commitIndex from %d to %d. And it's len(rf.log) = %d.", rf.me, old_commit_index, rf.commitIndex, len(rf.log))
 	}
@@ -453,6 +454,7 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
         copy(log_copy, rf.log)
 		index = len(rf.log)
 		log_len := len(rf.log)
+        term_copy := rf.currentTerm
 		rf_copy := rf // use rf_copy to fill the AppendEntries RPC args.
 		for len(rf.repCount) < log_len {
 			rf.repCount = append(rf.repCount, 1)
@@ -479,8 +481,9 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 					//-------------------------------------------------------------------------------------
 					// Note!! when we fill the args, the leader's raft instance will still go ahead.
 					// the log[] may grow, and other AppendEntries RPCs will be sent to the same peer concurrently.
-					args.Term = rf_copy.currentTerm
-					args.LeaderId = rf.me
+					//args.Term = term_copy
+					args.Term = rf.currentTerm
+                    args.LeaderId = rf.me
 					args.LeaderCommit = rf_copy.commitIndex
 					// If last log index >= nextIndex for a follower: send AppendEntries RPC with log entries starting at nextIndex
 					args.PrevLogIndex = log_next_index[i] - 1
@@ -497,6 +500,11 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 							DPrintf("peer-%d AppendEntries success!", rf.me)
 							// If successful: update nextIndex and matchIndex for follower.
 							rf.mu.Lock()
+                            // re-establish the assumption.
+                            if rf.currentTerm != term_copy {
+                                //rf.mu.Unlock()
+                                //return
+                            }
                             // FIXME: nextIndex[i] should not decrease, so check and set.
                             if index >= rf.nextIndex[i] {
                                 rf.nextIndex[i] = index + 1

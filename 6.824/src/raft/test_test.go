@@ -320,7 +320,7 @@ func TestRejoin2B(t *testing.T) {
 
 	// new leader network failure
 	leader2 := cfg.checkOneLeader()
-    DPrintf("------------Disconnect 2nd leader-%d--------------------", leader1)
+    DPrintf("------------Disconnect 2nd leader-%d--------------------", leader2)
 	cfg.disconnect(leader2)
 
 	// old leader connected again
@@ -330,8 +330,8 @@ func TestRejoin2B(t *testing.T) {
 	cfg.one(104, 2, true)
 
 	// all together now
+    DPrintf("------------Reconnect 2nd leader-%d--------------------", leader2)
 	cfg.connect(leader2)
-    DPrintf("------------Reconnect 2nd leader-%d--------------------", leader1)
 
 	cfg.one(105, servers, true)
 
