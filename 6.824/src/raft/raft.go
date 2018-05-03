@@ -586,8 +586,8 @@ func Make(peers []*labrpc.ClientEnd, me int,
 	// create a channel in Raft
 	rf.applyCh = applyCh
 	rf.state = Follower
-	rf.nonleaderCh = make(chan bool)
-	rf.leaderCh = make(chan bool)
+	rf.nonleaderCh = make(chan bool, 3)
+	rf.leaderCh = make(chan bool, 3)
 	// set election timeout
 	rf.voteCount = 0
 	rf.resetElectionTimeout()
@@ -700,9 +700,6 @@ func Make(peers []*labrpc.ClientEnd, me int,
 }
 
 func (rf *Raft) convertToLeader() {
-	//rf.mu.Lock()
-	//defer rf.mu.Unlock()
-//    rf.resetElectionTimeout()
 	rf.state = Leader
 	DPrintf("peer-%d becomes the new leader!!!", rf.me)
 	// when a leader first comes to power, it initializes all nextIndex values to the index just after the last one in its log. (Section 5.3)
@@ -753,10 +750,11 @@ func (rf *Raft) broadcastHeartbeats() {
 		go func(i int) {
             rf.mu.Lock()
             if rf.state != Leader {
+                defer rf.mu.Unlock()
                 return
             }
 			var args AppendEntriesArgs
-			args.Term = rf_copy.currentTerm
+			args.Term = term_copy
 			args.LeaderId = rf.me
 			args.PrevLogIndex = log_next_index[i] - 1
 			if args.PrevLogIndex > 0 {
@@ -778,10 +776,14 @@ func (rf *Raft) broadcastHeartbeats() {
                         rf.currentTerm = reply.Term
                         rf.state = Follower
                         DPrintf("peer-%d degenerate from a Leader into a Follower!!!", rf.me)
+                        rf.mu.Unlock()
                         rf.nonleaderCh <- true
+                    } else {
+                        rf.mu.Unlock()
                     }
+                } else {
+                    rf.mu.Unlock()
                 }
-                rf.mu.Unlock()
 			}
 		}(peer_index)
 	}
