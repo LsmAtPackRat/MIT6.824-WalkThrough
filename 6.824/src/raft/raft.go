@@ -47,7 +47,6 @@ type ApplyMsg struct {
 // A Log Entry
 type LogEntry struct {
 	Term int
-	//Index   int // need?
 	Command interface{}
 }
 
@@ -757,7 +756,7 @@ func (rf *Raft) broadcastHeartbeats() {
 		// create a goroutine to send heartbeat for each peer.
 		go func(i int) {
             rf.mu.Lock()
-            if rf.state != Leader {
+            if rf.state != Leader || rf.currentTerm != term_copy {
                 defer rf.mu.Unlock()
                 return
             }
