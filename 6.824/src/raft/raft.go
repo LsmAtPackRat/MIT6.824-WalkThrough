@@ -204,13 +204,18 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 		return
 	}
 
-	setdown := false
+	stepdown := false
 	// step down and convert to follower, adopt the args.Term
 	if args.Term > rf.currentTerm {
+        // if rf.state == Leader??
 		rf.currentTerm = args.Term
-		rf.state = Follower
+        old_state := rf.state
+        rf.state = Follower
+        if old_state == Leader {
+            rf.nonleaderCh <- true
+        }
 		rf.votedFor = -1
-		setdown = true
+		stepdown = true
 	}
 
 	// 5.4.1 Election restriction : if the requester's log isn't more up-to-date than this peer's, don't vote for it.
@@ -233,7 +238,7 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 
 	// requester's log is more up-to-date than requester's.
 	// Then, we should check whether this server has voted for another server in the same term
-	if setdown {
+	if stepdown {
 		rf.resetElectionTimeout()
 		// now we need to reset the election timer.
 		rf.votedFor = args.CandidateId // First-come-first-served
@@ -518,6 +523,9 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 								    committed_log.Command = rf.log[curr_commit_index-1].Command
 								    committed_log.CommandIndex = curr_commit_index
                                     // FIXME : use a seperate goroutine!
+                                    /*go func() {
+                                        // apply the committed_log to rf.applyCh
+                                    }()*/
 								    rf.applyCh <- committed_log
                                     rf.lastApplied = curr_commit_index
                                 }
@@ -544,7 +552,7 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 						}
 					} else {
 						// RPC fails. Retry!
-                        time.Sleep(time.Millisecond * time.Duration(20))
+                        time.Sleep(time.Millisecond * time.Duration(10))
 					}
 				}
 			}(peer_index)
