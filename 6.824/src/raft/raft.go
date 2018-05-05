@@ -471,20 +471,8 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 			// send AppendEntries RPC to each peer. And decide when it is safe to apply a log entry to the state machine.
 			go func(i int) {
 				for {
-					// sendAppendEntries(server int, args *AppendEntriesArgs, reply *AppendEntriesReply)
-                    //rf.mu.Lock()
-                    if len(rf.log) < rf.nextIndex[i] || rf.state != Leader {
-                        // don't need to send AppendEntries RPC to peer-i.
-                        // FIXME
-                        //defer rf.mu.Unlock()
-                        //return
-                    }
 					var args AppendEntriesArgs
 					var reply AppendEntriesReply
-					//-------------------------------------------------------------------------------------
-					// Note!! when we fill the args, the leader's raft instance will still go ahead.
-					// the log[] may grow, and other AppendEntries RPCs will be sent to the same peer concurrently.
-					//args.Term = term_copy
 					args.Term = term_copy
                     args.LeaderId = rf.me
 					args.LeaderCommit = commitIndex_copy
@@ -493,13 +481,8 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 					if args.PrevLogIndex > 0 {
 						args.PrevLogTerm = log_copy[args.PrevLogIndex-1].Term
 					}
-                    // FIXME
 					args.Entries = make([]LogEntry, len(log_copy) - nextIndex_copy[i] + 1)
-                    //fmt.Println("log_copy.len() = %d,  nextIndex_copy[i] = %d.", len(log_copy), nextIndex_copy[i])
                     copy(args.Entries, log_copy[nextIndex_copy[i]-1 : len(log_copy)])
-                    //args.Entries = log_copy[log_next_index[i]-1 : log_len] // log[nextIndex~end](including nextIndex). Note that the log index start from 1.
-					//-------------------------------------------------------------------------------------
-                    //rf.mu.Unlock()
 					ok := rf.sendAppendEntries(i, &args, &reply)
 					// handle RPC reply in the same goroutine.
 					if ok == true {
@@ -510,10 +493,10 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 							rf.mu.Lock()
                             // re-establish the assumption.
                             if rf.currentTerm != term_copy {
-                                //rf.mu.Unlock()
-                                //return
+                                defer rf.mu.Unlock()
+                                return
                             }
-                            // FIXME: nextIndex[i] should not decrease, so check and set.
+                            // NOTE: ASS's QA: nextIndex[i] should not decrease, so check and set.
                             if index >= rf.nextIndex[i] {
                                 rf.nextIndex[i] = index + 1
                                 // Ass's QA
@@ -552,7 +535,7 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
                                 rf.mu.Unlock()
 								rf.nonleaderCh <- true
 							} else {
-                                // FIXME: right?
+                                // FIXME: right? the nextIndex[i] should never < 1
                                 if rf.nextIndex[i] > 1 {
 							        rf.nextIndex[i] -= 1
                                 }
@@ -754,11 +737,13 @@ func (rf *Raft) electionTimeout() bool {
 func (rf *Raft) broadcastHeartbeats() {
 	DPrintf("peer-%d broadcast heartbeats.", rf.me)
 	rf.mu.Lock()
-	// FIXME: it seems that the bug occurs because the AppendEntries RPC's consistency check fail when the logs match.
+    // make a copy
     term_copy := rf.currentTerm
-	rf_copy := rf
-    log_next_index := make([]int, len(rf.peers))
-    copy(log_next_index, rf.nextIndex)
+    commitIndex_copy := rf.commitIndex
+    log_copy := make([]LogEntry, len(rf.log))
+    copy(log_copy, rf.log)
+    nextIndex_copy := make([]int, len(rf.peers))
+    copy(nextIndex_copy, rf.nextIndex)
 	rf.mu.Unlock()
 
     for peer_index, _ := range rf.peers {
@@ -772,25 +757,29 @@ func (rf *Raft) broadcastHeartbeats() {
                 defer rf.mu.Unlock()
                 return
             }
+            rf.mu.Unlock()
 			var args AppendEntriesArgs
 			args.Term = term_copy
 			args.LeaderId = rf.me
-			args.PrevLogIndex = log_next_index[i] - 1
+			args.PrevLogIndex = nextIndex_copy[i] - 1
 			if args.PrevLogIndex > 0 {
-				args.PrevLogTerm = rf_copy.log[args.PrevLogIndex-1].Term
+				args.PrevLogTerm = log_copy[args.PrevLogIndex-1].Term
 			}
-			args.Entries = make([]LogEntry, 0)
-			args.LeaderCommit = rf_copy.commitIndex
-			//args.LeaderCommit = rf.commitIndex // section 5.3 metioned.
+			args.Entries = make([]LogEntry, 0)  // heartbeat has an empty Entries.
+			args.LeaderCommit = commitIndex_copy
 			var reply AppendEntriesReply
-            rf.mu.Unlock()
 			ok := rf.sendAppendEntries(i, &args, &reply)
 			// handle the PRC reply in the same goroutine.
 			if ok == true {
                 rf.mu.Lock()
-                // re-establish the assumption.
-                if rf.state == Leader && rf.currentTerm == term_copy {
-                    // this reply is out-of-date.
+                if reply.Success {
+                    // re-establish the assumption?
+                    if rf.state == Leader && rf.currentTerm != term_copy {
+                        defer rf.mu.Unlock()
+                        return
+                    }
+                    rf.mu.Unlock()
+                } else {
                     if reply.Term > rf.currentTerm {
                         rf.currentTerm = reply.Term
                         rf.state = Follower
@@ -798,12 +787,17 @@ func (rf *Raft) broadcastHeartbeats() {
                         rf.mu.Unlock()
                         rf.nonleaderCh <- true
                     } else {
+                        // fail to pass the consistency check.
+                        if rf.nextIndex[i] > 1 {
+                            rf.nextIndex[i]--
+                        }
                         rf.mu.Unlock()
                     }
-                } else {
-                    rf.mu.Unlock()
                 }
-			}
+            } else {
+                // heartbeat RPC failed!
+                //rf.mu.Unlock()
+            }
 		}(peer_index)
 	}
 }
