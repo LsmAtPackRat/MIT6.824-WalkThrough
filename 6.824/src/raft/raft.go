@@ -447,18 +447,22 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 		newlog.Term = rf.currentTerm
 		newlog.Command = command
 		rf.log = append(rf.log, newlog)
-        log_next_index := make([]int, len(rf.peers))
-        copy(log_next_index, rf.nextIndex)
+        // now the log entry is appended into leader's log.
+
+        // make a copy of current leader's state.
+        nextIndex_copy := make([]int, len(rf.peers))
+        copy(nextIndex_copy, rf.nextIndex)
         log_copy := make([]LogEntry, len(rf.log))
         copy(log_copy, rf.log)
-		index = len(rf.log)
-		log_len := len(rf.log)
+        commitIndex_copy := rf.commitIndex
         term_copy := rf.currentTerm
-		rf_copy := rf // use rf_copy to fill the AppendEntries RPC args.
+		index = len(rf.log)   // the 3rd return value.
+		log_len := len(rf.log)
 		for len(rf.repCount) < log_len {
 			rf.repCount = append(rf.repCount, 1)
 		}
 		rf.mu.Unlock()
+
 		// start agreement and return immediately.
 		for peer_index, _ := range rf.peers {
 			if peer_index == rf.me {
@@ -468,7 +472,7 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 			go func(i int) {
 				for {
 					// sendAppendEntries(server int, args *AppendEntriesArgs, reply *AppendEntriesReply)
-                    rf.mu.Lock()
+                    //rf.mu.Lock()
                     if len(rf.log) < rf.nextIndex[i] || rf.state != Leader {
                         // don't need to send AppendEntries RPC to peer-i.
                         // FIXME
@@ -481,21 +485,26 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 					// Note!! when we fill the args, the leader's raft instance will still go ahead.
 					// the log[] may grow, and other AppendEntries RPCs will be sent to the same peer concurrently.
 					//args.Term = term_copy
-					args.Term = rf.currentTerm
+					args.Term = term_copy
                     args.LeaderId = rf.me
-					args.LeaderCommit = rf_copy.commitIndex
+					args.LeaderCommit = commitIndex_copy
 					// If last log index >= nextIndex for a follower: send AppendEntries RPC with log entries starting at nextIndex
-					args.PrevLogIndex = log_next_index[i] - 1
+					args.PrevLogIndex = nextIndex_copy[i] - 1
 					if args.PrevLogIndex > 0 {
-						args.PrevLogTerm = rf_copy.log[args.PrevLogIndex-1].Term
+						args.PrevLogTerm = log_copy[args.PrevLogIndex-1].Term
 					}
-					args.Entries = log_copy[log_next_index[i]-1 : log_len] // log[nextIndex~end](including nextIndex). Note that the log index start from 1.
+                    // FIXME
+					args.Entries = make([]LogEntry, len(log_copy) - nextIndex_copy[i] + 1)
+                    //fmt.Println("log_copy.len() = %d,  nextIndex_copy[i] = %d.", len(log_copy), nextIndex_copy[i])
+                    copy(args.Entries, log_copy[nextIndex_copy[i]-1 : len(log_copy)])
+                    //args.Entries = log_copy[log_next_index[i]-1 : log_len] // log[nextIndex~end](including nextIndex). Note that the log index start from 1.
 					//-------------------------------------------------------------------------------------
-                    rf.mu.Unlock()
+                    //rf.mu.Unlock()
 					ok := rf.sendAppendEntries(i, &args, &reply)
 					// handle RPC reply in the same goroutine.
 					if ok == true {
 						if reply.Success == true {
+                            // this case means that the log entry is replicated successfully.
 							DPrintf("peer-%d AppendEntries success!", rf.me)
 							// If successful: update nextIndex and matchIndex for follower.
 							rf.mu.Lock()
@@ -525,6 +534,7 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 								    committed_log.CommandValid = true
 								    committed_log.Command = rf.log[curr_commit_index-1].Command
 								    committed_log.CommandIndex = curr_commit_index
+                                    // FIXME : use a seperate goroutine!
 								    rf.applyCh <- committed_log
                                     rf.lastApplied = curr_commit_index
                                 }
@@ -543,7 +553,9 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 								rf.nonleaderCh <- true
 							} else {
                                 // FIXME: right?
-							    rf.nextIndex[i] -= 1
+                                if rf.nextIndex[i] > 1 {
+							        rf.nextIndex[i] -= 1
+                                }
                                 rf.mu.Unlock()
                             }
 						}

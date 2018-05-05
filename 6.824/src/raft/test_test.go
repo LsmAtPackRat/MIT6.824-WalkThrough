@@ -167,7 +167,7 @@ func TestFailNoAgree2B(t *testing.T) {
 	time.Sleep(2 * RaftElectionTimeout)
 
 	n, _ := cfg.nCommitted(index)
-	if n > 0 {
+	if n > 0 {  // because now there is no majority, so the command 20 should not be committed. so n must be 0.
 		t.Fatalf("%v committed but no majority", n)
 	}
 
@@ -184,11 +184,14 @@ func TestFailNoAgree2B(t *testing.T) {
 	if ok2 == false {
 		t.Fatalf("leader2 rejected Start()")
 	}
+
+    // 2 or 3 will be ok. because 10 is the index 1, 
+    // 20 may be index 2(if new leader has 20, it will continue to replicate it) or dropped, so 30 will be index 2/3.
 	if index2 < 2 || index2 > 3 {
 		t.Fatalf("unexpected index %v", index2)
 	}
 
-	cfg.one(1000, servers, true)
+	cfg.one(1000, servers, true)   // 1000 will be committed.
 
 	cfg.end()
 }
