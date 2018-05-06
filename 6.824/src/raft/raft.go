@@ -320,12 +320,6 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 	}
 
 	// 4. Now this peer's log matches the leader's log at PrevLogIndex. Append any new entries not already in the log
-    if len(args.Entries) == 0 {
-        // it's a heartbeat.
-        // FIXME: why the next 2 lines will cause error??
-        //reply.Success = true
-        //return
-    }
 	DPrintf("peer-%d AppendEntries RPC pass the consistent check at PrevLogIndex = %d!", rf.me, args.PrevLogIndex)
 	// now logs match at PrevLogIndex
 	// NOTE: only if the logs don't match at PrevLogIndex, truncate the rf.log.
@@ -342,6 +336,7 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 			break
 		}
 	}
+
 	if mismatch {
 		// need adjustment. rf.log[pos].Term != args.Entries[i].Term
 		// truncate the rf.log and append entries.
@@ -350,10 +345,11 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 	} else {
 		// there some elements in entries but not in rf.log
 		if pos == len(rf.log) && i < len(args.Entries) {
+            rf.log = rf.log[:pos]
 			rf.log = append(rf.log, args.Entries[i:]...)
 		}
 	}
-	// now the log is consistent with the leader's.
+	// now the log is consistent with the leader's. from 0 ~ PrevLogIndex + len(Entries). but whether the subsequents are consistent is unknown.
 	reply.Success = true
     // update the rf.commitIndex. If leaderCommit > commitIndex, set commitIndex = min(leaderCommit, index of last new entry)
 	if rf.commitIndex < args.LeaderCommit {
@@ -361,7 +357,7 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 		// This step will exclude some candidates to be elected as the new leader!
 		// commit!
 		old_commit_index := rf.commitIndex
-		//old_commit_index := rf.commitIndex
+
 		if args.LeaderCommit <= len(rf.log) {
 			rf.commitIndex = args.LeaderCommit
 		} else {
@@ -369,7 +365,8 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 		}
 		DPrintf("peer-%d Nonleader update its commitIndex from %d to %d. And it's len(rf.log) = %d.", rf.me, old_commit_index, rf.commitIndex, len(rf.log))
 
-        // commit.
+        // FIXME: use seperate goroutine to apply command
+        // apply.
 		for i := rf.lastApplied + 1; i <= rf.commitIndex; i++ {
 			//DPrintf("peer-%d (not the leader) apply the command() at index %d!!!!!!!!", rf.me, i)
             DPrintf("peer-%d (not the leader) apply command-%d at index-%d.", rf.me, rf.log[i-1].Command.(int), i)
@@ -377,7 +374,6 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 			committed_log.CommandValid = true
 			committed_log.Command = rf.log[i-1].Command
 			committed_log.CommandIndex = i
-            // FIXME: use seperate goroutine to apply command
 			rf.applyCh <- committed_log
             rf.lastApplied = i   // update the lastApplied.
 		}
@@ -761,8 +757,6 @@ func (rf *Raft) broadcastHeartbeats() {
     commitIndex_copy := rf.commitIndex
     log_copy := make([]LogEntry, len(rf.log))
     copy(log_copy, rf.log)
-    nextIndex_copy := make([]int, len(rf.peers))
-    copy(nextIndex_copy, rf.nextIndex)
 	rf.mu.Unlock()
 
     for peer_index, _ := range rf.peers {
@@ -780,7 +774,8 @@ func (rf *Raft) broadcastHeartbeats() {
 			var args AppendEntriesArgs
 			args.Term = term_copy
 			args.LeaderId = rf.me
-			args.PrevLogIndex = nextIndex_copy[i] - 1
+            // NOTE: This is a key point.
+            args.PrevLogIndex = len(log_copy)
 			if args.PrevLogIndex > 0 {
 				args.PrevLogTerm = log_copy[args.PrevLogIndex-1].Term
 			}
@@ -803,9 +798,6 @@ func (rf *Raft) broadcastHeartbeats() {
                         rf.nonleaderCh <- true
                     } else {
                         // fail to pass the consistency check.
-                        if rf.nextIndex[i] > 1 {
-                            rf.nextIndex[i]--
-                        }
                         rf.mu.Unlock()
                     }
                 }
