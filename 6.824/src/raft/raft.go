@@ -295,11 +295,12 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 	} else {
 		DPrintf("peer-%d gets an heartbeat(args.LeaderId = %d, args.Term = %d, args.PrevLogIndex = %d, args.LeaderCommit = %d).", rf.me, args.LeaderId, args.Term, args.PrevLogIndex, args.LeaderCommit)
 	}
-	//DPrintf("peer-%d log[]'s length is %d.", rf.me, len(rf.log))
-	rf.mu.Lock()
-	defer rf.mu.Unlock()
+
+    rf.mu.Lock()
+    defer rf.mu.Unlock()
+
     reply.FirstIndexOfThatTerm = 0
-	// 1. detect obsolete information, this can filter out old leader's heartbeat.
+    // 1. detect obsolete information, this can filter out old leader's heartbeat.
 	if args.Term < rf.currentTerm {
 		DPrintf("peer-%d got an obsolete AppendEntries RPC..., ignore it.(args.Term = %d, rf.currentTerm = %d.)", rf.me, args.Term, rf.currentTerm)
 		reply.Term = rf.currentTerm
@@ -493,14 +494,6 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 		index = len(rf.log)   // the 3rd return value.
         rf.repCount[index] = 1
         // now the log entry is appended into leader's log.
-
-        // make a copy of current leader's state.
-        nextIndex_copy := make([]int, len(rf.peers))
-        copy(nextIndex_copy, rf.nextIndex)
-        log_copy := make([]LogEntry, len(rf.log))
-        copy(log_copy, rf.log)
-        commitIndex_copy := rf.commitIndex
-        term_copy := rf.currentTerm
 		rf.mu.Unlock()
 
 		// start agreement and return immediately.
@@ -510,13 +503,26 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 			}
 			// send AppendEntries RPC to each peer. And decide when it is safe to apply a log entry to the state machine.
 			go func(i int) {
+                rf.mu.Lock()
+                nextIndex_copy := make([]int, len(rf.peers))
+                copy(nextIndex_copy, rf.nextIndex)
+                log_copy := make([]LogEntry, len(rf.log))
+                copy(log_copy, rf.log)
+                rf.mu.Unlock()
 				for {
-                    // if this peer is not the Leader, just return
-                    // reduce RPCs...
+                    // make a copy of current leader's state.
+                    rf.mu.Lock()
                     if rf.state != Leader {
+                        rf.mu.Unlock()
                         return
                     }
-					var args AppendEntriesArgs
+                    // FIXME: put the next 2 lines here can reduce RPCs significantly, if put them before the for-loop, RPCs will be much more than now.
+                    // but I don't know why.
+                    commitIndex_copy := rf.commitIndex
+                    term_copy := rf.currentTerm
+                    rf.mu.Unlock()
+
+                    var args AppendEntriesArgs
 					var reply AppendEntriesReply
 					args.Term = term_copy
                     args.LeaderId = rf.me
@@ -524,10 +530,16 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 					// If last log index >= nextIndex for a follower: send AppendEntries RPC with log entries starting at nextIndex
 					args.PrevLogIndex = nextIndex_copy[i] - 1
 					if args.PrevLogIndex > 0 {
+                        // FIXME: when will this case happen??
+                        if args.PrevLogIndex > len(log_copy) {
+                            TDPrintf("adjust PrevLogIndex.")
+                            return
+                            //args.PrevLogIndex = len(log_copy)
+                        }
 						args.PrevLogTerm = log_copy[args.PrevLogIndex-1].Term
 					}
-					args.Entries = make([]LogEntry, len(log_copy) - nextIndex_copy[i] + 1)
-                    copy(args.Entries, log_copy[nextIndex_copy[i]-1 : len(log_copy)])
+					args.Entries = make([]LogEntry, len(log_copy) - args.PrevLogIndex)
+                    copy(args.Entries, log_copy[args.PrevLogIndex : len(log_copy)])
                     // reduce RPCs...
                     if rf.state != Leader {
                         return
@@ -580,15 +592,15 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
                                 // don't try to send AppendEntries RPC to others then, rf is not the leader.
                                 return
 							} else {
-                                // FIXME: right? the nextIndex[i] should never < 1
+                                // NOTE: the nextIndex[i] should never < 1
                                 first_index_of_that_term := reply.FirstIndexOfThatTerm
                                 if first_index_of_that_term == 0 {
-                                    rf.nextIndex[i] -= 1
-                                    if rf.nextIndex[i] < 1 {
-                                        rf.nextIndex[i] = 1
+                                    nextIndex_copy[i] -= 1
+                                    if nextIndex_copy[i] < 1 {
+                                        nextIndex_copy[i] = 1
                                     }
                                 } else {
-                                    rf.nextIndex[i] = first_index_of_that_term
+                                    nextIndex_copy[i] = first_index_of_that_term
                                 }
                                 rf.mu.Unlock()
                             }

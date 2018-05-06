@@ -29,3 +29,9 @@ func PrintStatistics() {
         RPC_REPORTED = true
     }
 }
+
+
+func TDPrintf(format string, a ...interface{}) (n int, err error) {
+    log.Printf(format, a...)
+	return
+}
