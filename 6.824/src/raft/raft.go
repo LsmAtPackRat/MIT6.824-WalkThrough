@@ -21,7 +21,6 @@ import "sync"
 import "labrpc"
 import "time"
 import "math/rand"
-
 //import "fmt"
 //import "strconv"
 // import "bytes"
@@ -91,9 +90,10 @@ type Raft struct {
 	resetElectionCh          chan int      // used to notify the peer to reset its election timeout.
 	electionTimeoutStartTime time.Time     // nanosecond precision. used for election timeout.
 	electionTimeoutInterval  time.Duration // nanosecond count.
-	nonleaderCh              chan bool     // block/unblock nonleader's election timeout long-running goroutine
-	leaderCh                 chan bool     // block/unblock leader's heartbeat long-running goroutine
+	nonleaderCh              chan bool     // block/unblock nonleader's election timeout long-running goroutine.
+	leaderCh                 chan bool     // block/unblock leader's heartbeat long-running goroutine.
 	applyCh                  chan ApplyMsg
+    canApplyCh               chan bool     // if can apply command, write to this channel to notify the goroutine.
 }
 
 // return currentTerm and whether this server
@@ -365,18 +365,8 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 		}
 		DPrintf("peer-%d Nonleader update its commitIndex from %d to %d. And it's len(rf.log) = %d.", rf.me, old_commit_index, rf.commitIndex, len(rf.log))
 
-        // FIXME: use seperate goroutine to apply command
         // apply.
-		for i := rf.lastApplied + 1; i <= rf.commitIndex; i++ {
-			//DPrintf("peer-%d (not the leader) apply the command() at index %d!!!!!!!!", rf.me, i)
-            DPrintf("peer-%d (not the leader) apply command-%d at index-%d.", rf.me, rf.log[i-1].Command.(int), i)
-			var committed_log ApplyMsg
-			committed_log.CommandValid = true
-			committed_log.Command = rf.log[i-1].Command
-			committed_log.CommandIndex = i
-			rf.applyCh <- committed_log
-            rf.lastApplied = i   // update the lastApplied.
-		}
+        rf.canApplyCh <- true
 	}
 	return
 }
@@ -502,12 +492,12 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
                             // this case means that the log entry is replicated successfully.
 							DPrintf("peer-%d AppendEntries success!", rf.me)
 							// If successful: update nextIndex and matchIndex for follower.
-							rf.mu.Lock()
                             // re-establish the assumption.
                             if rf.state != Leader || rf.currentTerm != term_copy { //p-9, never commits log entries from previous terms by counting replicas.
-                                rf.mu.Unlock()
+                                //rf.mu.Unlock()
                                 return
                             }
+							rf.mu.Lock()
                             // NOTE: TA's QA: nextIndex[i] should not decrease, so check and set.
                             if index >= rf.nextIndex[i] {
                                 rf.nextIndex[i] = index + 1
@@ -523,16 +513,7 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
                                 // NOTE: the Leader should commit one by one.
 								rf.commitIndex = index
                                 // now the command at commitIndex is committed.
-                                // FIXME : use a seperate goroutine to apply the command!
-                                for curr_index := rf.lastApplied + 1; curr_index <= index; curr_index++ {
-                                    DPrintf("peer-%d (the leader) apply command-%d at index-%d.", rf.me, rf.log[curr_index-1].Command.(int), curr_index)
-								    var committed_log ApplyMsg
-								    committed_log.CommandValid = true
-								    committed_log.Command = rf.log[curr_index-1].Command
-								    committed_log.CommandIndex = curr_index
-								    rf.applyCh <- committed_log
-                                    rf.lastApplied = curr_index
-                                }
+                                rf.canApplyCh <- true
 							}
 							rf.mu.Unlock()
 							return // jump out of the loop.
@@ -605,6 +586,7 @@ func Make(peers []*labrpc.ClientEnd, me int,
 	rf.state = Follower
 	rf.nonleaderCh = make(chan bool, 3)
 	rf.leaderCh = make(chan bool, 3)
+    rf.canApplyCh = make(chan bool, 3)
 	// set election timeout
 	rf.voteCount = 0
 	rf.resetElectionTimeout()
@@ -613,6 +595,26 @@ func Make(peers []*labrpc.ClientEnd, me int,
 	rf.commitIndex = 0
 	rf.lastApplied = 0
 	rf.log = make([]LogEntry, 0)
+
+    // seperate goroutine to apply command to statemachine.
+    go func() {
+        for {
+            <-rf.canApplyCh
+            // apply
+            rf.mu.Lock()
+            for curr_index := rf.lastApplied + 1; curr_index <= rf.commitIndex; curr_index++ {
+                DPrintf("peer-%d apply command-%d at index-%d.", rf.me, rf.log[curr_index-1].Command.(int), curr_index)
+                var curr_command ApplyMsg
+                curr_command.CommandValid = true
+                curr_command.Command = rf.log[curr_index-1].Command
+                curr_command.CommandIndex = curr_index
+                rf.applyCh <- curr_command
+                rf.lastApplied = curr_index
+            }
+            rf.mu.Unlock()
+        }
+    }()
+
 	// Leader's heartbeat long-running goroutine.
 	go func() {
 		for {
