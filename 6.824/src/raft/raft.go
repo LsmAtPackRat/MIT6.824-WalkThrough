@@ -514,16 +514,13 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
                                 // NOTE: the Leader should commit one by one.
 								rf.commitIndex = index
                                 // now the command at commitIndex is committed.
+                                // FIXME : use a seperate goroutine to apply the command!
                                 for curr_index := rf.lastApplied + 1; curr_index <= index; curr_index++ {
                                     DPrintf("peer-%d (the leader) apply command-%d at index-%d.", rf.me, rf.log[curr_index-1].Command.(int), curr_index)
 								    var committed_log ApplyMsg
 								    committed_log.CommandValid = true
 								    committed_log.Command = rf.log[curr_index-1].Command
 								    committed_log.CommandIndex = curr_index
-                                    // FIXME : use a seperate goroutine!
-                                    /*go func() {
-                                        // apply the committed_log to rf.applyCh
-                                    }()*/
 								    rf.applyCh <- committed_log
                                     rf.lastApplied = curr_index
                                 }

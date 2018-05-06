@@ -353,29 +353,36 @@ func TestBackup2B(t *testing.T) {
 
 	// put leader and one follower in a partition
 	leader1 := cfg.checkOneLeader()
+    DPrintf("--------------Disconnect server-%d, server-%d, server-%d-----------------", (leader1+2)%servers, (leader1+3)%servers, (leader1+4)%servers)
 	cfg.disconnect((leader1 + 2) % servers)
 	cfg.disconnect((leader1 + 3) % servers)
 	cfg.disconnect((leader1 + 4) % servers)
 
 	// submit lots of commands that won't commit
+    DPrintf("--------------Submit lots of commands that won't commit---------------")
 	for i := 0; i < 50; i++ {
 		cfg.rafts[leader1].Start(rand.Int())
 	}
+    DPrintf("--------------Finish submit---------------")
 
 	time.Sleep(RaftElectionTimeout / 2)
 
+    DPrintf("--------------Disconnect server-%d, server-%d-----------------", (leader1+0)%servers, (leader1+1)%servers)
 	cfg.disconnect((leader1 + 0) % servers)
 	cfg.disconnect((leader1 + 1) % servers)
 
 	// allow other partition to recover
+    DPrintf("--------------Reconnect server-%d, server-%d, server-%d-----------------", (leader1+2)%servers, (leader1+3)%servers, (leader1+4)%servers)
 	cfg.connect((leader1 + 2) % servers)
 	cfg.connect((leader1 + 3) % servers)
 	cfg.connect((leader1 + 4) % servers)
 
 	// lots of successful commands to new group.
+    DPrintf("--------------Submit lots of successful commands to new group------------")
 	for i := 0; i < 50; i++ {
 		cfg.one(rand.Int(), 3, true)
 	}
+    DPrintf("--------------Finish submit lots of successful commands to new group---------------")
 
 	// now another partitioned leader and one follower
 	leader2 := cfg.checkOneLeader()
@@ -383,32 +390,43 @@ func TestBackup2B(t *testing.T) {
 	if leader2 == other {
 		other = (leader2 + 1) % servers
 	}
+
+    DPrintf("-------------Disconnect other-%d-----------------", other)
 	cfg.disconnect(other)
 
 	// lots more commands that won't commit
+    DPrintf("--------------Submit lots more commands that won't commit------------")
 	for i := 0; i < 50; i++ {
 		cfg.rafts[leader2].Start(rand.Int())
 	}
+    DPrintf("--------------Finish submit lots more commands that won't commit------------")
 
 	time.Sleep(RaftElectionTimeout / 2)
 
 	// bring original leader back to life,
+    DPrintf("----------------Bring original leader back to life------------------")
+    DPrintf("----------------Disconnect all the servers--------------------------")
 	for i := 0; i < servers; i++ {
 		cfg.disconnect(i)
 	}
+    DPrintf("----------------Reconnect server-%d, server-%d, other-%d----------------", (leader1+0)%servers, (leader1+1)%servers, other)
 	cfg.connect((leader1 + 0) % servers)
 	cfg.connect((leader1 + 1) % servers)
 	cfg.connect(other)
 
 	// lots of successful commands to new group.
+    DPrintf("--------------Submit lots of successful commands to new group------------")
 	for i := 0; i < 50; i++ {
 		cfg.one(rand.Int(), 3, true)
 	}
+    DPrintf("--------------Finish submit lots of successful commands to new group---------------")
 
 	// now everyone
+    DPrintf("---------------Connect everyone----------------------------")
 	for i := 0; i < servers; i++ {
 		cfg.connect(i)
 	}
+    DPrintf("---------------final one()-------------------------")
 	cfg.one(rand.Int(), servers, true)
 
 	cfg.end()
