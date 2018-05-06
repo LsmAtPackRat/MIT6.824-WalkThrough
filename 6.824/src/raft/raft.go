@@ -474,6 +474,11 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 			// send AppendEntries RPC to each peer. And decide when it is safe to apply a log entry to the state machine.
 			go func(i int) {
 				for {
+                    // if this peer is not the Leader, just return
+                    // reduce RPCs...
+                    if rf.state != Leader {
+                        return
+                    }
 					var args AppendEntriesArgs
 					var reply AppendEntriesReply
 					args.Term = term_copy
@@ -486,6 +491,10 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 					}
 					args.Entries = make([]LogEntry, len(log_copy) - nextIndex_copy[i] + 1)
                     copy(args.Entries, log_copy[nextIndex_copy[i]-1 : len(log_copy)])
+                    // reduce RPCs...
+                    if rf.state != Leader {
+                        return
+                    }
 					ok := rf.sendAppendEntries(i, &args, &reply)
 					// handle RPC reply in the same goroutine.
 					if ok == true {
@@ -508,7 +517,7 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 							// test whether we can update the leader's commitIndex.
 							rf.repCount[index]++
 							// update leader's commitIndex!
-							if rf.repCount[index] > len(rf.peers)/2 && rf.commitIndex < index {
+							if rf.commitIndex < index && rf.repCount[index] > len(rf.peers)/2 {
                                 // apply the command.
 								DPrintf("peer-%d Leader moves its commitIndex from %d to %d.", rf.me, rf.commitIndex, index)
                                 // NOTE: the Leader should commit one by one.
@@ -604,7 +613,6 @@ func Make(peers []*labrpc.ClientEnd, me int,
 	rf.commitIndex = 0
 	rf.lastApplied = 0
 	rf.log = make([]LogEntry, 0)
-	//rf.repCount = make([]int, 0)
 	// Leader's heartbeat long-running goroutine.
 	go func() {
 		for {
@@ -655,6 +663,10 @@ func Make(peers []*labrpc.ClientEnd, me int,
 						// create goroutine.
 						go func(i int) {
 							// use a copy of the state of the rf peer
+                            // reduce RPCs....
+                            if rf.state != Candidate || rf.currentTerm != term_copy {
+                                return
+                            }
 							var args RequestVoteArgs
 							args.Term = term_copy
 							args.CandidateId = rf.me
@@ -762,12 +774,10 @@ func (rf *Raft) broadcastHeartbeats() {
 		}
 		// create a goroutine to send heartbeat for each peer.
 		go func(i int) {
-            rf.mu.Lock()
-            if rf.state != Leader || rf.currentTerm != term_copy {
-                defer rf.mu.Unlock()
+            // reduce RPCs....
+            if rf.state != Leader {
                 return
             }
-            rf.mu.Unlock()
 			var args AppendEntriesArgs
 			args.Term = term_copy
 			args.LeaderId = rf.me
@@ -782,11 +792,10 @@ func (rf *Raft) broadcastHeartbeats() {
 			ok := rf.sendAppendEntries(i, &args, &reply)
 			// handle the PRC reply in the same goroutine.
 			if ok == true {
-                rf.mu.Lock()
                 if reply.Success {
-                    rf.mu.Unlock()
                     return
                 } else {
+                    rf.mu.Lock()
                     if reply.Term > rf.currentTerm {
                         rf.currentTerm = reply.Term
                         rf.state = Follower
