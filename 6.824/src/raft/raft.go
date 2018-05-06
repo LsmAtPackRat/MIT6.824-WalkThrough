@@ -401,11 +401,13 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 // the struct itself.
 //
 func (rf *Raft) sendRequestVote(server int, args *RequestVoteArgs, reply *RequestVoteReply) bool {
+    RV_RPCS++
 	ok := rf.peers[server].Call("Raft.RequestVote", args, reply)
 	return ok
 }
 
 func (rf *Raft) sendAppendEntries(server int, args *AppendEntriesArgs, reply *AppendEntriesReply) bool {
+    AE_RPCS++
 	ok := rf.peers[server].Call("Raft.AppendEntries", args, reply)
 	// only the leader could send AppendEntries RPC. And it should handle the situations reflected in reply
 	return ok
@@ -540,7 +542,7 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 					} else {
 						// RPC fails. Retry!
                         // when network partition
-                        time.Sleep(time.Millisecond * time.Duration(200))
+                        time.Sleep(time.Millisecond * time.Duration(100))
 					}
 				}
 			}(peer_index)
@@ -560,6 +562,7 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 //
 func (rf *Raft) Kill() {
 	// Your code here, if desired.
+    //PrintStatistics()
 }
 
 //
@@ -621,7 +624,7 @@ func Make(peers []*labrpc.ClientEnd, me int,
 			if rf.state == Leader {
 				// send heartbeats
 				rf.broadcastHeartbeats()
-				time.Sleep(time.Millisecond * time.Duration(200)) // 100ms per heartbeat. (heartbeat time interval << election timeout)
+				time.Sleep(time.Millisecond * time.Duration(100)) // 100ms per heartbeat. (heartbeat time interval << election timeout)
 			} else {
 				// block until be elected as the new leader.
 				//
@@ -748,7 +751,7 @@ func (rf *Raft) convertToLeader() {
 func (rf *Raft) resetElectionTimeout() {
     rf.electionTimeoutStartTime = time.Now()
     // randomize election timeout, 300~400ms
-    rf.electionTimeoutInterval = time.Duration(time.Millisecond * time.Duration(900 + rand.Intn(100)))
+    rf.electionTimeoutInterval = time.Duration(time.Millisecond * time.Duration(300 + rand.Intn(100)))
 }
 
 func (rf *Raft) electionTimeout() bool {

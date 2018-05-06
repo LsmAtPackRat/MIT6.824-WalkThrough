@@ -20,6 +20,7 @@ import "sync"
 const RaftElectionTimeout = 1000 * time.Millisecond
 
 func TestInitialElection2A(t *testing.T) {
+    ResetStatistics()
 	servers := 3
 	cfg := make_config(t, servers, false)
 	defer cfg.cleanup()
@@ -45,6 +46,7 @@ func TestInitialElection2A(t *testing.T) {
 }
 
 func TestReElection2A(t *testing.T) {
+    ResetStatistics()
 	servers := 3
 	cfg := make_config(t, servers, false)
 	defer cfg.cleanup()
@@ -81,6 +83,7 @@ func TestReElection2A(t *testing.T) {
 }
 
 func TestBasicAgree2B(t *testing.T) {
+    ResetStatistics()
     DPrintf("-------------TestBasicAgree2B-------------------")
 	servers := 5
 	cfg := make_config(t, servers, false)
@@ -106,6 +109,7 @@ func TestBasicAgree2B(t *testing.T) {
 }
 
 func TestFailAgree2B(t *testing.T) {
+    ResetStatistics()
     DPrintf("-------------TestFailAgree2B-------------------")
 	servers := 3
 	cfg := make_config(t, servers, false)
@@ -140,6 +144,7 @@ func TestFailAgree2B(t *testing.T) {
 }
 
 func TestFailNoAgree2B(t *testing.T) {
+    ResetStatistics()
     DPrintf("-------------TestFailNoAgree2B-------------------")
 	servers := 5
 	cfg := make_config(t, servers, false)
@@ -197,6 +202,7 @@ func TestFailNoAgree2B(t *testing.T) {
 }
 
 func TestConcurrentStarts2B(t *testing.T) {
+    ResetStatistics()
     DPrintf("-------------TestConcurrentStarts2B-------------------")
 	servers := 3
 	cfg := make_config(t, servers, false)
@@ -299,6 +305,7 @@ loop:
 }
 
 func TestRejoin2B(t *testing.T) {
+    ResetStatistics()
     DPrintf("-------------TestRejoin2B-------------------")
 	servers := 3
 	cfg := make_config(t, servers, false)
@@ -342,6 +349,7 @@ func TestRejoin2B(t *testing.T) {
 }
 
 func TestBackup2B(t *testing.T) {
+    ResetStatistics()
     DPrintf("-------------TestBackup2B-------------------")
 	servers := 5
 	cfg := make_config(t, servers, false)
@@ -433,6 +441,7 @@ func TestBackup2B(t *testing.T) {
 }
 
 func TestCount2B(t *testing.T) {
+    ResetStatistics()
     DPrintf("-------------TestCount2B-------------------")
 	servers := 3
 	cfg := make_config(t, servers, false)
