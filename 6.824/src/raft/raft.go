@@ -555,25 +555,23 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 						if reply.Success == true {
                             // this case means that the log entry is replicated successfully.
 							DPrintf("peer-%d AppendEntries success!", rf.me)
-							// If successful: update nextIndex and matchIndex for follower.
                             // re-establish the assumption.
-                            if rf.state != Leader || rf.currentTerm != term_copy { //p-9, never commits log entries from previous terms by counting replicas.
-                                //rf.mu.Unlock()
+							rf.mu.Lock()   // hold lock here is very very important!!
+                            //Figure-8 and p-8~9: never commits log entries from previous terms by counting replicas.
+                            if rf.state != Leader || rf.currentTerm != term_copy {
+                                rf.mu.Unlock()
                                 return
                             }
-							rf.mu.Lock()
                             // NOTE: TA's QA: nextIndex[i] should not decrease, so check and set.
                             if index >= rf.nextIndex[i] {
-                                //rf.nextIndex[i] = index + 1
-                                if rf.nextIndex[i] < index + 1 {
-                                    rf.nextIndex[i] = index + 1
-                                }
+                                rf.nextIndex[i] = index + 1
                                 // TA's QA
                                 rf.matchIndex[i] = args.PrevLogIndex + len(args.Entries)
                             }
 							// test whether we can update the leader's commitIndex.
 							rf.repCount[index]++
-							// update leader's commitIndex!
+							// update leader's commitIndex! We can determine that Figure-8's case will not occur now, 
+                            // because we have test rf.currentTerm == term_copy before, so we will never commit log entries from previous terms.
 							if rf.commitIndex < index && rf.repCount[index] > len(rf.peers)/2 {
                                 // apply the command.
 								DPrintf("peer-%d Leader moves its commitIndex from %d to %d.", rf.me, rf.commitIndex, index)
