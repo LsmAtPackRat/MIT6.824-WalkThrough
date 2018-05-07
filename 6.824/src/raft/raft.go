@@ -236,7 +236,7 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 		old_state := rf.state
 		rf.state = Follower
 		if old_state == Leader {
-			rf.nonleaderCh <- true
+			rf.nonleaderCh <- true   // FIXME: will this cause a dead-lock??
 		}
 		rf.votedFor = -1
 		rf.persist()
@@ -331,7 +331,7 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 	} else if rf.state == Leader {
 		DPrintf("peer-%d degenerate from a Leader to a Follower!!!", rf.me)
 		rf.state = Follower
-		rf.nonleaderCh <- true
+		rf.nonleaderCh <- true      // FIXME: will this cause a deadlock
 	}
 
 	// consistent check
@@ -831,7 +831,7 @@ func (rf *Raft) convertToLeader() {
 	}
 	rf.repCount = make(map[int]int)
 	DPrintf("peer-%d Leader's log array's length = %d.", rf.me, len(rf.log))
-	rf.leaderCh <- true
+	rf.leaderCh <- true    // FIXME : will this cause a deadlock??
 }
 
 // set the electionTimeoutStartTime to now.
