@@ -208,7 +208,9 @@ type AppendEntriesArgs struct {
 type AppendEntriesReply struct {
 	Term    int
 	Success bool
-    FirstIndexOfThatTerm int   // first index of the log entry of the Term. Used by leader to update nextIndex when AppendEntries RPC is rejected.
+    // refer to TA's guide.
+    ConflictTerm int
+    ConflictIndex int
 }
 
 //
@@ -299,7 +301,9 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
     rf.mu.Lock()
     defer rf.mu.Unlock()
 
-    reply.FirstIndexOfThatTerm = 0
+    // initialize the reply.
+    reply.ConflictIndex = 1
+    reply.ConflictTerm = 0
     // 1. detect obsolete information, this can filter out old leader's heartbeat.
 	if args.Term < rf.currentTerm {
 		DPrintf("peer-%d got an obsolete AppendEntries RPC..., ignore it.(args.Term = %d, rf.currentTerm = %d.)", rf.me, args.Term, rf.currentTerm)
@@ -335,7 +339,6 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 	if len(rf.log) < args.PrevLogIndex {
 		// Then the leader will learn this situation and adjust this follower's matchIndex/nextIndex in its state, and AppendEntries RPC again.
 		reply.Success = false
-        reply.FirstIndexOfThatTerm = 0
 		return
 	}
 
@@ -346,17 +349,17 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 		rf.log = rf.log[:args.PrevLogIndex-1] // log[i:j] contains i~j-1, and we don't want to reserve log entry at PrevLogIndex. So...
         rf.persist()
 		reply.Success = false
+        reply.ConflictTerm = rf.log[args.PrevLogIndex-2].Term
         // fill the reply.FirstIndexOfThatTerm
         i := 1
-        local_prev_term := rf.log[args.PrevLogIndex - 2].Term // now args.PrevLogIndex - 1 is the last index in log.
         for i = args.PrevLogIndex - 1; i >= 1; i-- {
-            if rf.log[i-1].Term == local_prev_term {
+            if rf.log[i-1].Term == reply.ConflictTerm {
                 continue
             } else {
                 break
             }
         }
-        reply.FirstIndexOfThatTerm = i + 1
+        reply.ConflictIndex = i + 1
 		return
 	}
 
@@ -506,8 +509,8 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
                 rf.mu.Lock()
                 nextIndex_copy := make([]int, len(rf.peers))
                 copy(nextIndex_copy, rf.nextIndex)
-                log_copy := make([]LogEntry, len(rf.log))
-                copy(log_copy, rf.log)
+                //log_copy := make([]LogEntry, len(rf.log))
+                //copy(log_copy, rf.log)
                 rf.mu.Unlock()
 				for {
                     // make a copy of current leader's state.
@@ -520,6 +523,8 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
                     // but I don't know why.
                     commitIndex_copy := rf.commitIndex
                     term_copy := rf.currentTerm
+                    log_copy := make([]LogEntry, len(rf.log))
+                    copy(log_copy, rf.log)
                     rf.mu.Unlock()
 
                     var args AppendEntriesArgs
@@ -532,7 +537,7 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 					if args.PrevLogIndex > 0 {
                         // FIXME: when will this case happen??
                         if args.PrevLogIndex > len(log_copy) {
-                            TDPrintf("adjust PrevLogIndex.")
+                           // TDPrintf("adjust PrevLogIndex.")
                             return
                             //args.PrevLogIndex = len(log_copy)
                         }
@@ -559,7 +564,10 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 							rf.mu.Lock()
                             // NOTE: TA's QA: nextIndex[i] should not decrease, so check and set.
                             if index >= rf.nextIndex[i] {
-                                rf.nextIndex[i] = index + 1
+                                //rf.nextIndex[i] = index + 1
+                                if rf.nextIndex[i] < index + 1 {
+                                    rf.nextIndex[i] = index + 1
+                                }
                                 // TA's QA
                                 rf.matchIndex[i] = args.PrevLogIndex + len(args.Entries)
                             }
@@ -593,15 +601,25 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
                                 return
 							} else {
                                 // NOTE: the nextIndex[i] should never < 1
-                                first_index_of_that_term := reply.FirstIndexOfThatTerm
-                                if first_index_of_that_term == 0 {
-                                    nextIndex_copy[i] -= 1
-                                    if nextIndex_copy[i] < 1 {
-                                        nextIndex_copy[i] = 1
+                                conflict_term := reply.ConflictTerm
+                                conflict_index := reply.ConflictIndex
+                                // refer to TA's guide blog.
+                                // first, try to find the first index of conflict_term in leader's log.
+                                found := false
+                                new_next_index := conflict_index  // at least 1
+                                for j := 0; j < len(rf.log); j++ {
+                                    if rf.log[j].Term == conflict_term {
+                                        found = true
+                                    } else if rf.log[j].Term > conflict_term {
+                                        if found {
+                                            new_next_index = j + 1
+                                            break
+                                        } else {
+                                            break
+                                        }
                                     }
-                                } else {
-                                    nextIndex_copy[i] = first_index_of_that_term
                                 }
+                                nextIndex_copy[i] = new_next_index
                                 rf.mu.Unlock()
                             }
 						}
