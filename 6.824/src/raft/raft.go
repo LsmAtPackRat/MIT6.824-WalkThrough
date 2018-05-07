@@ -515,21 +515,20 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 				for {
                     // make a copy of current leader's state.
                     rf.mu.Lock()
-                    if rf.state != Leader {
+                    if rf.state != Leader || rf.currentTerm != term {
                         rf.mu.Unlock()
                         return
                     }
-                    // FIXME: put the next 2 lines here can reduce RPCs significantly, if put them before the for-loop, RPCs will be much more than now.
+                    // FIXME: put the next line here can reduce RPCs significantly, if put it before the for-loop, RPCs will be much more than now.
                     // but I don't know why.
                     commitIndex_copy := rf.commitIndex
-                    term_copy := rf.currentTerm
-                    log_copy := make([]LogEntry, len(rf.log))
+                    log_copy := make([]LogEntry, len(rf.log))  // during the agreement, log could grow.
                     copy(log_copy, rf.log)
                     rf.mu.Unlock()
 
                     var args AppendEntriesArgs
 					var reply AppendEntriesReply
-					args.Term = term_copy
+					args.Term = term
                     args.LeaderId = rf.me
 					args.LeaderCommit = commitIndex_copy
 					// If last log index >= nextIndex for a follower: send AppendEntries RPC with log entries starting at nextIndex
@@ -545,10 +544,6 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 					}
 					args.Entries = make([]LogEntry, len(log_copy) - args.PrevLogIndex)
                     copy(args.Entries, log_copy[args.PrevLogIndex : len(log_copy)])
-                    // reduce RPCs...
-                    if rf.state != Leader {
-                        return
-                    }
 					ok := rf.sendAppendEntries(i, &args, &reply)
 					// handle RPC reply in the same goroutine.
 					if ok == true {
@@ -558,7 +553,7 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
                             // re-establish the assumption.
 							rf.mu.Lock()   // hold lock here is very very important!!
                             //Figure-8 and p-8~9: never commits log entries from previous terms by counting replicas.
-                            if rf.state != Leader || rf.currentTerm != term_copy {
+                            if rf.state != Leader || rf.currentTerm != term {
                                 rf.mu.Unlock()
                                 return
                             }
@@ -691,6 +686,7 @@ func Make(peers []*labrpc.ClientEnd, me int,
             // apply
             rf.mu.Lock()
             for curr_index := rf.lastApplied + 1; curr_index <= rf.commitIndex; curr_index++ {
+                // FIXME: here is a "index out of range" bug.
                 DPrintf("peer-%d apply command-%d at index-%d.", rf.me, rf.log[curr_index-1].Command.(int), curr_index)
                 var curr_command ApplyMsg
                 curr_command.CommandValid = true
