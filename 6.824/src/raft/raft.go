@@ -231,7 +231,6 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 	stepdown := false
 	// step down and convert to follower, adopt the args.Term
 	if args.Term > rf.currentTerm {
-        // if rf.state == Leader??
 		rf.currentTerm = args.Term
         old_state := rf.state
         rf.state = Follower
@@ -515,13 +514,13 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 				for {
                     // make a copy of current leader's state.
                     rf.mu.Lock()
+                    // we should not send RPC if rf.currentTerm != term, the log entry will be sent in later AE-RPCs in args.Entries.
                     if rf.state != Leader || rf.currentTerm != term {
                         rf.mu.Unlock()
                         return
                     }
-                    // FIXME: put the next line here can reduce RPCs significantly, if put it before the for-loop, RPCs will be much more than now.
-                    // but I don't know why.
-                    commitIndex_copy := rf.commitIndex
+                    // make a copy of leader's raft state.
+                    commitIndex_copy := rf.commitIndex  // during the agreement, commitIndex may increase.
                     log_copy := make([]LogEntry, len(rf.log))  // during the agreement, log could grow.
                     copy(log_copy, rf.log)
                     rf.mu.Unlock()
@@ -536,7 +535,7 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 					if args.PrevLogIndex > 0 {
                         // FIXME: when will this case happen??
                         if args.PrevLogIndex > len(log_copy) {
-                           // TDPrintf("adjust PrevLogIndex.")
+                            // TDPrintf("adjust PrevLogIndex.")
                             return
                             //args.PrevLogIndex = len(log_copy)
                         }
@@ -552,12 +551,13 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 							DPrintf("peer-%d AppendEntries success!", rf.me)
                             // re-establish the assumption.
 							rf.mu.Lock()   // hold lock here is very very important!!
-                            //Figure-8 and p-8~9: never commits log entries from previous terms by counting replicas.
+                            //Figure-8 and p-8~9: never commits log entries from previous terms by counting replicas!
                             if rf.state != Leader || rf.currentTerm != term {
                                 rf.mu.Unlock()
                                 return
                             }
                             // NOTE: TA's QA: nextIndex[i] should not decrease, so check and set.
+                            // FIXME: I don't think the next branch is useful, try to delete it later.
                             if index >= rf.nextIndex[i] {
                                 rf.nextIndex[i] = index + 1
                                 // TA's QA
@@ -614,6 +614,7 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
                                 }
                                 nextIndex_copy[i] = new_next_index
                                 rf.mu.Unlock()
+                                // now retry to send AppendEntries RPC to peer-i.
                             }
 						}
 					} else {
