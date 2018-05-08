@@ -64,7 +64,6 @@ const (
 //
 type Raft struct {
 	mu        sync.Mutex          // Lock to protect shared access to this peer's state
-    muapply   sync.Mutex          // make sure that the command will be applied to SM in index order.
 	peers     []*labrpc.ClientEnd // RPC end points of all peers
 	persister *Persister          // Object to hold this peer's persisted state
 	me        int                 // this peer's index into peers[]
