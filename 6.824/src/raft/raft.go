@@ -513,8 +513,6 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 				rf.mu.Lock()
 				nextIndex_copy := make([]int, len(rf.peers))
 				copy(nextIndex_copy, rf.nextIndex)
-				//log_copy := make([]LogEntry, len(rf.log))
-				//copy(log_copy, rf.log)
 				rf.mu.Unlock()
 				for {
 					// make a copy of current leader's state.
@@ -767,10 +765,6 @@ func Make(peers []*labrpc.ClientEnd, me int,
 						// create goroutine.
 						go func(i int) {
 							// use a copy of the state of the rf peer
-							// reduce RPCs....
-							if rf.state != Candidate || rf.currentTerm != term_copy {
-								return
-							}
 							var args RequestVoteArgs
 							args.Term = term_copy
 							args.CandidateId = rf.me
@@ -778,6 +772,13 @@ func Make(peers []*labrpc.ClientEnd, me int,
 							args.LastLogTerm = last_log_term_copy
 							var reply RequestVoteReply
 							DPrintf("peer-%d send a sendRequestVote RPC to peer-%d", rf.me, i)
+							// reduce RPCs....
+                            rf.mu.Lock()
+							if rf.state != Candidate || rf.currentTerm != term_copy {
+                                rf.mu.Unlock()
+								return
+							}
+                            rf.mu.Unlock()
 							ok := rf.sendRequestVote(i, &args, &reply)
 							// handle the RPC reply in the same goroutine.
 							if ok == true {
