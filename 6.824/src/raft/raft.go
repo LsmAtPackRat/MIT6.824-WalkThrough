@@ -64,6 +64,7 @@ const (
 //
 type Raft struct {
 	mu        sync.Mutex          // Lock to protect shared access to this peer's state
+    muapply   sync.Mutex          // make sure that the command will be applied to SM in index order.
 	peers     []*labrpc.ClientEnd // RPC end points of all peers
 	persister *Persister          // Object to hold this peer's persisted state
 	me        int                 // this peer's index into peers[]
@@ -236,7 +237,9 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 		old_state := rf.state
 		rf.state = Follower
 		if old_state == Leader {
-			rf.nonleaderCh <- true   // FIXME: will this cause a dead-lock??
+//            go func() {
+			    rf.nonleaderCh <- true   // FIXME: will this cause a dead-lock??
+//            }()
 		}
 		rf.votedFor = -1
 		rf.persist()
@@ -331,7 +334,9 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 	} else if rf.state == Leader {
 		DPrintf("peer-%d degenerate from a Leader to a Follower!!!", rf.me)
 		rf.state = Follower
-		rf.nonleaderCh <- true      // FIXME: will this cause a deadlock
+        //go func() {
+		    rf.nonleaderCh <- true   // FIXME: will it cause deadlock??
+        //}()
 	}
 
 	// consistent check
@@ -411,10 +416,10 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 		}
 		DPrintf("peer-%d Nonleader update its commitIndex from %d to %d. And it's len(rf.log) = %d.", rf.me, old_commit_index, rf.commitIndex, len(rf.log))
 
-		// apply.
-		rf.mu.Unlock()
-		rf.canApplyCh <- true
-		rf.mu.Lock()
+		// apply. Now all the commands before rf.commitIndex will not be changed, and could be applied.
+        go func() {
+		    rf.canApplyCh <- true   // FIXME: will this cause deadlock??
+        }()
 	}
 	return
 }
@@ -576,7 +581,9 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 								rf.commitIndex = index
 								rf.mu.Unlock()
 								// now the command at commitIndex is committed.
-								rf.canApplyCh <- true
+                                go func() {
+								    rf.canApplyCh <- true   // FIXME: will this cause deadlock??
+                                }()
 							} else {
 								rf.mu.Unlock()
 							}
@@ -672,9 +679,9 @@ func Make(peers []*labrpc.ClientEnd, me int,
 	// create a channel in Raft
 	rf.applyCh = applyCh
 	rf.state = Follower
-	rf.nonleaderCh = make(chan bool, 3)
-	rf.leaderCh = make(chan bool, 3)
-	rf.canApplyCh = make(chan bool, 3)
+	rf.nonleaderCh = make(chan bool, 20)
+	rf.leaderCh = make(chan bool, 20)
+	rf.canApplyCh = make(chan bool, 20)
 	// set election timeout
 	rf.voteCount = 0
 	rf.resetElectionTimeout()
@@ -693,17 +700,20 @@ func Make(peers []*labrpc.ClientEnd, me int,
 			<-rf.canApplyCh
 			// apply
 			rf.mu.Lock()
-			for curr_index := rf.lastApplied + 1; curr_index <= rf.commitIndex; curr_index++ {
-				// FIXME: here is a "index out of range" bug.
-				DPrintf("peer-%d apply command-%d at index-%d.", rf.me, rf.log[curr_index-1].Command.(int), curr_index)
+            commitIndex_copy := rf.commitIndex
+            lastApplied_copy := rf.lastApplied
+            log_copy := make([]LogEntry, len(rf.log))
+            copy(log_copy, rf.log)
+            rf.mu.Unlock()
+			for curr_index := lastApplied_copy + 1; curr_index <= commitIndex_copy; curr_index++ {
+				DPrintf("peer-%d apply command-%d at index-%d.", rf.me, log_copy[curr_index-1].Command.(int), curr_index)
 				var curr_command ApplyMsg
 				curr_command.CommandValid = true
-				curr_command.Command = rf.log[curr_index-1].Command
+				curr_command.Command = log_copy[curr_index-1].Command
 				curr_command.CommandIndex = curr_index
 				rf.applyCh <- curr_command
 				rf.lastApplied = curr_index
 			}
-			rf.mu.Unlock()
 		}
 	}()
 
@@ -831,14 +841,16 @@ func (rf *Raft) convertToLeader() {
 	}
 	rf.repCount = make(map[int]int)
 	DPrintf("peer-%d Leader's log array's length = %d.", rf.me, len(rf.log))
-	rf.leaderCh <- true    // FIXME : will this cause a deadlock??
+    //go func() {
+	    rf.leaderCh <- true
+    //}()
 }
 
 // set the electionTimeoutStartTime to now.
 func (rf *Raft) resetElectionTimeout() {
 	rf.electionTimeoutStartTime = time.Now()
 	// randomize election timeout, 300~400ms
-	rf.electionTimeoutInterval = time.Duration(time.Millisecond * time.Duration(300+rand.Intn(100)))
+	rf.electionTimeoutInterval = time.Duration(time.Millisecond * time.Duration(500+rand.Intn(300)))
 }
 
 func (rf *Raft) electionTimeout() bool {
