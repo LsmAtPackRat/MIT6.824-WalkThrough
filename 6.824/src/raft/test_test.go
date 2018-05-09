@@ -20,7 +20,7 @@ import "sync"
 const RaftElectionTimeout = 1000 * time.Millisecond
 
 func TestInitialElection2A(t *testing.T) {
-    ResetStatistics()
+	ResetStatistics()
 	servers := 3
 	cfg := make_config(t, servers, false)
 	defer cfg.cleanup()
@@ -46,7 +46,7 @@ func TestInitialElection2A(t *testing.T) {
 }
 
 func TestReElection2A(t *testing.T) {
-    ResetStatistics()
+	ResetStatistics()
 	servers := 3
 	cfg := make_config(t, servers, false)
 	defer cfg.cleanup()
@@ -83,8 +83,8 @@ func TestReElection2A(t *testing.T) {
 }
 
 func TestBasicAgree2B(t *testing.T) {
-    ResetStatistics()
-    DPrintf("-------------TestBasicAgree2B-------------------")
+	ResetStatistics()
+	DPrintf("-------------TestBasicAgree2B-------------------")
 	servers := 5
 	cfg := make_config(t, servers, false)
 	defer cfg.cleanup()
@@ -95,11 +95,11 @@ func TestBasicAgree2B(t *testing.T) {
 	for index := 1; index < iters+1; index++ {
 		nd, _ := cfg.nCommitted(index)
 		if nd > 0 {
-            // cfg.one() will call Start() to append an entry and begin agreement, so.
+			// cfg.one() will call Start() to append an entry and begin agreement, so.
 			t.Fatalf("some have committed before Start()")
 		}
 
-		xindex := cfg.one(index*100, servers, false)  // start agreement.
+		xindex := cfg.one(index*100, servers, false) // start agreement.
 		if xindex != index {
 			t.Fatalf("got index %v but expected %v", xindex, index)
 		}
@@ -109,8 +109,8 @@ func TestBasicAgree2B(t *testing.T) {
 }
 
 func TestFailAgree2B(t *testing.T) {
-    ResetStatistics()
-    DPrintf("-------------TestFailAgree2B-------------------")
+	ResetStatistics()
+	DPrintf("-------------TestFailAgree2B-------------------")
 	servers := 3
 	cfg := make_config(t, servers, false)
 	defer cfg.cleanup()
@@ -121,7 +121,7 @@ func TestFailAgree2B(t *testing.T) {
 
 	// follower network disconnection
 	leader := cfg.checkOneLeader()
-    DPrintf("--------------Disconnect server-%d!-------------", (leader+1)%servers)
+	DPrintf("--------------Disconnect server-%d!-------------", (leader+1)%servers)
 	cfg.disconnect((leader + 1) % servers)
 
 	// agree despite one disconnected server?
@@ -132,7 +132,7 @@ func TestFailAgree2B(t *testing.T) {
 	cfg.one(105, servers-1, false)
 
 	// re-connect
-    DPrintf("--------------Reconnect server-%d!-------------", (leader+1)%servers)
+	DPrintf("--------------Reconnect server-%d!-------------", (leader+1)%servers)
 	cfg.connect((leader + 1) % servers)
 
 	// agree with full set of servers?
@@ -144,8 +144,8 @@ func TestFailAgree2B(t *testing.T) {
 }
 
 func TestFailNoAgree2B(t *testing.T) {
-    ResetStatistics()
-    DPrintf("-------------TestFailNoAgree2B-------------------")
+	ResetStatistics()
+	DPrintf("-------------TestFailNoAgree2B-------------------")
 	servers := 5
 	cfg := make_config(t, servers, false)
 	defer cfg.cleanup()
@@ -156,7 +156,7 @@ func TestFailNoAgree2B(t *testing.T) {
 
 	// 3 of 5 followers disconnect
 	leader := cfg.checkOneLeader()
-    DPrintf("--------------Disconnect 3 servers: server-%d, server-%d, server-%d!-------------", (leader+1)%servers, (leader+2)%servers, (leader+3)%servers)
+	DPrintf("--------------Disconnect 3 servers: server-%d, server-%d, server-%d!-------------", (leader+1)%servers, (leader+2)%servers, (leader+3)%servers)
 	cfg.disconnect((leader + 1) % servers)
 	cfg.disconnect((leader + 2) % servers)
 	cfg.disconnect((leader + 3) % servers)
@@ -172,12 +172,12 @@ func TestFailNoAgree2B(t *testing.T) {
 	time.Sleep(2 * RaftElectionTimeout)
 
 	n, _ := cfg.nCommitted(index)
-	if n > 0 {  // because now there is no majority, so the command 20 should not be committed. so n must be 0.
+	if n > 0 { // because now there is no majority, so the command 20 should not be committed. so n must be 0.
 		t.Fatalf("%v committed but no majority", n)
 	}
 
 	// repair
-    DPrintf("--------------Reconnect 3 servers: server-%d, server-%d, server-%d!-------------", (leader+1)%servers, (leader+2)%servers, (leader+3)%servers)
+	DPrintf("--------------Reconnect 3 servers: server-%d, server-%d, server-%d!-------------", (leader+1)%servers, (leader+2)%servers, (leader+3)%servers)
 	cfg.connect((leader + 1) % servers)
 	cfg.connect((leader + 2) % servers)
 	cfg.connect((leader + 3) % servers)
@@ -190,20 +190,20 @@ func TestFailNoAgree2B(t *testing.T) {
 		t.Fatalf("leader2 rejected Start()")
 	}
 
-    // 2 or 3 will be ok. because 10 is the index 1, 
-    // 20 may be index 2(if new leader has 20, it will continue to replicate it) or dropped, so 30 will be index 2/3.
+	// 2 or 3 will be ok. because 10 is the index 1,
+	// 20 may be index 2(if new leader has 20, it will continue to replicate it) or dropped, so 30 will be index 2/3.
 	if index2 < 2 || index2 > 3 {
 		t.Fatalf("unexpected index %v", index2)
 	}
 
-	cfg.one(1000, servers, true)   // 1000 will be committed.
+	cfg.one(1000, servers, true) // 1000 will be committed.
 
 	cfg.end()
 }
 
 func TestConcurrentStarts2B(t *testing.T) {
-    ResetStatistics()
-    DPrintf("-------------TestConcurrentStarts2B-------------------")
+	ResetStatistics()
+	DPrintf("-------------TestConcurrentStarts2B-------------------")
 	servers := 3
 	cfg := make_config(t, servers, false)
 	defer cfg.cleanup()
@@ -305,8 +305,8 @@ loop:
 }
 
 func TestRejoin2B(t *testing.T) {
-    ResetStatistics()
-    DPrintf("-------------TestRejoin2B-------------------")
+	ResetStatistics()
+	DPrintf("-------------TestRejoin2B-------------------")
 	servers := 3
 	cfg := make_config(t, servers, false)
 	defer cfg.cleanup()
@@ -317,7 +317,7 @@ func TestRejoin2B(t *testing.T) {
 
 	// leader network failure
 	leader1 := cfg.checkOneLeader()
-    DPrintf("------------Disconnect 1st leader-%d--------------------", leader1)
+	DPrintf("------------Disconnect 1st leader-%d--------------------", leader1)
 	cfg.disconnect(leader1)
 
 	// make old leader try to agree on some entries
@@ -330,17 +330,17 @@ func TestRejoin2B(t *testing.T) {
 
 	// new leader network failure
 	leader2 := cfg.checkOneLeader()
-    DPrintf("------------Disconnect 2nd leader-%d--------------------", leader2)
+	DPrintf("------------Disconnect 2nd leader-%d--------------------", leader2)
 	cfg.disconnect(leader2)
 
 	// old leader connected again
-    DPrintf("------------Reconnect 1st leader-%d--------------------", leader1)
+	DPrintf("------------Reconnect 1st leader-%d--------------------", leader1)
 	cfg.connect(leader1)
 
 	cfg.one(104, 2, true)
 
 	// all together now
-    DPrintf("------------Reconnect 2nd leader-%d--------------------", leader2)
+	DPrintf("------------Reconnect 2nd leader-%d--------------------", leader2)
 	cfg.connect(leader2)
 
 	cfg.one(105, servers, true)
@@ -349,8 +349,8 @@ func TestRejoin2B(t *testing.T) {
 }
 
 func TestBackup2B(t *testing.T) {
-    ResetStatistics()
-    DPrintf("-------------TestBackup2B-------------------")
+	ResetStatistics()
+	DPrintf("-------------TestBackup2B-------------------")
 	servers := 5
 	cfg := make_config(t, servers, false)
 	defer cfg.cleanup()
@@ -361,36 +361,36 @@ func TestBackup2B(t *testing.T) {
 
 	// put leader and one follower in a partition
 	leader1 := cfg.checkOneLeader()
-    DPrintf("--------------Disconnect server-%d, server-%d, server-%d-----------------", (leader1+2)%servers, (leader1+3)%servers, (leader1+4)%servers)
+	DPrintf("--------------Disconnect server-%d, server-%d, server-%d-----------------", (leader1+2)%servers, (leader1+3)%servers, (leader1+4)%servers)
 	cfg.disconnect((leader1 + 2) % servers)
 	cfg.disconnect((leader1 + 3) % servers)
 	cfg.disconnect((leader1 + 4) % servers)
 
 	// submit lots of commands that won't commit
-    DPrintf("--------------Submit lots of commands that won't commit---------------")
+	DPrintf("--------------Submit lots of commands that won't commit---------------")
 	for i := 0; i < 50; i++ {
 		cfg.rafts[leader1].Start(rand.Int())
 	}
-    DPrintf("--------------Finish submit---------------")
+	DPrintf("--------------Finish submit---------------")
 
 	time.Sleep(RaftElectionTimeout / 2)
 
-    DPrintf("--------------Disconnect server-%d, server-%d-----------------", (leader1+0)%servers, (leader1+1)%servers)
+	DPrintf("--------------Disconnect server-%d, server-%d-----------------", (leader1+0)%servers, (leader1+1)%servers)
 	cfg.disconnect((leader1 + 0) % servers)
 	cfg.disconnect((leader1 + 1) % servers)
 
 	// allow other partition to recover
-    DPrintf("--------------Reconnect server-%d, server-%d, server-%d-----------------", (leader1+2)%servers, (leader1+3)%servers, (leader1+4)%servers)
+	DPrintf("--------------Reconnect server-%d, server-%d, server-%d-----------------", (leader1+2)%servers, (leader1+3)%servers, (leader1+4)%servers)
 	cfg.connect((leader1 + 2) % servers)
 	cfg.connect((leader1 + 3) % servers)
 	cfg.connect((leader1 + 4) % servers)
 
 	// lots of successful commands to new group.
-    DPrintf("--------------Submit lots of successful commands to new group------------")
+	DPrintf("--------------Submit lots of successful commands to new group------------")
 	for i := 0; i < 50; i++ {
 		cfg.one(rand.Int(), 3, true)
 	}
-    DPrintf("--------------Finish submit lots of successful commands to new group---------------")
+	DPrintf("--------------Finish submit lots of successful commands to new group---------------")
 
 	// now another partitioned leader and one follower
 	leader2 := cfg.checkOneLeader()
@@ -399,50 +399,50 @@ func TestBackup2B(t *testing.T) {
 		other = (leader2 + 1) % servers
 	}
 
-    DPrintf("-------------Disconnect other-%d-----------------", other)
+	DPrintf("-------------Disconnect other-%d-----------------", other)
 	cfg.disconnect(other)
 
 	// lots more commands that won't commit
-    DPrintf("--------------Submit lots more commands that won't commit------------")
+	DPrintf("--------------Submit lots more commands that won't commit------------")
 	for i := 0; i < 50; i++ {
 		cfg.rafts[leader2].Start(rand.Int())
 	}
-    DPrintf("--------------Finish submit lots more commands that won't commit------------")
+	DPrintf("--------------Finish submit lots more commands that won't commit------------")
 
 	time.Sleep(RaftElectionTimeout / 2)
 
 	// bring original leader back to life,
-    DPrintf("----------------Bring original leader back to life------------------")
-    DPrintf("----------------Disconnect all the servers--------------------------")
+	DPrintf("----------------Bring original leader back to life------------------")
+	DPrintf("----------------Disconnect all the servers--------------------------")
 	for i := 0; i < servers; i++ {
 		cfg.disconnect(i)
 	}
-    DPrintf("----------------Reconnect server-%d, server-%d, other-%d----------------", (leader1+0)%servers, (leader1+1)%servers, other)
+	DPrintf("----------------Reconnect server-%d, server-%d, other-%d----------------", (leader1+0)%servers, (leader1+1)%servers, other)
 	cfg.connect((leader1 + 0) % servers)
 	cfg.connect((leader1 + 1) % servers)
 	cfg.connect(other)
 
 	// lots of successful commands to new group.
-    DPrintf("--------------Submit lots of successful commands to new group------------")
+	DPrintf("--------------Submit lots of successful commands to new group------------")
 	for i := 0; i < 50; i++ {
 		cfg.one(rand.Int(), 3, true)
 	}
-    DPrintf("--------------Finish submit lots of successful commands to new group---------------")
+	DPrintf("--------------Finish submit lots of successful commands to new group---------------")
 
 	// now everyone
-    DPrintf("---------------Connect everyone----------------------------")
+	DPrintf("---------------Connect everyone----------------------------")
 	for i := 0; i < servers; i++ {
 		cfg.connect(i)
 	}
-    DPrintf("---------------final one()-------------------------")
+	DPrintf("---------------final one()-------------------------")
 	cfg.one(rand.Int(), servers, true)
 
 	cfg.end()
 }
 
 func TestCount2B(t *testing.T) {
-    ResetStatistics()
-    DPrintf("-------------TestCount2B-------------------")
+	ResetStatistics()
+	DPrintf("-------------TestCount2B-------------------")
 	servers := 3
 	cfg := make_config(t, servers, false)
 	defer cfg.cleanup()

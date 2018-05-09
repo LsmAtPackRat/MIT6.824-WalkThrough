@@ -166,14 +166,14 @@ func (cfg *config) start1(i int) {
 	// listen to messages from Raft indicating newly committed messages.
 	applyCh := make(chan ApplyMsg)
 	go func() {
-        // infinitely read from applyCh.
+		// infinitely read from applyCh.
 		for m := range applyCh {
 			err_msg := ""
 			if m.CommandValid == false {
 				// ignore other types of ApplyMsg
 			} else if v, ok := (m.Command).(int); ok {
 				cfg.mu.Lock()
-                // check other raft's committed(and then applied) log entry to see whether conflict!
+				// check other raft's committed(and then applied) log entry to see whether conflict!
 				for j := 0; j < len(cfg.logs); j++ {
 					if old, oldok := cfg.logs[j][m.CommandIndex]; oldok && old != v {
 						// some server has already committed a different value for this entry!
@@ -182,13 +182,13 @@ func (cfg *config) start1(i int) {
 					}
 				}
 				_, prevok := cfg.logs[i][m.CommandIndex-1]
-				cfg.logs[i][m.CommandIndex] = v   // okay, save it.
+				cfg.logs[i][m.CommandIndex] = v // okay, save it.
 				if m.CommandIndex > cfg.maxIndex {
 					cfg.maxIndex = m.CommandIndex
 				}
 				cfg.mu.Unlock()
 
-                // this branch check the apply order.
+				// this branch check the apply order.
 				if m.CommandIndex > 1 && prevok == false {
 					err_msg = fmt.Sprintf("server %v apply out of order %v", i, m.CommandIndex)
 				}
@@ -368,7 +368,7 @@ func (cfg *config) nCommitted(index int) (int, interface{}) {
 		}
 
 		cfg.mu.Lock()
-        // I think cfg.logs[i][index] is the log that applied to the cfg.rafts[i].applyCh, then save in cfg.logs[i][index]
+		// I think cfg.logs[i][index] is the log that applied to the cfg.rafts[i].applyCh, then save in cfg.logs[i][index]
 		cmd1, ok := cfg.logs[i][index]
 		cfg.mu.Unlock()
 
@@ -391,7 +391,7 @@ func (cfg *config) wait(index int, n int, startTerm int) interface{} {
 	for iters := 0; iters < 30; iters++ {
 		nd, _ := cfg.nCommitted(index)
 		if nd >= n {
-			break   // success, wait() will return the cmd.
+			break // success, wait() will return the cmd.
 		}
 		time.Sleep(to)
 		if to < time.Second {
@@ -408,7 +408,7 @@ func (cfg *config) wait(index int, n int, startTerm int) interface{} {
 		}
 	}
 	nd, cmd := cfg.nCommitted(index)
-	if nd < n {  // haven't reach the goal(n) in a period of time.
+	if nd < n { // haven't reach the goal(n) in a period of time.
 		cfg.t.Fatalf("only %d decided for index %d; wanted %d\n",
 			nd, index, n)
 	}
@@ -443,14 +443,14 @@ func (cfg *config) one(cmd int, expectedServers int, retry bool) int {
 			cfg.mu.Unlock()
 			if rf != nil {
 				index1, _, ok := rf.Start(cmd)
-				if ok {   // now rf thinks it is the leader(but it may not be the real leader).
+				if ok { // now rf thinks it is the leader(but it may not be the real leader).
 					index = index1
 					break
 				}
 			}
 		}
 
-		if index != -1 {  // once a rf thinks it is the leader, the index will not be -1.
+		if index != -1 { // once a rf thinks it is the leader, the index will not be -1.
 			// somebody claimed to be the leader and to have
 			// submitted our command; wait a while for agreement.
 			t1 := time.Now()
@@ -466,12 +466,12 @@ func (cfg *config) one(cmd int, expectedServers int, retry bool) int {
 				time.Sleep(20 * time.Millisecond)
 			}
 			if retry == false {
-                DPrintf("one(%v) failed to reach agreement at index: %d.", cmd, index)
+				DPrintf("one(%v) failed to reach agreement at index: %d.", cmd, index)
 				cfg.t.Fatalf("one(%v) failed to reach agreement", cmd)
 			}
 		} else {
-            // there isn't a leader now.
-            //fmt.Printf("one(%v) haven't reached agreement, wait 50ms!\n", cmd)
+			// there isn't a leader now.
+			//fmt.Printf("one(%v) haven't reached agreement, wait 50ms!\n", cmd)
 			time.Sleep(50 * time.Millisecond)
 		}
 	}
