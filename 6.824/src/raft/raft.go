@@ -303,6 +303,7 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 	// initialize the reply.
 	reply.ConflictIndex = 1
 	reply.ConflictTerm = 0
+
 	// 1. detect obsolete information, this can filter out old leader's heartbeat.
 	if args.Term < rf.currentTerm {
 		DPrintf("peer-%d got an obsolete AppendEntries RPC..., ignore it.(args.Term = %d, rf.currentTerm = %d.)", rf.me, args.Term, rf.currentTerm)
@@ -387,22 +388,22 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 		rf.log = append(rf.log, args.Entries[i:]...)
 		rf.persist()
 	} else {
-		// there some elements in entries but not in rf.log
+		// there are some elements in entries but not in rf.log
 		if pos == len(rf.log) && i < len(args.Entries) {
 			rf.log = rf.log[:pos]
 			rf.log = append(rf.log, args.Entries[i:]...)
 			rf.persist()
 		}
 	}
-	// now the log is consistent with the leader's. from 0 ~ PrevLogIndex + len(Entries). but whether the subsequents are consistent is unknown.
+	// now the log is consistent with the leader's. from 0 ~ PrevLogIndex + len(Entries). but whether the post-sequences are consistent is unknown.
 	reply.Success = true
 	// update the rf.commitIndex. If leaderCommit > commitIndex, set commitIndex = min(leaderCommit, index of last new entry)
-	if rf.commitIndex < args.LeaderCommit {
+	/*if rf.commitIndex < args.LeaderCommit {
 		// we need to update commitIndex locally. Explictly update the old entries. See my note upon Figure8.
 		// This step will exclude some candidates to be elected as the new leader!
 		// commit!
 		old_commit_index := rf.commitIndex
-
+        // FIXME: commitIndex = min(leaderCommit, index of last new entry)
 		if args.LeaderCommit <= len(rf.log) {
 			rf.commitIndex = args.LeaderCommit
 		} else {
@@ -414,7 +415,23 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 		go func() {
 			rf.canApplyCh <- true
 		}()
-	}
+	}*/
+
+    last_index := args.PrevLogIndex + len(args.Entries)
+    if args.LeaderCommit > rf.commitIndex {
+		old_commit_index := rf.commitIndex
+		if args.LeaderCommit <= last_index {
+			rf.commitIndex = args.LeaderCommit
+		} else {
+			rf.commitIndex = last_index
+		}
+		DPrintf("peer-%d Nonleader update its commitIndex from %d to %d. And it's len(rf.log) = %d.", rf.me, old_commit_index, rf.commitIndex, len(rf.log))
+
+		// apply. Now all the commands before rf.commitIndex will not be changed, and could be applied.
+		go func() {
+			rf.canApplyCh <- true
+        }()
+    }
 	return
 }
 
