@@ -17,11 +17,19 @@ func DPrintf(format string, a ...interface{}) (n int, err error) {
 	return
 }
 
+type CommandType int
+
+const (
+    CmdPut CommandType = iota
+    CmdAppend
+    CmdGet
+)
 
 type Op struct {
 	// Your definitions here.
 	// Field names must start with capital letters,
 	// otherwise RPC will break.
+    Command CommandType    // actually int type.
 }
 
 type KVServer struct {
@@ -35,11 +43,28 @@ type KVServer struct {
 	// Your definitions here.
 }
 
-
+// Get RPC handler. You should enter an Op in the Raft log using Start().
 func (kv *KVServer) Get(args *GetArgs, reply *GetReply) {
 	// Your code here.
+    key := args.Key
+    var op Op
+    op.Command = CmdGet
+    index, term, isLeader := kv.rf.Start(op.Command)   // start an agreement.
+    // wait until the command appears on the applyCh, then reply this RPC.
+    if isLeader {
+        reply.WrongLeader = false
+        <-kv.rf.applyCh  // appear on the applyCh??
+        reply.Err = OK
+        reply.Value = ??
+    } else {
+        reply.WrongLeader = true
+        // reply.Err & reply.Value will not need to be filled.
+        return
+    }
 }
 
+
+// PutAppend RPC handler. You should enter an Op in the Raft log using Start().
 func (kv *KVServer) PutAppend(args *PutAppendArgs, reply *PutAppendReply) {
 	// Your code here.
 }
@@ -80,9 +105,13 @@ func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persiste
 	// You may need initialization code here.
 
 	kv.applyCh = make(chan raft.ApplyMsg)
-	kv.rf = raft.Make(servers, me, persister, kv.applyCh)
+	kv.rf = raft.Make(servers, me, persister, kv.applyCh)  // this kv.rf will be associated with other kv.rf peers.
 
 	// You may need initialization code here.
+    // start a long-running goroutine to continously read from applyCh.
+    go func() {
+
+    }()
 
 	return kv
 }

@@ -37,8 +37,20 @@ func MakeClerk(servers []*labrpc.ClientEnd) *Clerk {
 // arguments. and reply must be passed as a pointer.
 //
 func (ck *Clerk) Get(key string) string {
-
 	// You will have to modify this function.
+    var args GetArgs
+    args.Key = key
+    for i := 0; i < len(ck.servers); i++ {
+        var reply GetReply
+        ok := ck.servers[i].Call("KVServer.Get", &args, &reply)
+        if ok {
+            if !reply.WrongLeader && reply.Err == OK {
+                return reply.Value
+            }
+        }
+        // re-try by sending to a different kvserver.
+    }
+
 	return ""
 }
 
@@ -54,6 +66,20 @@ func (ck *Clerk) Get(key string) string {
 //
 func (ck *Clerk) PutAppend(key string, value string, op string) {
 	// You will have to modify this function.
+    var args PutAppendArgs
+    args.Key = key
+    args.Value = value
+    args.Op = op
+    for i := 0; i < len(ck.servers); i++ {
+        var reply PutAppendReply
+        ok := ck.servers[i].Call("KVServer.PutAppend", &args, &reply)
+        if ok {
+            if !reply.WrongLeader && reply.Err == OK {
+                break
+            }
+        }
+        // re-try by sending to a different kvserver.
+    }
 }
 
 func (ck *Clerk) Put(key string, value string) {

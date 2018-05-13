@@ -480,7 +480,6 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 	isLeader := true
 
 	// Your code here (2B).
-	//term, isLeader = rf.GetState()
 	rf.mu.Lock()
 	term = rf.currentTerm
 	if rf.state != Leader {
