@@ -29,7 +29,9 @@ type Op struct {
 	// Your definitions here.
 	// Field names must start with capital letters,
 	// otherwise RPC will break.
-    Command CommandType    // actually int type.
+    Type CommandType    // actually int type.
+    Key   string
+    Value string
 }
 
 type KVServer struct {
@@ -41,26 +43,38 @@ type KVServer struct {
 	maxraftstate int // snapshot if log grows this big
 
 	// Your definitions here.
+    // lsm : K/V mapping
+    kvmappings map[string]string
+    // lsm :
+    getCh chan GetReply
 }
 
 // Get RPC handler. You should enter an Op in the Raft log using Start().
 func (kv *KVServer) Get(args *GetArgs, reply *GetReply) {
 	// Your code here.
     key := args.Key
+    kv.mu.Lock()
+    // construct an Op to passed to kv.rf.Start()
     var op Op
-    op.Command = CmdGet
-    index, term, isLeader := kv.rf.Start(op.Command)   // start an agreement.
-    // wait until the command appears on the applyCh, then reply this RPC.
+    op.Type = CmdGet
+    op.Key = key
+    index, term, isLeader := kv.rf.Start(op)   // start an agreement.
+
     if isLeader {
         reply.WrongLeader = false
-        <-kv.rf.applyCh  // appear on the applyCh??
-        reply.Err = OK
-        reply.Value = ??
     } else {
         reply.WrongLeader = true
         // reply.Err & reply.Value will not need to be filled.
         return
     }
+
+    // we need to update some data structures so that apply knows to poke us later.
+    kv.getCh = make(chan GetReply)
+    kv.mu.Unlock()
+
+    // wait for apply() to poke us.
+    reply <- getCh
+    return
 }
 
 
@@ -110,8 +124,52 @@ func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persiste
 	// You may need initialization code here.
     // start a long-running goroutine to continously read from applyCh.
     go func() {
-
+        // read command from the kv.applyCh indefinately.
+        for m := range kv.applyCh {
+            // m is an ApplyMsg
+            err_msg := ""
+            if m.CommandValid == false {
+                // ignore other types of ApplyMsg
+            } else {
+                // cmd is the type interface{}
+                command := m.Command
+                command_index := m.CommandIndex
+                // apply this cmd.
+                kv.apply(command_index, command)
+            }
+        }
     }()
 
 	return kv
 }
+
+// apply the cmd to the service.
+func (kv *KVServer) apply(command_index int, command interface{}) {
+    kv.mu.Lock()
+
+    // cmd contains all the data to execute a command.
+    op := (command).(Op)
+    cmd_type := op.Type
+
+    switch cmd_type {
+    case CmdGet:
+        // do the get.
+        value, ok := kv.kvmappings[op.Key]
+        // see who was listening for this index.
+        var reply GetReply
+        reply.Value = 
+        reply.Err = 
+        reply.WrongLeader = 
+        // poke them all with the result of the operation. 
+        kv.getCh <- reply
+    case CmdPut:
+    case CmdAppend:
+    }
+
+    kv.mu.Unlock()
+}
+
+
+
+
+

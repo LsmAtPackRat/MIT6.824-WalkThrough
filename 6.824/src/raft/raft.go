@@ -40,7 +40,7 @@ import "labgob"
 //
 type ApplyMsg struct {
 	CommandValid bool
-	Command      interface{}
+	Command      interface{}   // Command contains all the things to execute the command. not just a int.
 	CommandIndex int
 }
 
@@ -491,6 +491,7 @@ func (rf *Raft) sendAppendEntries(server int, args *AppendEntriesArgs, reply *Ap
 // the leader.
 //
 func (rf *Raft) Start(command interface{}) (int, int, bool) {
+    // NOTE: command is an object of type Op struct in kvraft/server.go
 	DPrintf("peer-%d ----------------------Start()-----------------------", rf.me)
 	index := -1
 	term := -1
