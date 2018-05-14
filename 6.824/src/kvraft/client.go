@@ -3,6 +3,7 @@ package raftkv
 import "labrpc"
 import "crypto/rand"
 import "math/big"
+//import "raft"
 
 
 type Clerk struct {
@@ -37,18 +38,23 @@ func MakeClerk(servers []*labrpc.ClientEnd) *Clerk {
 // arguments. and reply must be passed as a pointer.
 //
 func (ck *Clerk) Get(key string) string {
+    DPrintf("client.go - Get(" + key + ")")
 	// You will have to modify this function.
     var args GetArgs
     args.Key = key
-    for i := 0; i < len(ck.servers); i++ {
+    i := 0
+    for {
         var reply GetReply
         ok := ck.servers[i].Call("KVServer.Get", &args, &reply)
         if ok {
             if !reply.WrongLeader && reply.Err == OK {
+                DPrintf("client.go - Get success! Get a " + reply.Value)
                 return reply.Value
             }
         }
         // re-try by sending to a different kvserver.
+        i = (i + 1) % len(ck.servers)
+        DPrintf("client.go - Get retry!")
     }
 
 	return ""
@@ -65,20 +71,26 @@ func (ck *Clerk) Get(key string) string {
 // arguments. and reply must be passed as a pointer.
 //
 func (ck *Clerk) PutAppend(key string, value string, op string) {
+    DPrintf("client.go - PutAppend(" + key + ", " + value + ", " + op + ")")
 	// You will have to modify this function.
     var args PutAppendArgs
     args.Key = key
     args.Value = value
     args.Op = op
-    for i := 0; i < len(ck.servers); i++ {
+    i := 0
+    for {
         var reply PutAppendReply
         ok := ck.servers[i].Call("KVServer.PutAppend", &args, &reply)
         if ok {
             if !reply.WrongLeader && reply.Err == OK {
+                DPrintf("client.go - PutAppend success!")
                 break
             }
         }
+        DPrintf("client.go - PutAppend fail! retry by sending to a different kvserver.")
         // re-try by sending to a different kvserver.
+        i = (i + 1) % len(ck.servers)
+        DPrintf("client.go - PutAppend retry!")
     }
 }
 

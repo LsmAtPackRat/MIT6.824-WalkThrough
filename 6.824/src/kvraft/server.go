@@ -8,7 +8,7 @@ import (
 	"sync"
 )
 
-const Debug = 0
+const Debug = 1
 
 func DPrintf(format string, a ...interface{}) (n int, err error) {
 	if Debug > 0 {
@@ -43,44 +43,74 @@ type KVServer struct {
 	maxraftstate int // snapshot if log grows this big
 
 	// Your definitions here.
-    // lsm : K/V mapping
     kvmappings map[string]string
-    // lsm :
     getCh chan GetReply
+    putAppendCh chan PutAppendReply
 }
 
 // Get RPC handler. You should enter an Op in the Raft log using Start().
 func (kv *KVServer) Get(args *GetArgs, reply *GetReply) {
-	// Your code here.
+	DPrintf("server.go - Get(" + args.Key + ")")
+    // Your code here.
     key := args.Key
     kv.mu.Lock()
     // construct an Op to passed to kv.rf.Start()
     var op Op
     op.Type = CmdGet
     op.Key = key
-    index, term, isLeader := kv.rf.Start(op)   // start an agreement.
-
-    if isLeader {
-        reply.WrongLeader = false
-    } else {
+    _, _, isLeader := kv.rf.Start(op)   // start an agreement.
+    if !isLeader {
         reply.WrongLeader = true
-        // reply.Err & reply.Value will not need to be filled.
+        kv.mu.Unlock()
         return
     }
 
     // we need to update some data structures so that apply knows to poke us later.
-    kv.getCh = make(chan GetReply)
     kv.mu.Unlock()
 
     // wait for apply() to poke us.
-    reply <- getCh
+    var temp_reply GetReply
+    temp_reply = <-kv.getCh
+    reply.WrongLeader = false
+    reply.Err = temp_reply.Err
+    reply.Value = temp_reply.Value
     return
 }
 
 
 // PutAppend RPC handler. You should enter an Op in the Raft log using Start().
 func (kv *KVServer) PutAppend(args *PutAppendArgs, reply *PutAppendReply) {
+    DPrintf("server.go - server-%d PutAppend(" + args.Key + ", " + args.Value + ", " + args.Op + ")", kv.me)
 	// Your code here.
+    if args.Op == "Put" || args.Op == "Append" {
+        kv.mu.Lock()
+        key := args.Key
+        value := args.Value
+        var op Op
+        op.Key = key
+        op.Value = value
+        if args.Op == "Put" {
+            op.Type = CmdPut
+        } else {
+            op.Type = CmdAppend
+        }
+        _, _, isLeader := kv.rf.Start(op)
+        if !isLeader {
+            reply.WrongLeader = true
+            kv.mu.Unlock()
+            return
+        }
+        // we need to update some data structures so that apply knows to poke us later.
+        kv.mu.Unlock()
+
+        // wait for apply() to poke us.
+        var temp_reply PutAppendReply
+        temp_reply = <-kv.putAppendCh
+        reply.WrongLeader = false
+        reply.Err = temp_reply.Err
+    } else {
+        log.Fatal("PutAppend() get a wrong args!")
+    }
 }
 
 //
@@ -108,6 +138,7 @@ func (kv *KVServer) Kill() {
 // for any long-running work.
 //
 func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persister, maxraftstate int) *KVServer {
+    DPrintf("server.go - StartKVServer()!")
 	// call labgob.Register on structures you want
 	// Go's RPC library to marshall/unmarshall.
 	labgob.Register(Op{})
@@ -117,6 +148,9 @@ func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persiste
 	kv.maxraftstate = maxraftstate
 
 	// You may need initialization code here.
+    kv.kvmappings = make(map[string]string)
+    kv.getCh = make(chan GetReply)
+    kv.putAppendCh = make(chan PutAppendReply)
 
 	kv.applyCh = make(chan raft.ApplyMsg)
 	kv.rf = raft.Make(servers, me, persister, kv.applyCh)  // this kv.rf will be associated with other kv.rf peers.
@@ -127,9 +161,9 @@ func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persiste
         // read command from the kv.applyCh indefinately.
         for m := range kv.applyCh {
             // m is an ApplyMsg
-            err_msg := ""
             if m.CommandValid == false {
                 // ignore other types of ApplyMsg
+                DPrintf("server.go - ignore other types of ApplyMsg!")
             } else {
                 // cmd is the type interface{}
                 command := m.Command
@@ -150,6 +184,7 @@ func (kv *KVServer) apply(command_index int, command interface{}) {
     // cmd contains all the data to execute a command.
     op := (command).(Op)
     cmd_type := op.Type
+    DPrintf("server.go - server-%d apply command %d", kv.me, cmd_type)
 
     switch cmd_type {
     case CmdGet:
@@ -157,13 +192,31 @@ func (kv *KVServer) apply(command_index int, command interface{}) {
         value, ok := kv.kvmappings[op.Key]
         // see who was listening for this index.
         var reply GetReply
-        reply.Value = 
-        reply.Err = 
-        reply.WrongLeader = 
+        if ok {
+            reply.Value = value
+            reply.Err = OK
+        } else {
+            // the key is not exist!
+            reply.Err = ErrNoKey
+        }
         // poke them all with the result of the operation. 
         kv.getCh <- reply
     case CmdPut:
+        // replace the value for a particular key
+        var reply PutAppendReply
+        kv.kvmappings[op.Key] = op.Value
+        reply.Err = OK
+        kv.putAppendCh <- reply
     case CmdAppend:
+        value, ok := kv.kvmappings[op.Key]
+        var reply PutAppendReply
+        if ok {
+            kv.kvmappings[op.Key] = value + op.Value
+        } else {
+            kv.kvmappings[op.Key] = op.Value
+        }
+        reply.Err = OK
+        kv.putAppendCh <- reply
     }
 
     kv.mu.Unlock()

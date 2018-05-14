@@ -714,7 +714,8 @@ func Make(peers []*labrpc.ClientEnd, me int,
 			copy(log_copy, rf.log)
 			rf.mu.Unlock()
 			for curr_index := lastApplied_copy + 1; curr_index <= commitIndex_copy; curr_index++ {
-				DPrintf("peer-%d apply command-%d at index-%d.", rf.me, log_copy[curr_index-1].Command.(int), curr_index)
+				//DPrintf("peer-%d apply command-%d at index-%d.", rf.me, log_copy[curr_index-1].Command.(int), curr_index)
+				DPrintf("peer-%d apply command-xx at index-%d.", rf.me, curr_index)
 				var curr_command ApplyMsg
 				curr_command.CommandValid = true
 				curr_command.Command = log_copy[curr_index-1].Command
