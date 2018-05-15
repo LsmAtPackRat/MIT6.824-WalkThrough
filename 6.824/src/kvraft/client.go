@@ -3,7 +3,6 @@ package raftkv
 import "labrpc"
 import "crypto/rand"
 import "math/big"
-//import "raft"
 
 
 type Clerk struct {
@@ -84,7 +83,7 @@ func (ck *Clerk) PutAppend(key string, value string, op string) {
         if ok {
             if !reply.WrongLeader && reply.Err == OK {
                 DPrintf("client.go - PutAppend success!")
-                break
+                return
             }
         }
         DPrintf("client.go - PutAppend fail! retry by sending to a different kvserver.")
