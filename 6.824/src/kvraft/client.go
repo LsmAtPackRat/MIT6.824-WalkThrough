@@ -3,7 +3,7 @@ package raftkv
 import "labrpc"
 import "crypto/rand"
 import "math/big"
-
+import "time"
 
 type Clerk struct {
 	servers []*labrpc.ClientEnd
@@ -53,6 +53,7 @@ func (ck *Clerk) Get(key string) string {
         }
         // re-try by sending to a different kvserver.
         i = (i + 1) % len(ck.servers)
+        time.Sleep(time.Millisecond * time.Duration(20))
         DPrintf("client.go - Get retry!")
     }
 
@@ -89,6 +90,7 @@ func (ck *Clerk) PutAppend(key string, value string, op string) {
         DPrintf("client.go - PutAppend fail! retry by sending to a different kvserver.")
         // re-try by sending to a different kvserver.
         i = (i + 1) % len(ck.servers)
+        time.Sleep(time.Millisecond * time.Duration(20))
         DPrintf("client.go - PutAppend retry!")
     }
 }

@@ -8,7 +8,7 @@ import (
 	"sync"
 )
 
-const Debug = 1
+const Debug = 0
 
 func DPrintf(format string, a ...interface{}) (n int, err error) {
 	if Debug > 0 {
@@ -32,6 +32,7 @@ type Op struct {
     Type CommandType    // actually int type.
     Key   string
     Value string
+    Id    int     // uniquely identify client operations.
 }
 
 type KVServer struct {
@@ -46,6 +47,7 @@ type KVServer struct {
     kvmappings map[string]string
     getCh chan GetReply
     putAppendCh chan PutAppendReply
+    opId   int
 }
 
 // Get RPC handler. You should enter an Op in the Raft log using Start().
@@ -58,7 +60,10 @@ func (kv *KVServer) Get(args *GetArgs, reply *GetReply) {
     var op Op
     op.Type = CmdGet
     op.Key = key
+    op.Id = kv.opId + 1    // identify this op
+    //index, term, isLeader := kv.rf.Start(op)   // start an agreement.
     _, _, isLeader := kv.rf.Start(op)   // start an agreement.
+    // if op is committed, it should appear at index in kv.rf.log.
     if !isLeader {
         reply.WrongLeader = true
         kv.mu.Unlock()
@@ -148,26 +153,28 @@ func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persiste
 	kv.maxraftstate = maxraftstate
 
 	// You may need initialization code here.
+    kv.opId = 0
     kv.kvmappings = make(map[string]string)
     kv.getCh = make(chan GetReply)
     kv.putAppendCh = make(chan PutAppendReply)
 
 	kv.applyCh = make(chan raft.ApplyMsg)
+    // a kvserver contains a raft.
 	kv.rf = raft.Make(servers, me, persister, kv.applyCh)  // this kv.rf will be associated with other kv.rf peers.
 
 	// You may need initialization code here.
     // start a long-running goroutine to continously read from applyCh.
     go func() {
         // read command from the kv.applyCh indefinately.
-        for m := range kv.applyCh {
+        for msg := range kv.applyCh {
             // m is an ApplyMsg
-            if m.CommandValid == false {
+            if msg.CommandValid == false {
                 // ignore other types of ApplyMsg
                 DPrintf("server.go - ignore other types of ApplyMsg!")
             } else {
                 // cmd is the type interface{}
-                command := m.Command
-                command_index := m.CommandIndex
+                command := msg.Command
+                command_index := msg.CommandIndex
                 // apply this cmd.
                 kv.apply(command_index, command)
             }
@@ -182,7 +189,11 @@ func (kv *KVServer) apply(command_index int, command interface{}) {
     kv.mu.Lock()
 
     // cmd contains all the data to execute a command.
-    op := (command).(Op)
+    op, ok := (command).(Op)
+    if !ok {
+        log.Fatal("server.go - apply() cannot convert command interface{} to Op struct")
+    }
+
     cmd_type := op.Type
     DPrintf("server.go - server-%d apply command %d", kv.me, cmd_type)
 
@@ -200,12 +211,17 @@ func (kv *KVServer) apply(command_index int, command interface{}) {
             reply.Err = ErrNoKey
         }
         // poke them all with the result of the operation. 
+        // NOTE: if we don't unlock() before write to the channel, it'll cause deadlock. 
+        // if other kvserver call kv.rf.Start(), this kvserver will call  apply() too.
+        // then it could block here with a lock held in hand. But Get() should get the lock and then unlock and then read the channel, so, deadlock!
+        kv.mu.Unlock()
         kv.getCh <- reply
     case CmdPut:
         // replace the value for a particular key
         var reply PutAppendReply
         kv.kvmappings[op.Key] = op.Value
         reply.Err = OK
+        kv.mu.Unlock()
         kv.putAppendCh <- reply
     case CmdAppend:
         value, ok := kv.kvmappings[op.Key]
@@ -216,10 +232,12 @@ func (kv *KVServer) apply(command_index int, command interface{}) {
             kv.kvmappings[op.Key] = op.Value
         }
         reply.Err = OK
+        kv.mu.Unlock()
         kv.putAppendCh <- reply
+    default:
+        kv.mu.Unlock()
     }
 
-    kv.mu.Unlock()
 }
 
 
