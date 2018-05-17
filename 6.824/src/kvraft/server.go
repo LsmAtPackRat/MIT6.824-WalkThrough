@@ -8,7 +8,7 @@ import (
 	"sync"
 )
 
-const Debug = 0
+const Debug = 1
 
 func DPrintf(format string, a ...interface{}) (n int, err error) {
 	if Debug > 0 {
@@ -35,6 +35,11 @@ type Op struct {
     SerialNumber int64
 }
 
+type ResultItem struct {
+    reply interface{}
+    serial_number int64
+}
+
 type channels []chan interface{}
 
 type KVServer struct {
@@ -48,8 +53,7 @@ type KVServer struct {
 
 	// Your definitions here.
     kvmappings map[string]string
-    waitMap map[int]chan interface{}   // index -> channel
-    waitCommandMap map[int]int64       // command index to serial number.
+    waitMap map[int][]chan ResultItem   // index -> channels
     servedRequest map[int64]interface{}    // record which command is served before, and the value is the reply.
 }
 
@@ -74,15 +78,21 @@ func (kv *KVServer) Get(args *GetArgs, reply *GetReply) {
         return
     }
     // we need to update some data structures so that apply knows to poke us later.
-    kv.waitMap[index] = make(chan interface{})
-    kv.waitCommandMap[index] = op.SerialNumber
+    wait_ch := make(chan ResultItem, 10)
+    kv.waitMap[index] = append(kv.waitMap[index], wait_ch)
+    //kv.waitCommandMap[index] = op.SerialNumber
     kv.mu.Unlock()
 
     // wait for apply() to poke us.
-    temp_reply := (<-kv.waitMap[index]).(GetReply)
-    reply.WrongLeader = temp_reply.WrongLeader
-    reply.Err = temp_reply.Err
-    reply.Value = temp_reply.Value
+    result_item := (<-wait_ch)
+    if result_item.serial_number != op.SerialNumber {
+        reply.WrongLeader = true
+    } else {
+        temp_reply := (result_item.reply).(GetReply)
+        reply.WrongLeader = temp_reply.WrongLeader
+        reply.Err = temp_reply.Err
+        reply.Value = temp_reply.Value
+    }
     return
 }
 
@@ -112,14 +122,19 @@ func (kv *KVServer) PutAppend(args *PutAppendArgs, reply *PutAppendReply) {
         }
 
         // we need to update some data structures so that apply knows to poke us later.
-        kv.waitMap[index] = make(chan interface{})
-        kv.waitCommandMap[index] = op.SerialNumber
+        wait_ch := make(chan ResultItem, 10)
+        kv.waitMap[index] = append(kv.waitMap[index], wait_ch)
         kv.mu.Unlock()
 
         // wait for apply() to poke us.
-        temp_reply := (<-kv.waitMap[index]).(PutAppendReply)
-        reply.WrongLeader = temp_reply.WrongLeader
-        reply.Err = temp_reply.Err
+        result_item := (<-wait_ch)
+        if result_item.serial_number != op.SerialNumber {
+            reply.WrongLeader = true
+        } else {
+            temp_reply := (result_item.reply).(PutAppendReply)
+            reply.Err = temp_reply.Err
+            reply.WrongLeader = temp_reply.WrongLeader
+        }
     } else {
         log.Fatal("PutAppend() get a wrong args!")
     }
@@ -161,8 +176,7 @@ func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persiste
 
 	// You may need initialization code here.
     kv.kvmappings = make(map[string]string)
-    kv.waitMap = make(map[int]chan interface{})
-    kv.waitCommandMap = make(map[int]int64)
+    kv.waitMap = make(map[int][]chan ResultItem)
     kv.servedRequest = make(map[int64]interface{})
 
 	kv.applyCh = make(chan raft.ApplyMsg)
@@ -209,35 +223,28 @@ func (kv *KVServer) apply(command_index int, command interface{}) {
         // then it could block here with a lock held in hand. But Get() should get the lock and then unlock and then read the channel, so, deadlock!
         kv.mu.Unlock()
         // check whether to poke the Get().
-        if channel, ok := kv.waitMap[command_index]; ok {
-            // someone is waiting for the result!
-            var reply GetReply
-            if kv.waitCommandMap[command_index] == op.SerialNumber {
-                value, ok := kv.kvmappings[op.Key]
-                if ok {
-                    reply.Value = value
-                    reply.Err = OK
-                    reply.WrongLeader = false
-                } else {
-                    reply.Value = ""
-                    reply.Err = ErrNoKey
-                    reply.WrongLeader = false
-                }
-                if _, ok := kv.servedRequest[op.SerialNumber]; !ok {
-                    // haven't served before.
-                    kv.servedRequest[op.SerialNumber] = reply
-                } else {
-                    // served before.
-                    // FIXME: why g
-                    //reply = kv.servedRequest[op.SerialNumber].(GetReply)
-                }
+        var result_item ResultItem
+        var reply GetReply
+        if prev_reply, ok := kv.servedRequest[op.SerialNumber]; ok {
+            result_item.reply = prev_reply
+        } else {
+            value, ok := kv.kvmappings[op.Key]
+            if ok {
+                reply.Value = value
+                reply.Err = OK
+                reply.WrongLeader = false
             } else {
-                // hehe , send an error.
                 reply.Value = ""
                 reply.Err = ErrNoKey
-                reply.WrongLeader = true
+                reply.WrongLeader = false
             }
-            channel<-reply
+            kv.servedRequest[op.SerialNumber] = reply
+            result_item.reply = reply
+        }
+        result_item.serial_number = op.SerialNumber
+        // send results to all of the channels block for this index.
+        for _, channel := range kv.waitMap[command_index] {
+            channel<-result_item
         }
     case CmdPut:
         //
@@ -248,19 +255,14 @@ func (kv *KVServer) apply(command_index int, command interface{}) {
             kv.servedRequest[op.SerialNumber] = true
         }
         kv.mu.Unlock()
-        // check whether to poke the PutAppend().
-        if channel, ok := kv.waitMap[command_index]; ok {
-            // someone is waiting for this index.
-            var reply PutAppendReply
-            if kv.waitCommandMap[command_index] == op.SerialNumber {
-                reply.Err = OK
-                reply.WrongLeader = false
-            } else {
-                // hehe, send an error to waiter.
-                reply.Err = ErrNoKey
-                reply.WrongLeader = true
-            }
-            channel<-reply
+        var result_item ResultItem
+        var reply PutAppendReply
+        reply.Err = OK
+        reply.WrongLeader = false
+        result_item.reply = reply
+        result_item.serial_number = op.SerialNumber
+        for _, channel := range kv.waitMap[command_index] {
+            channel<-result_item
         }
     case CmdAppend:
         if _, ok := kv.servedRequest[op.SerialNumber]; !ok {
@@ -275,19 +277,14 @@ func (kv *KVServer) apply(command_index int, command interface{}) {
             kv.servedRequest[op.SerialNumber] = true
         }
         kv.mu.Unlock()
-        // check whether to poke the PutAppend().
-        if channel, ok := kv.waitMap[command_index]; ok {
-            // someone is waiting for this index.
-            var reply PutAppendReply
-            if kv.waitCommandMap[command_index] == op.SerialNumber {
-                reply.Err = OK
-                reply.WrongLeader = false
-            } else {
-                // hehe, send an error to waiter.
-                reply.Err = ErrNoKey
-                reply.WrongLeader = true
-            }
-            channel<-reply
+        var result_item ResultItem
+        var reply PutAppendReply
+        reply.Err = OK
+        reply.WrongLeader = false
+        result_item.reply = reply
+        result_item.serial_number = op.SerialNumber
+        for _, channel := range kv.waitMap[command_index] {
+            channel<-result_item
         }
     default:
         kv.mu.Unlock()
