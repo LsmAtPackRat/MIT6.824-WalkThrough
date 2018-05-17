@@ -10,6 +10,9 @@ type Clerk struct {
 	// You will have to modify this struct.
 }
 
+
+// this function is provided by the origin version, but not used.
+// I think it's used for generating uniquely serial number for each command.
 func nrand() int64 {
 	max := big.NewInt(int64(1) << 62)
 	bigx, _ := rand.Int(rand.Reader, max)
@@ -21,6 +24,7 @@ func MakeClerk(servers []*labrpc.ClientEnd) *Clerk {
 	ck := new(Clerk)
 	ck.servers = servers
 	// You'll have to add code here.
+    // how to identify itself, use the address as the id ?
 	return ck
 }
 
@@ -42,6 +46,7 @@ func (ck *Clerk) Get(key string) string {
     var args GetArgs
     args.Key = key
     i := 0
+    args.SerialNumber = nrand()
     for {
         var reply GetReply
         ok := ck.servers[i].Call("KVServer.Get", &args, &reply)
@@ -78,6 +83,7 @@ func (ck *Clerk) PutAppend(key string, value string, op string) {
     args.Value = value
     args.Op = op
     i := 0
+    args.SerialNumber = nrand()
     for {
         var reply PutAppendReply
         ok := ck.servers[i].Call("KVServer.PutAppend", &args, &reply)

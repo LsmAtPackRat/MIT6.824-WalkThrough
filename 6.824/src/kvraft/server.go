@@ -32,11 +32,14 @@ type Op struct {
     Type CommandType    // actually int type.
     Key   string
     Value string
-    Id    int     // uniquely identify client operations.
+    SerialNumber int64
 }
+
+type channels []chan interface{}
 
 type KVServer struct {
 	mu      sync.Mutex
+    muservice   sync.Mutex
 	me      int
 	rf      *raft.Raft
 	applyCh chan raft.ApplyMsg
@@ -45,9 +48,13 @@ type KVServer struct {
 
 	// Your definitions here.
     kvmappings map[string]string
-    getCh chan GetReply
-    putAppendCh chan PutAppendReply
-    opId   int
+    //getCh chan GetReply
+    //putAppendCh chan PutAppendReply
+    waitMap map[int]chan interface{}   // index -> channeil
+    waitCommandMap map[int]int64       // command index to serial number.
+    //waitCh chan interface{}   // wait for the result.
+    //waitIndex int   // which index will the command appear at.
+    //waitCommandSerialNumber int64  // unique id of a command.
 }
 
 // Get RPC handler. You should enter an Op in the Raft log using Start().
@@ -60,23 +67,27 @@ func (kv *KVServer) Get(args *GetArgs, reply *GetReply) {
     var op Op
     op.Type = CmdGet
     op.Key = key
-    op.Id = kv.opId + 1    // identify this op
+    op.SerialNumber = args.SerialNumber
     //index, term, isLeader := kv.rf.Start(op)   // start an agreement.
-    _, _, isLeader := kv.rf.Start(op)   // start an agreement.
+    index, _, isLeader := kv.rf.Start(op)   // start an agreement.
+
+    //kv.waitIndex = index
+    //kv.waitCommandSerialNumber = op.SerialNumber
+    //kv.isWaiting = true
     // if op is committed, it should appear at index in kv.rf.log.
     if !isLeader {
         reply.WrongLeader = true
         kv.mu.Unlock()
         return
     }
-
     // we need to update some data structures so that apply knows to poke us later.
+    kv.waitMap[index] = make(chan interface{})
+    kv.waitCommandMap[index] = op.SerialNumber
     kv.mu.Unlock()
 
     // wait for apply() to poke us.
-    var temp_reply GetReply
-    temp_reply = <-kv.getCh
-    reply.WrongLeader = false
+    temp_reply := (<-kv.waitMap[index]).(GetReply)
+    reply.WrongLeader = temp_reply.WrongLeader
     reply.Err = temp_reply.Err
     reply.Value = temp_reply.Value
     return
@@ -94,24 +105,31 @@ func (kv *KVServer) PutAppend(args *PutAppendArgs, reply *PutAppendReply) {
         var op Op
         op.Key = key
         op.Value = value
+        op.SerialNumber = args.SerialNumber
         if args.Op == "Put" {
             op.Type = CmdPut
         } else {
             op.Type = CmdAppend
         }
-        _, _, isLeader := kv.rf.Start(op)
+        index, _, isLeader := kv.rf.Start(op)
         if !isLeader {
             reply.WrongLeader = true
             kv.mu.Unlock()
             return
         }
+
         // we need to update some data structures so that apply knows to poke us later.
+        kv.waitMap[index] = make(chan interface{})
+        kv.waitCommandMap[index] = op.SerialNumber
+        // we need to update some data structures so that apply knows to poke us later.
+        //kv.waitIndex = index
+        //kv.waitCommandSerialNumber = op.SerialNumber
+        //kv.isWaiting = true
         kv.mu.Unlock()
 
         // wait for apply() to poke us.
-        var temp_reply PutAppendReply
-        temp_reply = <-kv.putAppendCh
-        reply.WrongLeader = false
+        temp_reply := (<-kv.waitMap[index]).(PutAppendReply)
+        reply.WrongLeader = temp_reply.WrongLeader
         reply.Err = temp_reply.Err
     } else {
         log.Fatal("PutAppend() get a wrong args!")
@@ -153,10 +171,10 @@ func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persiste
 	kv.maxraftstate = maxraftstate
 
 	// You may need initialization code here.
-    kv.opId = 0
     kv.kvmappings = make(map[string]string)
-    kv.getCh = make(chan GetReply)
-    kv.putAppendCh = make(chan PutAppendReply)
+    kv.waitMap = make(map[int]chan interface{})
+    kv.waitCommandMap = make(map[int]int64)
+    //kv.waitCh = make(chan interface{})
 
 	kv.applyCh = make(chan raft.ApplyMsg)
     // a kvserver contains a raft.
@@ -197,47 +215,88 @@ func (kv *KVServer) apply(command_index int, command interface{}) {
     cmd_type := op.Type
     DPrintf("server.go - server-%d apply command %d", kv.me, cmd_type)
 
+    /*right_index := false    // the command is at the index which the kvserver is waiting for,
+    right_index_and_command := false   // the command is the right command that the kvserver is waiting for.
+    if kv.isWaiting && command_index == kv.waitIndex {
+        right_index = true
+        if op.SerialNumber == kv.waitCommandSerialNumber {
+            // there's no failure. the thing you put into log comes back out.
+            right_index_and_command = true
+        }
+    }*/
+
     switch cmd_type {
     case CmdGet:
-        // do the get.
-        value, ok := kv.kvmappings[op.Key]
-        // see who was listening for this index.
-        var reply GetReply
-        if ok {
-            reply.Value = value
-            reply.Err = OK
-        } else {
-            // the key is not exist!
-            reply.Err = ErrNoKey
-        }
-        // poke them all with the result of the operation. 
         // NOTE: if we don't unlock() before write to the channel, it'll cause deadlock. 
         // if other kvserver call kv.rf.Start(), this kvserver will call  apply() too.
         // then it could block here with a lock held in hand. But Get() should get the lock and then unlock and then read the channel, so, deadlock!
         kv.mu.Unlock()
-        kv.getCh <- reply
+        // check whether to poke the Get().
+        if channel, ok := kv.waitMap[command_index]; ok {
+            // someone is waiting for the result!
+            var reply GetReply
+            if kv.waitCommandMap[command_index] == op.SerialNumber {
+                value, ok := kv.kvmappings[op.Key]
+                if ok {
+                    reply.Value = value
+                    reply.Err = OK
+                    reply.WrongLeader = false
+                } else {
+                    reply.Value = ""
+                    reply.Err = ErrNoKey
+                    reply.WrongLeader = false
+                }
+            } else {
+                // hehe , send an error.
+                reply.Value = ""
+                reply.Err = ErrNoKey
+                reply.WrongLeader = true
+            }
+            channel<-reply
+        }
     case CmdPut:
         // replace the value for a particular key
-        var reply PutAppendReply
         kv.kvmappings[op.Key] = op.Value
-        reply.Err = OK
         kv.mu.Unlock()
-        kv.putAppendCh <- reply
+        // check whether to poke the PutAppend().
+        if channel, ok := kv.waitMap[command_index]; ok {
+            // someone is waiting for this index.
+            var reply PutAppendReply
+            if kv.waitCommandMap[command_index] == op.SerialNumber {
+                reply.Err = OK
+                reply.WrongLeader = false
+            } else {
+                // hehe, send an error to waiter.
+                reply.Err = ErrNoKey
+                reply.WrongLeader = true
+            }
+            channel<-reply
+        }
     case CmdAppend:
         value, ok := kv.kvmappings[op.Key]
-        var reply PutAppendReply
         if ok {
             kv.kvmappings[op.Key] = value + op.Value
         } else {
             kv.kvmappings[op.Key] = op.Value
         }
-        reply.Err = OK
         kv.mu.Unlock()
-        kv.putAppendCh <- reply
+        // check whether to poke the PutAppend().
+        if channel, ok := kv.waitMap[command_index]; ok {
+            // someone is waiting for this index.
+            var reply PutAppendReply
+            if kv.waitCommandMap[command_index] == op.SerialNumber {
+                reply.Err = OK
+                reply.WrongLeader = false
+            } else {
+                // hehe, send an error to waiter.
+                reply.Err = ErrNoKey
+                reply.WrongLeader = true
+            }
+            channel<-reply
+        }
     default:
         kv.mu.Unlock()
     }
-
 }
 
 
