@@ -37,10 +37,9 @@ type Op struct {
 
 type ResultItem struct {
     reply interface{}
+    term int  // the term in which the leader Start() this Op.
     serial_number int64
 }
-
-type channels []chan interface{}
 
 type KVServer struct {
 	mu      sync.Mutex
@@ -59,18 +58,18 @@ type KVServer struct {
 
 // Get RPC handler. You should enter an Op in the Raft log using Start().
 func (kv *KVServer) Get(args *GetArgs, reply *GetReply) {
-	DPrintf("server.go - Get(" + args.Key + ")")
+	DPrintf("server.go - server-%d Get(" + args.Key + ")", kv.me)
     // Your code here.
     key := args.Key
     kv.mu.Lock()
+
     // construct an Op to passed to kv.rf.Start()
     var op Op
     op.Type = CmdGet
     op.Key = key
     op.SerialNumber = args.SerialNumber
     //index, term, isLeader := kv.rf.Start(op)   // start an agreement.
-    index, _, isLeader := kv.rf.Start(op)   // start an agreement.
-
+    index, term, isLeader := kv.rf.Start(op)   // start an agreement.
     // if op is committed, it should appear at index in kv.rf.log.
     if !isLeader {
         reply.WrongLeader = true
@@ -85,7 +84,7 @@ func (kv *KVServer) Get(args *GetArgs, reply *GetReply) {
 
     // wait for apply() to poke us.
     result_item := (<-wait_ch)
-    if result_item.serial_number != op.SerialNumber {
+    if result_item.serial_number != op.SerialNumber || result_item.term != term {
         reply.WrongLeader = true
     } else {
         temp_reply := (result_item.reply).(GetReply)
@@ -114,7 +113,7 @@ func (kv *KVServer) PutAppend(args *PutAppendArgs, reply *PutAppendReply) {
         } else {
             op.Type = CmdAppend
         }
-        index, _, isLeader := kv.rf.Start(op)
+        index, term, isLeader := kv.rf.Start(op)
         if !isLeader {
             reply.WrongLeader = true
             kv.mu.Unlock()
@@ -126,9 +125,10 @@ func (kv *KVServer) PutAppend(args *PutAppendArgs, reply *PutAppendReply) {
         kv.waitMap[index] = append(kv.waitMap[index], wait_ch)
         kv.mu.Unlock()
 
+        // the leader could not be the leader any more.
         // wait for apply() to poke us.
         result_item := (<-wait_ch)
-        if result_item.serial_number != op.SerialNumber {
+        if result_item.serial_number != op.SerialNumber || result_item.term != term {
             reply.WrongLeader = true
         } else {
             temp_reply := (result_item.reply).(PutAppendReply)
@@ -196,8 +196,9 @@ func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persiste
                 // cmd is the type interface{}
                 command := msg.Command
                 command_index := msg.CommandIndex
+                command_term := msg.CommandTerm
                 // apply this cmd.
-                kv.apply(command_index, command)
+                kv.apply(command_index, command_term, command)
             }
         }
     }()
@@ -206,8 +207,10 @@ func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persiste
 }
 
 // apply the cmd to the service.
-func (kv *KVServer) apply(command_index int, command interface{}) {
+func (kv *KVServer) apply(command_index int, command_term int,  command interface{}) {
+    DPrintf("apply()!")
     kv.mu.Lock()
+    defer kv.mu.Unlock()
 
     // cmd contains all the data to execute a command.
     op, ok := (command).(Op)
@@ -221,9 +224,9 @@ func (kv *KVServer) apply(command_index int, command interface{}) {
         // NOTE: if we don't unlock() before write to the channel, it'll cause deadlock. 
         // if other kvserver call kv.rf.Start(), this kvserver will call  apply() too.
         // then it could block here with a lock held in hand. But Get() should get the lock and then unlock and then read the channel, so, deadlock!
-        kv.mu.Unlock()
         // check whether to poke the Get().
         var result_item ResultItem
+        result_item.term = command_term
         var reply GetReply
         if prev_reply, ok := kv.servedRequest[op.SerialNumber]; ok {
             result_item.reply = prev_reply
@@ -244,25 +247,28 @@ func (kv *KVServer) apply(command_index int, command interface{}) {
         result_item.serial_number = op.SerialNumber
         // send results to all of the channels block for this index.
         for _, channel := range kv.waitMap[command_index] {
+            DPrintf("write to a channel")
             channel<-result_item
+            DPrintf("finish writing to a channel")
         }
     case CmdPut:
-        //
         if _, ok := kv.servedRequest[op.SerialNumber]; !ok {
             // we haven't serve for this command. apply this command.
             // replace the value for a particular key
             kv.kvmappings[op.Key] = op.Value
             kv.servedRequest[op.SerialNumber] = true
         }
-        kv.mu.Unlock()
         var result_item ResultItem
+        result_item.term = command_term
         var reply PutAppendReply
         reply.Err = OK
         reply.WrongLeader = false
         result_item.reply = reply
         result_item.serial_number = op.SerialNumber
         for _, channel := range kv.waitMap[command_index] {
+            DPrintf("write to a channel")
             channel<-result_item
+            DPrintf("finish writing to a channel")
         }
     case CmdAppend:
         if _, ok := kv.servedRequest[op.SerialNumber]; !ok {
@@ -276,18 +282,18 @@ func (kv *KVServer) apply(command_index int, command interface{}) {
             }
             kv.servedRequest[op.SerialNumber] = true
         }
-        kv.mu.Unlock()
         var result_item ResultItem
+        result_item.term = command_term
         var reply PutAppendReply
         reply.Err = OK
         reply.WrongLeader = false
         result_item.reply = reply
         result_item.serial_number = op.SerialNumber
         for _, channel := range kv.waitMap[command_index] {
+            DPrintf("write to a channel")
             channel<-result_item
+            DPrintf("finish writing to a channel")
         }
-    default:
-        kv.mu.Unlock()
     }
 }
 

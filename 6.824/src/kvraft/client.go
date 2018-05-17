@@ -43,7 +43,6 @@ func MakeClerk(servers []*labrpc.ClientEnd) *Clerk {
 // arguments. and reply must be passed as a pointer.
 //
 func (ck *Clerk) Get(key string) string {
-    DPrintf("client.go - Get(" + key + ")")
 	// You will have to modify this function.
     var args GetArgs
     args.Key = key
@@ -54,16 +53,19 @@ func (ck *Clerk) Get(key string) string {
     }
     ck.unique[sn] = true
     args.SerialNumber = sn
+    DPrintf("client.go - Get(" + key + "), SerialNumber = %d", sn)
     for {
         var reply GetReply
         ok := ck.servers[i].Call("KVServer.Get", &args, &reply)
         if ok {
             if !reply.WrongLeader && reply.Err == OK {
-                DPrintf("client.go - Get success! Get a " + reply.Value)
+                DPrintf("client.go - Get OK! Get a " + reply.Value)
                 return reply.Value
             } else if !reply.WrongLeader && reply.Err == ErrNoKey{
+                DPrintf("client.go - Get ErrNoKey! Get an empty value")
                 return ""
             }
+            DPrintf("client.go - Get fail! WrongLeader!")
         }
         // re-try by sending to a different kvserver.
         i = (i + 1) % len(ck.servers)
@@ -85,7 +87,6 @@ func (ck *Clerk) Get(key string) string {
 // arguments. and reply must be passed as a pointer.
 //
 func (ck *Clerk) PutAppend(key string, value string, op string) {
-    DPrintf("client.go - PutAppend(" + key + ", " + value + ", " + op + ")")
 	// You will have to modify this function.
     var args PutAppendArgs
     args.Key = key
@@ -98,13 +99,16 @@ func (ck *Clerk) PutAppend(key string, value string, op string) {
     }
     ck.unique[sn] = true
     args.SerialNumber = sn
+    DPrintf("client.go - PutAppend(" + key + ", " + value + ", " + op + "), SerialNumber = %d", sn)
     for {
         var reply PutAppendReply
         ok := ck.servers[i].Call("KVServer.PutAppend", &args, &reply)
         if ok {
             if !reply.WrongLeader && reply.Err == OK {
-                DPrintf("client.go - PutAppend success!")
+                DPrintf("client.go - PutAppend OK!")
                 return
+            } else {
+                DPrintf("client.go - PutAppend fail! WrongLeader!")
             }
         }
         DPrintf("client.go - PutAppend fail! retry by sending to a different kvserver.")

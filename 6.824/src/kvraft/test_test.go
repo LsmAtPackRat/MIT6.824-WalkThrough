@@ -135,6 +135,7 @@ func partitioner(t *testing.T, cfg *config, ch chan bool, done *int32) {
 				}
 			}
 		}
+        DPrintf("-------------------partitioner, partition!--------------------")
 		cfg.partition(pa[0], pa[1])
 		time.Sleep(electionTimeout + time.Duration(rand.Int63()%200)*time.Millisecond)
 	}
@@ -204,11 +205,13 @@ func GenericTest(t *testing.T, part string, nclients int, unreliable bool, crash
 				if (rand.Int() % 1000) < 500 {
 					nv := "x " + strconv.Itoa(cli) + " " + strconv.Itoa(j) + " y"
 					// log.Printf("%d: client new append %v\n", cli, nv)
+					DPrintf("%d: client new append %v\n", cli, nv)
 					Append(cfg, myck, key, nv)
 					last = NextValue(last, nv)
 					j++
 				} else {
 					// log.Printf("%d: client new get %v\n", cli, key)
+					DPrintf("%d: client new get %v\n", cli, key)
 					v := Get(cfg, myck, key)
 					if v != last {
 						log.Fatalf("get wrong value, key %v, wanted:\n%v\n, got\n%v\n", key, last, v)
@@ -219,6 +222,7 @@ func GenericTest(t *testing.T, part string, nclients int, unreliable bool, crash
 
 		if partitions {
 			// Allow the clients to perform some operations without interruption
+            DPrintf("---------------partitions------------------------")
 			time.Sleep(1 * time.Second)
 			go partitioner(t, cfg, ch_partitioner, &done_partitioner)
 		}
@@ -234,9 +238,11 @@ func GenericTest(t *testing.T, part string, nclients int, unreliable bool, crash
 			// have submitted a request in a minority.  That request
 			// won't return until that server discovers a new term
 			// has started.
+            DPrintf("-----------------reconnect network----------------------")
 			cfg.ConnectAll()
 			// wait for a while so that we have a new term
 			time.Sleep(electionTimeout)
+            DPrintf("-------------------we will have a new term----------------")
 		}
 
 		if crash {
@@ -258,7 +264,9 @@ func GenericTest(t *testing.T, part string, nclients int, unreliable bool, crash
 		// log.Printf("wait for clients\n")
 		for i := 0; i < nclients; i++ {
 			// log.Printf("read from clients %d\n", i)
+            DPrintf("read from clients %d\n", i)
 			j := <-clnts[i]
+            DPrintf("yes, we got %d from clients %d\n", j, i)
 			// if j < 10 {
 			// 	log.Printf("Warning: client %d managed to perform only %d put operations in 1 sec?\n", i, j)
 			// }

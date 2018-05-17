@@ -42,6 +42,7 @@ type ApplyMsg struct {
 	CommandValid bool
 	Command      interface{}   // Command contains all the things to execute the command. not just a int.
 	CommandIndex int
+    CommandTerm int
 }
 
 // A Log Entry
@@ -710,6 +711,7 @@ func Make(peers []*labrpc.ClientEnd, me int,
 			rf.mu.Lock()
 			commitIndex_copy := rf.commitIndex
 			lastApplied_copy := rf.lastApplied
+            term_copy := rf.currentTerm
 			log_copy := make([]LogEntry, len(rf.log))
 			copy(log_copy, rf.log)
 			rf.mu.Unlock()
@@ -720,6 +722,7 @@ func Make(peers []*labrpc.ClientEnd, me int,
 				curr_command.CommandValid = true
 				curr_command.Command = log_copy[curr_index-1].Command
 				curr_command.CommandIndex = curr_index
+                curr_command.CommandTerm = term_copy
 				rf.applyCh <- curr_command
 				rf.lastApplied = curr_index
 			}
