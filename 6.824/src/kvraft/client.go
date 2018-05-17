@@ -5,9 +5,12 @@ import "crypto/rand"
 import "math/big"
 import "time"
 
+
+
 type Clerk struct {
 	servers []*labrpc.ClientEnd
 	// You will have to modify this struct.
+    // 
 }
 
 
@@ -24,7 +27,6 @@ func MakeClerk(servers []*labrpc.ClientEnd) *Clerk {
 	ck := new(Clerk)
 	ck.servers = servers
 	// You'll have to add code here.
-    // how to identify itself, use the address as the id ?
 	return ck
 }
 

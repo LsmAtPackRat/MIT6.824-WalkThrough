@@ -48,13 +48,9 @@ type KVServer struct {
 
 	// Your definitions here.
     kvmappings map[string]string
-    //getCh chan GetReply
-    //putAppendCh chan PutAppendReply
     waitMap map[int]chan interface{}   // index -> channeil
     waitCommandMap map[int]int64       // command index to serial number.
-    //waitCh chan interface{}   // wait for the result.
-    //waitIndex int   // which index will the command appear at.
-    //waitCommandSerialNumber int64  // unique id of a command.
+    servedRequest map[int64]interface{}    // record which command is served before, and the value is the reply.
 }
 
 // Get RPC handler. You should enter an Op in the Raft log using Start().
@@ -71,9 +67,6 @@ func (kv *KVServer) Get(args *GetArgs, reply *GetReply) {
     //index, term, isLeader := kv.rf.Start(op)   // start an agreement.
     index, _, isLeader := kv.rf.Start(op)   // start an agreement.
 
-    //kv.waitIndex = index
-    //kv.waitCommandSerialNumber = op.SerialNumber
-    //kv.isWaiting = true
     // if op is committed, it should appear at index in kv.rf.log.
     if !isLeader {
         reply.WrongLeader = true
@@ -121,10 +114,6 @@ func (kv *KVServer) PutAppend(args *PutAppendArgs, reply *PutAppendReply) {
         // we need to update some data structures so that apply knows to poke us later.
         kv.waitMap[index] = make(chan interface{})
         kv.waitCommandMap[index] = op.SerialNumber
-        // we need to update some data structures so that apply knows to poke us later.
-        //kv.waitIndex = index
-        //kv.waitCommandSerialNumber = op.SerialNumber
-        //kv.isWaiting = true
         kv.mu.Unlock()
 
         // wait for apply() to poke us.
@@ -174,7 +163,7 @@ func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persiste
     kv.kvmappings = make(map[string]string)
     kv.waitMap = make(map[int]chan interface{})
     kv.waitCommandMap = make(map[int]int64)
-    //kv.waitCh = make(chan interface{})
+    kv.servedRequest = make(map[int64]interface{})
 
 	kv.applyCh = make(chan raft.ApplyMsg)
     // a kvserver contains a raft.
@@ -213,18 +202,6 @@ func (kv *KVServer) apply(command_index int, command interface{}) {
     }
 
     cmd_type := op.Type
-    DPrintf("server.go - server-%d apply command %d", kv.me, cmd_type)
-
-    /*right_index := false    // the command is at the index which the kvserver is waiting for,
-    right_index_and_command := false   // the command is the right command that the kvserver is waiting for.
-    if kv.isWaiting && command_index == kv.waitIndex {
-        right_index = true
-        if op.SerialNumber == kv.waitCommandSerialNumber {
-            // there's no failure. the thing you put into log comes back out.
-            right_index_and_command = true
-        }
-    }*/
-
     switch cmd_type {
     case CmdGet:
         // NOTE: if we don't unlock() before write to the channel, it'll cause deadlock. 
@@ -246,6 +223,14 @@ func (kv *KVServer) apply(command_index int, command interface{}) {
                     reply.Err = ErrNoKey
                     reply.WrongLeader = false
                 }
+                if _, ok := kv.servedRequest[op.SerialNumber]; !ok {
+                    // haven't served before.
+                    kv.servedRequest[op.SerialNumber] = reply
+                } else {
+                    // served before.
+                    // FIXME: why g
+                    //reply = kv.servedRequest[op.SerialNumber].(GetReply)
+                }
             } else {
                 // hehe , send an error.
                 reply.Value = ""
@@ -255,8 +240,13 @@ func (kv *KVServer) apply(command_index int, command interface{}) {
             channel<-reply
         }
     case CmdPut:
-        // replace the value for a particular key
-        kv.kvmappings[op.Key] = op.Value
+        //
+        if _, ok := kv.servedRequest[op.SerialNumber]; !ok {
+            // we haven't serve for this command. apply this command.
+            // replace the value for a particular key
+            kv.kvmappings[op.Key] = op.Value
+            kv.servedRequest[op.SerialNumber] = true
+        }
         kv.mu.Unlock()
         // check whether to poke the PutAppend().
         if channel, ok := kv.waitMap[command_index]; ok {
@@ -273,11 +263,16 @@ func (kv *KVServer) apply(command_index int, command interface{}) {
             channel<-reply
         }
     case CmdAppend:
-        value, ok := kv.kvmappings[op.Key]
-        if ok {
-            kv.kvmappings[op.Key] = value + op.Value
-        } else {
-            kv.kvmappings[op.Key] = op.Value
+        if _, ok := kv.servedRequest[op.SerialNumber]; !ok {
+            // we haven't serve for this command. apply this command.
+            // replace the value for a particular key
+            value, ok := kv.kvmappings[op.Key]
+            if ok {
+                kv.kvmappings[op.Key] = value + op.Value
+            } else {
+                kv.kvmappings[op.Key] = op.Value
+            }
+            kv.servedRequest[op.SerialNumber] = true
         }
         kv.mu.Unlock()
         // check whether to poke the PutAppend().
