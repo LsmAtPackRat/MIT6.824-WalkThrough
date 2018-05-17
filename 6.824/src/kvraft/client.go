@@ -5,12 +5,11 @@ import "crypto/rand"
 import "math/big"
 import "time"
 
-
-
 type Clerk struct {
 	servers []*labrpc.ClientEnd
 	// You will have to modify this struct.
-    // 
+    //
+    unique map[int64]bool
 }
 
 
@@ -27,6 +26,7 @@ func MakeClerk(servers []*labrpc.ClientEnd) *Clerk {
 	ck := new(Clerk)
 	ck.servers = servers
 	// You'll have to add code here.
+    ck.unique = make(map[int64]bool)
 	return ck
 }
 
@@ -48,7 +48,12 @@ func (ck *Clerk) Get(key string) string {
     var args GetArgs
     args.Key = key
     i := 0
-    args.SerialNumber = nrand()
+    sn := nrand()
+    for _, ok := ck.unique[sn]; ok; {
+        sn = nrand()
+    }
+    ck.unique[sn] = true
+    args.SerialNumber = sn
     for {
         var reply GetReply
         ok := ck.servers[i].Call("KVServer.Get", &args, &reply)
@@ -56,6 +61,8 @@ func (ck *Clerk) Get(key string) string {
             if !reply.WrongLeader && reply.Err == OK {
                 DPrintf("client.go - Get success! Get a " + reply.Value)
                 return reply.Value
+            } else if !reply.WrongLeader && reply.Err == ErrNoKey{
+                return ""
             }
         }
         // re-try by sending to a different kvserver.
@@ -85,7 +92,12 @@ func (ck *Clerk) PutAppend(key string, value string, op string) {
     args.Value = value
     args.Op = op
     i := 0
-    args.SerialNumber = nrand()
+    sn := nrand()
+    for _, ok := ck.unique[sn]; ok; {
+        sn = nrand()
+    }
+    ck.unique[sn] = true
+    args.SerialNumber = sn
     for {
         var reply PutAppendReply
         ok := ck.servers[i].Call("KVServer.PutAppend", &args, &reply)

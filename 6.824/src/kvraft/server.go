@@ -48,7 +48,7 @@ type KVServer struct {
 
 	// Your definitions here.
     kvmappings map[string]string
-    waitMap map[int]chan interface{}   // index -> channeil
+    waitMap map[int]chan interface{}   // index -> channel
     waitCommandMap map[int]int64       // command index to serial number.
     servedRequest map[int64]interface{}    // record which command is served before, and the value is the reply.
 }
