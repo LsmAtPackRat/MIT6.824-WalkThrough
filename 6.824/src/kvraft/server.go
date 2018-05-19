@@ -6,9 +6,10 @@ import (
 	"log"
 	"raft"
 	"sync"
+    "time"
 )
 
-const Debug = 1
+const Debug = 0
 
 func DPrintf(format string, a ...interface{}) (n int, err error) {
 	if Debug > 0 {
@@ -70,6 +71,7 @@ func (kv *KVServer) Get(args *GetArgs, reply *GetReply) {
     op.SerialNumber = args.SerialNumber
     //index, term, isLeader := kv.rf.Start(op)   // start an agreement.
     index, term, isLeader := kv.rf.Start(op)   // start an agreement.
+
     // if op is committed, it should appear at index in kv.rf.log.
     if !isLeader {
         reply.WrongLeader = true
@@ -81,6 +83,37 @@ func (kv *KVServer) Get(args *GetArgs, reply *GetReply) {
     kv.waitMap[index] = append(kv.waitMap[index], wait_ch)
     //kv.waitCommandMap[index] = op.SerialNumber
     kv.mu.Unlock()
+
+    // start a goroutine to check whether the term is changed?
+    go func() {
+        for {
+            kv.mu.Lock()
+            curr_term, curr_isleader := kv.rf.GetState()
+            if curr_term != term || !curr_isleader {
+                // notify the server to return.
+                // construct an error result and send to waitMap channel.
+                var result_item ResultItem
+                result_item.term = curr_term
+                var reply GetReply
+                reply.WrongLeader = true
+                result_item.reply = reply
+                if _, ok := kv.waitMap[index]; ok {
+                    // apply() haven't write to the channel.
+                    delete(kv.waitMap, index)   // apply will not write to this channel.
+                    wait_ch <- result_item
+                }
+                kv.mu.Unlock()
+                return
+            } else {
+                if _, ok := kv.waitMap[index]; !ok {
+                    kv.mu.Unlock()
+                    return
+                }
+            }
+            kv.mu.Unlock()
+            time.Sleep(time.Millisecond * time.Duration(50))
+        }
+    }()
 
     // wait for apply() to poke us.
     result_item := (<-wait_ch)
@@ -125,6 +158,36 @@ func (kv *KVServer) PutAppend(args *PutAppendArgs, reply *PutAppendReply) {
         kv.waitMap[index] = append(kv.waitMap[index], wait_ch)
         kv.mu.Unlock()
 
+    // start a goroutine to check whether the term is changed?
+    go func() {
+        for {
+            kv.mu.Lock()
+            curr_term, curr_isleader := kv.rf.GetState()
+            if curr_term != term || !curr_isleader {
+                // notify the server to return.
+                // construct an error result and send to waitMap channel.
+                var result_item ResultItem
+                result_item.term = curr_term
+                var reply GetReply
+                reply.WrongLeader = true
+                result_item.reply = reply
+                if _, ok := kv.waitMap[index]; ok {
+                    // apply() haven't write to the channel.
+                    delete(kv.waitMap, index)   // apply will not write to this channel.
+                    wait_ch <- result_item
+                }
+                kv.mu.Unlock()
+                return
+            } else {
+                if _, ok := kv.waitMap[index]; !ok {
+                    kv.mu.Unlock()
+                    return
+                }
+            }
+            kv.mu.Unlock()
+            time.Sleep(time.Millisecond * time.Duration(50))
+        }
+    }()
         // the leader could not be the leader any more.
         // wait for apply() to poke us.
         result_item := (<-wait_ch)
@@ -249,6 +312,7 @@ func (kv *KVServer) apply(command_index int, command_term int,  command interfac
         for _, channel := range kv.waitMap[command_index] {
             //DPrintf("write to a channel")
             channel<-result_item
+            delete(kv.waitMap, command_index)
             //DPrintf("finish writing to a channel")
         }
     case CmdPut:
@@ -268,6 +332,7 @@ func (kv *KVServer) apply(command_index int, command_term int,  command interfac
         for _, channel := range kv.waitMap[command_index] {
             //DPrintf("write to a channel")
             channel<-result_item
+            delete(kv.waitMap, command_index)
             //DPrintf("finish writing to a channel")
         }
     case CmdAppend:
@@ -290,9 +355,10 @@ func (kv *KVServer) apply(command_index int, command_term int,  command interfac
         result_item.reply = reply
         result_item.serial_number = op.SerialNumber
         for _, channel := range kv.waitMap[command_index] {
-            DPrintf("write to a channel")
+            //DPrintf("write to a channel")
             channel<-result_item
-            DPrintf("finish writing to a channel")
+            delete(kv.waitMap, command_index)
+            //DPrintf("finish writing to a channel")
         }
     }
 }
