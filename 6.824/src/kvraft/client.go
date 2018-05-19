@@ -8,10 +8,9 @@ import "time"
 type Clerk struct {
 	servers []*labrpc.ClientEnd
 	// You will have to modify this struct.
-    //
-    unique map[int64]bool
+	//
+	unique map[int64]bool
 }
-
 
 // this function is provided by the origin version, but not used.
 // I think it's used for generating uniquely serial number for each command.
@@ -26,7 +25,7 @@ func MakeClerk(servers []*labrpc.ClientEnd) *Clerk {
 	ck := new(Clerk)
 	ck.servers = servers
 	// You'll have to add code here.
-    ck.unique = make(map[int64]bool)
+	ck.unique = make(map[int64]bool)
 	return ck
 }
 
@@ -44,34 +43,34 @@ func MakeClerk(servers []*labrpc.ClientEnd) *Clerk {
 //
 func (ck *Clerk) Get(key string) string {
 	// You will have to modify this function.
-    var args GetArgs
-    args.Key = key
-    i := 0
-    sn := nrand()
-    for _, ok := ck.unique[sn]; ok; {
-        sn = nrand()
-    }
-    ck.unique[sn] = true
-    args.SerialNumber = sn
-    DPrintf("client.go - Get(" + key + "), SerialNumber = %d", sn)
-    for {
-        var reply GetReply
-        ok := ck.servers[i].Call("KVServer.Get", &args, &reply)
-        if ok {
-            if !reply.WrongLeader && reply.Err == OK {
-                DPrintf("client.go - Get OK! Get a " + reply.Value)
-                return reply.Value
-            } else if !reply.WrongLeader && reply.Err == ErrNoKey{
-                DPrintf("client.go - Get ErrNoKey! Get an empty value")
-                return ""
-            }
-            DPrintf("client.go - Get fail! WrongLeader!")
-        }
-        // re-try by sending to a different kvserver.
-        i = (i + 1) % len(ck.servers)
-        time.Sleep(time.Millisecond * time.Duration(20))
-        DPrintf("client.go - Get retry!")
-    }
+	var args GetArgs
+	args.Key = key
+	i := 0
+	sn := nrand()
+	for _, ok := ck.unique[sn]; ok; {
+		sn = nrand()
+	}
+	ck.unique[sn] = true
+	args.SerialNumber = sn
+	DPrintf("client.go - Get("+key+"), SerialNumber = %d", sn)
+	for {
+		var reply GetReply
+		ok := ck.servers[i].Call("KVServer.Get", &args, &reply)
+		if ok {
+			if !reply.WrongLeader && reply.Err == OK {
+				DPrintf("client.go - Get OK! Get a " + reply.Value)
+				return reply.Value
+			} else if !reply.WrongLeader && reply.Err == ErrNoKey {
+				DPrintf("client.go - Get ErrNoKey! Get an empty value")
+				return ""
+			}
+			DPrintf("client.go - Get fail! WrongLeader!")
+		}
+		// re-try by sending to a different kvserver.
+		i = (i + 1) % len(ck.servers)
+		time.Sleep(time.Millisecond * time.Duration(20))
+		DPrintf("client.go - Get retry!")
+	}
 
 	return ""
 }
@@ -88,35 +87,35 @@ func (ck *Clerk) Get(key string) string {
 //
 func (ck *Clerk) PutAppend(key string, value string, op string) {
 	// You will have to modify this function.
-    var args PutAppendArgs
-    args.Key = key
-    args.Value = value
-    args.Op = op
-    i := 0
-    sn := nrand()
-    for _, ok := ck.unique[sn]; ok; {
-        sn = nrand()
-    }
-    ck.unique[sn] = true
-    args.SerialNumber = sn
-    DPrintf("client.go - PutAppend(" + key + ", " + value + ", " + op + "), SerialNumber = %d", sn)
-    for {
-        var reply PutAppendReply
-        ok := ck.servers[i].Call("KVServer.PutAppend", &args, &reply)
-        if ok {
-            if !reply.WrongLeader && reply.Err == OK {
-                DPrintf("client.go - PutAppend OK!")
-                return
-            } else {
-                DPrintf("client.go - PutAppend fail! WrongLeader!")
-            }
-        }
-        DPrintf("client.go - PutAppend fail! retry by sending to a different kvserver.")
-        // re-try by sending to a different kvserver.
-        i = (i + 1) % len(ck.servers)
-        time.Sleep(time.Millisecond * time.Duration(20))
-        DPrintf("client.go - PutAppend retry!")
-    }
+	var args PutAppendArgs
+	args.Key = key
+	args.Value = value
+	args.Op = op
+	i := 0
+	sn := nrand()
+	for _, ok := ck.unique[sn]; ok; {
+		sn = nrand()
+	}
+	ck.unique[sn] = true
+	args.SerialNumber = sn
+	DPrintf("client.go - PutAppend("+key+", "+value+", "+op+"), SerialNumber = %d", sn)
+	for {
+		var reply PutAppendReply
+		ok := ck.servers[i].Call("KVServer.PutAppend", &args, &reply)
+		if ok {
+			if !reply.WrongLeader && reply.Err == OK {
+				DPrintf("client.go - PutAppend OK!")
+				return
+			} else {
+				DPrintf("client.go - PutAppend fail! WrongLeader!")
+			}
+		}
+		DPrintf("client.go - PutAppend fail! retry by sending to a different kvserver.")
+		// re-try by sending to a different kvserver.
+		i = (i + 1) % len(ck.servers)
+		time.Sleep(time.Millisecond * time.Duration(20))
+		DPrintf("client.go - PutAppend retry!")
+	}
 }
 
 func (ck *Clerk) Put(key string, value string) {
