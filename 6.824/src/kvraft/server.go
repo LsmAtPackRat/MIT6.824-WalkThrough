@@ -247,9 +247,9 @@ func (kv *KVServer) apply(command_index int, command_term int,  command interfac
         result_item.serial_number = op.SerialNumber
         // send results to all of the channels block for this index.
         for _, channel := range kv.waitMap[command_index] {
-            DPrintf("write to a channel")
+            //DPrintf("write to a channel")
             channel<-result_item
-            DPrintf("finish writing to a channel")
+            //DPrintf("finish writing to a channel")
         }
     case CmdPut:
         if _, ok := kv.servedRequest[op.SerialNumber]; !ok {
@@ -266,9 +266,9 @@ func (kv *KVServer) apply(command_index int, command_term int,  command interfac
         result_item.reply = reply
         result_item.serial_number = op.SerialNumber
         for _, channel := range kv.waitMap[command_index] {
-            DPrintf("write to a channel")
+            //DPrintf("write to a channel")
             channel<-result_item
-            DPrintf("finish writing to a channel")
+            //DPrintf("finish writing to a channel")
         }
     case CmdAppend:
         if _, ok := kv.servedRequest[op.SerialNumber]; !ok {

@@ -1,0 +1,107 @@
+2018/05/19 23:09:43 server.go - StartKVServer()!
+2018/05/19 23:09:43 server.go - StartKVServer()!
+2018/05/19 23:09:43 server.go - StartKVServer()!
+2018/05/19 23:09:43 server.go - StartKVServer()!
+2018/05/19 23:09:43 server.go - StartKVServer()!
+2018/05/19 23:09:43 ---------------partitions------------------------
+2018/05/19 23:09:43 client.go - PutAppend(0, , Put), SerialNumber = 1949559541741824860
+2018/05/19 23:09:43 server.go - server-2 PutAppend(0, , Put)
+2018/05/19 23:09:43 client.go - PutAppend fail! WrongLeader!
+2018/05/19 23:09:43 client.go - PutAppend fail! retry by sending to a different kvserver.
+2018/05/19 23:09:43 client.go - PutAppend retry!
+2018/05/19 23:09:43 server.go - server-4 PutAppend(0, , Put)
+2018/05/19 23:09:43 client.go - PutAppend fail! WrongLeader!
+2018/05/19 23:09:43 client.go - PutAppend fail! retry by sending to a different kvserver.
+2018/05/19 23:09:43 client.go - PutAppend retry!
+2018/05/19 23:09:43 server.go - server-0 PutAppend(0, , Put)
+2018/05/19 23:09:43 client.go - PutAppend fail! WrongLeader!
+2018/05/19 23:09:43 client.go - PutAppend fail! retry by sending to a different kvserver.
+2018/05/19 23:09:44 client.go - PutAppend retry!
+2018/05/19 23:09:44 server.go - server-3 PutAppend(0, , Put)
+2018/05/19 23:09:44 client.go - PutAppend fail! WrongLeader!
+2018/05/19 23:09:44 client.go - PutAppend fail! retry by sending to a different kvserver.
+2018/05/19 23:09:44 client.go - PutAppend retry!
+2018/05/19 23:09:44 server.go - server-1 PutAppend(0, , Put)
+2018/05/19 23:09:44 client.go - PutAppend fail! WrongLeader!
+2018/05/19 23:09:44 client.go - PutAppend fail! retry by sending to a different kvserver.
+2018/05/19 23:09:44 client.go - PutAppend retry!
+2018/05/19 23:09:44 server.go - server-2 PutAppend(0, , Put)
+2018/05/19 23:09:44 client.go - PutAppend fail! WrongLeader!
+2018/05/19 23:09:44 client.go - PutAppend fail! retry by sending to a different kvserver.
+2018/05/19 23:09:44 client.go - PutAppend retry!
+2018/05/19 23:09:44 server.go - server-4 PutAppend(0, , Put)
+2018/05/19 23:09:44 client.go - PutAppend fail! WrongLeader!
+2018/05/19 23:09:44 client.go - PutAppend fail! retry by sending to a different kvserver.
+2018/05/19 23:09:44 client.go - PutAppend retry!
+2018/05/19 23:09:44 server.go - server-0 PutAppend(0, , Put)
+2018/05/19 23:09:44 client.go - PutAppend fail! WrongLeader!
+2018/05/19 23:09:44 client.go - PutAppend fail! retry by sending to a different kvserver.
+2018/05/19 23:09:44 client.go - PutAppend retry!
+2018/05/19 23:09:44 server.go - server-3 PutAppend(0, , Put)
+2018/05/19 23:09:44 client.go - PutAppend fail! WrongLeader!
+2018/05/19 23:09:44 client.go - PutAppend fail! retry by sending to a different kvserver.
+2018/05/19 23:09:44 client.go - PutAppend retry!
+2018/05/19 23:09:44 server.go - server-1 PutAppend(0, , Put)
+2018/05/19 23:09:44 client.go - PutAppend fail! WrongLeader!
+2018/05/19 23:09:44 client.go - PutAppend fail! retry by sending to a different kvserver.
+2018/05/19 23:09:44 client.go - PutAppend retry!
+2018/05/19 23:09:44 server.go - server-2 PutAppend(0, , Put)
+2018/05/19 23:09:44 client.go - PutAppend fail! WrongLeader!
+2018/05/19 23:09:44 client.go - PutAppend fail! retry by sending to a different kvserver.
+2018/05/19 23:09:44 client.go - PutAppend retry!
+2018/05/19 23:09:44 server.go - server-4 PutAppend(0, , Put)
+2018/05/19 23:09:44 client.go - PutAppend fail! WrongLeader!
+2018/05/19 23:09:44 client.go - PutAppend fail! retry by sending to a different kvserver.
+2018/05/19 23:09:44 client.go - PutAppend retry!
+2018/05/19 23:09:44 server.go - server-0 PutAppend(0, , Put)
+2018/05/19 23:09:44 client.go - PutAppend fail! WrongLeader!
+2018/05/19 23:09:44 client.go - PutAppend fail! retry by sending to a different kvserver.
+2018/05/19 23:09:44 client.go - PutAppend retry!
+2018/05/19 23:09:44 server.go - server-3 PutAppend(0, , Put)
+2018/05/19 23:09:44 apply()!
+2018/05/19 23:09:44 apply()!
+2018/05/19 23:09:44 client.go - PutAppend OK!
+2018/05/19 23:09:44 0: client new append x 0 0 y
+2018/05/19 23:09:44 client.go - PutAppend(0, x 0 0 y, Append), SerialNumber = 2826733644164966945
+2018/05/19 23:09:44 server.go - server-2 PutAppend(0, x 0 0 y, Append)
+2018/05/19 23:09:44 client.go - PutAppend fail! WrongLeader!
+2018/05/19 23:09:44 client.go - PutAppend fail! retry by sending to a different kvserver.
+2018/05/19 23:09:44 apply()!
+2018/05/19 23:09:44 client.go - PutAppend retry!
+2018/05/19 23:09:44 server.go - server-4 PutAppend(0, x 0 0 y, Append)
+2018/05/19 23:09:44 client.go - PutAppend fail! WrongLeader!
+2018/05/19 23:09:44 client.go - PutAppend fail! retry by sending to a different kvserver.
+2018/05/19 23:09:44 client.go - PutAppend retry!
+2018/05/19 23:09:44 server.go - server-0 PutAppend(0, x 0 0 y, Append)
+2018/05/19 23:09:44 client.go - PutAppend fail! WrongLeader!
+2018/05/19 23:09:44 client.go - PutAppend fail! retry by sending to a different kvserver.
+2018/05/19 23:09:44 apply()!
+2018/05/19 23:09:44 apply()!
+2018/05/19 23:09:44 client.go - PutAppend retry!
+2018/05/19 23:09:44 server.go - server-3 PutAppend(0, x 0 0 y, Append)
+2018/05/19 23:09:44 apply()!
+2018/05/19 23:09:44 write to a channel
+2018/05/19 23:09:44 finish writing to a channel
+2018/05/19 23:09:44 client.go - PutAppend OK!
+2018/05/19 23:09:44 0: client new get 0
+2018/05/19 23:09:44 client.go - Get(0), SerialNumber = 2498483052778391156
+2018/05/19 23:09:44 server.go - server-2 Get(0)
+2018/05/19 23:09:44 apply()!
+2018/05/19 23:09:44 client.go - Get fail! WrongLeader!
+2018/05/19 23:09:44 -------------------partitioner, partition!--------------------
+2018/05/19 23:09:44 client.go - Get retry!
+2018/05/19 23:09:44 server.go - server-4 Get(0)
+2018/05/19 23:09:44 client.go - Get fail! WrongLeader!
+2018/05/19 23:09:44 client.go - Get retry!
+2018/05/19 23:09:44 server.go - server-0 Get(0)
+2018/05/19 23:09:44 client.go - Get fail! WrongLeader!
+2018/05/19 23:09:45 client.go - Get retry!
+2018/05/19 23:09:45 server.go - server-3 Get(0)
+2018/05/19 23:09:46 -------------------partitioner, partition!--------------------
+2018/05/19 23:09:47 -------------------partitioner, partition!--------------------
+2018/05/19 23:09:48 -------------------partitioner, partition!--------------------
+2018/05/19 23:09:49 -------------------partitioner, partition!--------------------
+2018/05/19 23:09:50 test_test.go : partitioner() finished!
+2018/05/19 23:09:50 -----------------reconnect network----------------------
+2018/05/19 23:09:51 -------------------we will have a new term----------------
+2018/05/19 23:09:51 read from clients 0

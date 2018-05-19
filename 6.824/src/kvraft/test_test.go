@@ -139,6 +139,7 @@ func partitioner(t *testing.T, cfg *config, ch chan bool, done *int32) {
 		cfg.partition(pa[0], pa[1])
 		time.Sleep(electionTimeout + time.Duration(rand.Int63()%200)*time.Millisecond)
 	}
+    DPrintf("test_test.go : partitioner() finished!")
 }
 
 // Basic test is as follows: one or more clients submitting Append/Get
@@ -196,6 +197,7 @@ func GenericTest(t *testing.T, part string, nclients int, unreliable bool, crash
 		go spawn_clients_and_wait(t, cfg, nclients, func(cli int, myck *Clerk, t *testing.T) {
 			j := 0
 			defer func() {
+                DPrintf("%d: client defer write to channel clnts.", cli)
 				clnts[cli] <- j
 			}()
 			last := ""
@@ -218,6 +220,7 @@ func GenericTest(t *testing.T, part string, nclients int, unreliable bool, crash
 					}
 				}
 			}
+            DPrintf("test_test.go : go out of spawn_clients_and_wait's loop.")
 		})
 
 		if partitions {
@@ -226,6 +229,7 @@ func GenericTest(t *testing.T, part string, nclients int, unreliable bool, crash
 			time.Sleep(1 * time.Second)
 			go partitioner(t, cfg, ch_partitioner, &done_partitioner)
 		}
+        // make partitions many times in 5 seconds.
 		time.Sleep(5 * time.Second)
 
 		atomic.StoreInt32(&done_clients, 1)     // tell clients to quit
