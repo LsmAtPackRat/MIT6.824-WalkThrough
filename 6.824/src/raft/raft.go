@@ -77,6 +77,7 @@ type Raft struct {
 	currentTerm int        // latest term server has seen (initialized to 0 on first boot, increases monotonically)
 	votedFor    int        // candidateId that received vote in current term (or null if none)
 	log         []LogEntry // log entries, each entry contains command for state machine, and term when entry was received by leader (first index is 1)
+    firstLogIndex int      // Lab3B
 
 	// Volatile state on all servers:
 	commitIndex int // index of highest log entry known to be committed (initialized to 0, increases monotonically)
@@ -176,6 +177,27 @@ func (rf *Raft) readPersist(data []byte) {
 	}
 }
 
+
+// Raft must store each snapshot in the persister object using SaveStateAndSnapshot().
+// argument snapshot is passed by KVserver.
+func (rf *Raft) SaveSnapshotAndTrimLog(snapshot []byte) {
+    //rf.persister.SaveStateAndSnapshot(snapshot)
+    //
+}
+
+func (rf *Raft) readSnapshot(data []byte) {
+
+}
+
+// trim the rf.log, discard log entries just before the given index.
+func (rf *Raft) TrimLog(index int) {
+    if len(rf.log) < index || index < 1 {
+        DPrintf("TrimLog() error! index is too big or too short!")
+    } else {
+        rf.log = rf.log[index-1:]
+    }
+}
+
 //
 // example RequestVote RPC arguments structure.
 // field names must start with capital letters!
@@ -213,6 +235,27 @@ type AppendEntriesReply struct {
 	// refer to TA's guide.
 	ConflictTerm  int
 	ConflictIndex int
+}
+
+
+type InstallSnapshotArgs struct {
+    Term int
+    LeaderId int
+    LastIncludedIndex int
+    LastIncludedTerm int
+    //Offset int    // you do not have to implement the offset mechanism.
+    Data []byte
+    Done bool
+}
+
+type InstallSnapshotReply struct {
+    Term int
+}
+
+
+// InstallSnapshot RPC handler.
+func (rf *Raft) InstallSnapshot(args *InstallSnapshotArgs, reply *InstallSnapshotReply) {
+
 }
 
 //

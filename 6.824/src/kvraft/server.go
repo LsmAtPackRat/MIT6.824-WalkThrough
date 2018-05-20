@@ -8,6 +8,7 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+//    "bytes"
 )
 
 const Debug = 0
@@ -235,6 +236,25 @@ func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persiste
 			}
 		}
 	}()
+
+    // detect whether the persisted Raft's state grows too big.
+    // and then hands a snapshot to Raft and tell Raft it can discard old log entries.
+    /*go func() {
+        for {
+            if persister.RaftStateSize() > maxraftstate {
+                // produce a snapshot of this KVServer instance's state.
+                w := new(bytes.Buffer)
+                e := labgob.NewEncoder(w)
+                e.Encode(kv.kvmappings)
+                //e.Encode(rf.log)
+                snapshot := w.Bytes()
+                // now data is the byte[] that store the KVServer instance's state.
+                DPrintf("snapshot")
+                kv.rf.SaveSnapshotAndTrimLog(snapshot)
+            }
+            time.Sleep(time.Millisecond * time.Duration(50))
+        }
+    }()*/
 
 	return kv
 }
