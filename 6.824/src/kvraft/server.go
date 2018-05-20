@@ -37,14 +37,13 @@ type Op struct {
 }
 
 type ResultItem struct {
-	reply         interface{}
-	term          int // the term in which the leader Start() this Op.
-	serial_number int64
+	reply         interface{}   // maybe GetReply or PutAppendReply
+	term          int           // the term in which the leader Start() this Op.
+	serial_number int64         // indicate which Op is the owner of this result.
 }
 
 type KVServer struct {
 	mu        sync.Mutex
-	muservice sync.Mutex
 	me        int
 	rf        *raft.Raft
 	applyCh   chan raft.ApplyMsg
@@ -52,7 +51,7 @@ type KVServer struct {
 	maxraftstate int // snapshot if log grows this big
 
 	// Your definitions here.
-	kvmappings    map[string]string
+	kvmappings    map[string]string         // the store is based on this map.
 	waitMap       map[int][]chan ResultItem // index -> channels
 	servedRequest map[int64]interface{}     // record which command is served before, and the value is the reply.
 }
@@ -69,7 +68,6 @@ func (kv *KVServer) Get(args *GetArgs, reply *GetReply) {
 	op.Type = CmdGet
 	op.Key = key
 	op.SerialNumber = args.SerialNumber
-	//index, term, isLeader := kv.rf.Start(op)   // start an agreement.
 	index, term, isLeader := kv.rf.Start(op) // start an agreement.
 
 	// if op is committed, it should appear at index in kv.rf.log.
@@ -81,7 +79,6 @@ func (kv *KVServer) Get(args *GetArgs, reply *GetReply) {
 	// we need to update some data structures so that apply knows to poke us later.
 	wait_ch := make(chan ResultItem, 10)
 	kv.waitMap[index] = append(kv.waitMap[index], wait_ch)
-	//kv.waitCommandMap[index] = op.SerialNumber
 	kv.mu.Unlock()
 
 	// start a goroutine to check whether the term is changed?
@@ -250,7 +247,7 @@ func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persiste
 	go func() {
 		// read command from the kv.applyCh indefinately.
 		for msg := range kv.applyCh {
-			// m is an ApplyMsg
+			// m is an object of type ApplyMsg.
 			if msg.CommandValid == false {
 				// ignore other types of ApplyMsg
 				DPrintf("server.go - ignore other types of ApplyMsg!")
@@ -309,10 +306,8 @@ func (kv *KVServer) apply(command_index int, command_term int, command interface
 		result_item.serial_number = op.SerialNumber
 		// send results to all of the channels block for this index.
 		for _, channel := range kv.waitMap[command_index] {
-			//DPrintf("write to a channel")
 			channel <- result_item
 			delete(kv.waitMap, command_index)
-			//DPrintf("finish writing to a channel")
 		}
 	case CmdPut:
 		if _, ok := kv.servedRequest[op.SerialNumber]; !ok {
@@ -329,10 +324,8 @@ func (kv *KVServer) apply(command_index int, command_term int, command interface
 		result_item.reply = reply
 		result_item.serial_number = op.SerialNumber
 		for _, channel := range kv.waitMap[command_index] {
-			//DPrintf("write to a channel")
 			channel <- result_item
 			delete(kv.waitMap, command_index)
-			//DPrintf("finish writing to a channel")
 		}
 	case CmdAppend:
 		if _, ok := kv.servedRequest[op.SerialNumber]; !ok {
@@ -354,10 +347,8 @@ func (kv *KVServer) apply(command_index int, command_term int, command interface
 		result_item.reply = reply
 		result_item.serial_number = op.SerialNumber
 		for _, channel := range kv.waitMap[command_index] {
-			//DPrintf("write to a channel")
 			channel <- result_item
 			delete(kv.waitMap, command_index)
-			//DPrintf("finish writing to a channel")
 		}
 	}
 }
