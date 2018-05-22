@@ -185,6 +185,20 @@ func (kv *KVServer) Kill() {
 	// Your code here, if desired.
 }
 
+
+func (kv *KVServer) readSnapshot(data []byte) {
+    if data == nil || len(data) < 1 { // bootstrap without any state?
+        return
+    }
+    r := bytes.NewBuffer(data)
+    d := labgob.NewDecoder(r)
+    var mappings map[string]string
+    if d.Decode(&mappings) != nil {
+        DPrintf("server.go-readSnapshot()-Decode error!")
+    } else {
+        kv.kvmappings = mappings
+    }
+}
 //
 // servers[] contains the ports of the set of
 // servers that will cooperate via Raft to
@@ -213,6 +227,9 @@ func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persiste
 	kv.waitCh = make(map[int]chan ResultItem)
 	kv.servedRequest = make(map[int64]interface{})
 
+    // read snapshot.
+    kv.readSnapshot(persister.ReadSnapshot())
+
 	kv.applyCh = make(chan raft.ApplyMsg)
 	// a kvserver contains a raft.
 	kv.rf = raft.Make(servers, me, persister, kv.applyCh) // this kv.rf will be associated with other kv.rf peers.
@@ -235,12 +252,14 @@ func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persiste
 				kv.apply(command_index, command_term, command)
 
                 // check whether we need to produce a snapshot.
-                if kv.rf.StateOversize(maxraftstate) {
-                    w := new(bytes.Buffer)
-                    e := labgob.NewEncoder(w)
-                    e.Encode(kv.kvmappings)
-                    snapshot := w.Bytes()
-                    kv.rf.SaveSnapshotAndTrimLog(snapshot)
+                if maxraftstate != -1 {
+                    if kv.rf.StateOversize(maxraftstate) {
+                        w := new(bytes.Buffer)
+                        e := labgob.NewEncoder(w)
+                        e.Encode(kv.kvmappings)
+                        snapshot := w.Bytes()
+                        kv.rf.SaveSnapshotAndTrimLog(snapshot)
+                    }
                 }
 			}
 		}

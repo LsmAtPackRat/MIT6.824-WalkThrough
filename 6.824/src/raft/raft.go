@@ -197,11 +197,11 @@ func (rf *Raft) StateOversize(threshold int) (result bool) {
 func (rf *Raft) SaveSnapshotAndTrimLog(snapshot []byte) {
 	rf.mu.Lock()
 	defer rf.mu.Unlock()
-	// first, trim the log to rf.commitIndex, we don't need log entries before rf.commitIndex (excluding rf.commitIndex).
-	//rf.truncateLog(rf.commitIndex, rf.getLogLastIndex()+1)
-	//rf.firstLogIndex = rf.commitIndex
-    rf.truncateLog(rf.lastApplied+1, rf.getLogLastIndex() + 1)
-    rf.firstLogIndex = rf.lastApplied+1
+	// first, trim the log to rf.lastApplied, we don't need log entries before rf.lastApplied (excluding rf.lastApplied).
+    if rf.lastApplied > 0 {
+        rf.truncateLog(rf.lastApplied, rf.getLogLastIndex() + 1)
+        rf.firstLogIndex = rf.lastApplied
+    }
 	// then save the raft state and snapshot in an atomic step.
 	w := new(bytes.Buffer)
 	e := labgob.NewEncoder(w)
@@ -437,7 +437,6 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 			reply.ConflictIndex = i + 1
 			return
 		}
-
 	}
 
 	// 4. Now this peer's log matches the leader's log at PrevLogIndex. Append any new entries not already in the log
@@ -617,16 +616,20 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 						// FIXME: when will this case happen??
 						//if args.PrevLogIndex > len(log_copy) {
 						if args.PrevLogIndex > len(log_copy) + firstLogIndex_copy - 1 {
-							// TDPrintf("adjust PrevLogIndex.")
-							//return
 							//args.PrevLogIndex = len(log_copy)
 							args.PrevLogIndex = len(log_copy) + firstLogIndex_copy - 1
-						}
+						} else if args.PrevLogIndex < firstLogIndex_copy {
+                            args.PrevLogIndex = firstLogIndex_copy
+                        }
 						//args.PrevLogTerm = log_copy[args.PrevLogIndex-1].Term
 						args.PrevLogTerm = log_copy[args.PrevLogIndex-firstLogIndex_copy].Term
 					}
                     // NOTE: log entry at args.PrevLogIndex will not be included in args.Entries.
 					// FIXME: need more consideration.
+                    /* Here are 2 cases:
+                        1. leader send an InstallSnapshot RPC to follower.
+                        2. leader send an AppendEntries RPC to follower.
+                     */
 					//args.Entries = make([]LogEntry, len(log_copy) - args.PrevLogIndex)
 					//copy(args.Entries, log_copy[args.PrevLogIndex:len(log_copy)])
 					args.Entries = make([]LogEntry, len(log_copy) - args.PrevLogIndex + firstLogIndex_copy - 1)
