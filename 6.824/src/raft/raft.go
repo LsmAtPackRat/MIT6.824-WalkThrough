@@ -144,6 +144,9 @@ func (rf *Raft) persist() {
 	e.Encode(rf.votedFor)
 	e.Encode(rf.log)
 	e.Encode(rf.firstLogIndex)
+	// FIXME: right?
+	e.Encode(rf.lastIncludedIndex)
+	e.Encode(rf.lastIncludedTerm)
 	data := w.Bytes()
 	rf.persister.SaveRaftState(data)
 }
@@ -174,16 +177,23 @@ func (rf *Raft) readPersist(data []byte) {
 	var votedFor int
 	var log []LogEntry
 	var firstLogIndex int
+	var lastIncludedIndex int
+	var lastIncludedTerm int
+
 	if d.Decode(&currentTerm) != nil ||
 		d.Decode(&votedFor) != nil ||
 		d.Decode(&log) != nil ||
-		d.Decode(&firstLogIndex) != nil { //Decode return value is err, err == nil means okay!
+		d.Decode(&firstLogIndex) != nil ||
+		d.Decode(&lastIncludedIndex) != nil ||
+		d.Decode(&lastIncludedTerm) != nil { //Decode return value is err, err == nil means okay!
 		DPrintf("raft.go-readPersist()-Decode error!")
 	} else {
 		rf.currentTerm = currentTerm
 		rf.votedFor = votedFor
 		rf.log = log
 		rf.firstLogIndex = firstLogIndex
+		rf.lastIncludedIndex = lastIncludedIndex
+		rf.lastIncludedTerm = lastIncludedTerm
 	}
 }
 
@@ -220,6 +230,8 @@ func (rf *Raft) SaveSnapshotAndTrimLog(snapshot []byte) {
 	e.Encode(rf.votedFor)
 	e.Encode(rf.log)
 	e.Encode(rf.firstLogIndex)
+	e.Encode(rf.lastIncludedIndex)
+	e.Encode(rf.lastIncludedTerm)
 	raft_state := w.Bytes()
 	rf.persister.SaveStateAndSnapshot(raft_state, snapshot)
 }
@@ -279,7 +291,32 @@ type InstallSnapshotReply struct {
 
 // InstallSnapshot RPC handler.
 func (rf *Raft) InstallSnapshot(args *InstallSnapshotArgs, reply *InstallSnapshotReply) {
-	//    snapshot := args.Data
+    rf.mu.Lock()
+    defer rf.mu.Unlock()
+    if args.Term < rf.currentTerm {
+        reply.Term = rf.currentTerm
+        return
+    }
+
+    // snapshot contains new information not already in the recipient's log.
+    if rf.getLogLastIndex() < args.LastIncludedIndex {
+        // now discard the entire log.
+        rf.log = make([]LogEntry, 0)
+        // accept the snapshot.
+        rf.lastIncludedIndex = args.LastIncludedIndex
+        rf.lastIncludedTerm = args.LastIncludedTerm
+        rf.firstLogIndex = rf.lastIncludedIndex + 1
+        snapshot := args.Data
+        var msg ApplyMsg
+        msg.CommandValid = false    // indicates that this ApplyMsg is a snapshot.
+        msg.Snapshot = snapshot
+        rf.applyCh <- msg  // deadlock?
+        reply.Term = rf.currentTerm
+        return
+    } else {
+        // instead the follower receives a snapshot that describes a prefix of its log.
+        
+    }
 }
 
 //
@@ -549,6 +586,12 @@ func (rf *Raft) sendAppendEntries(server int, args *AppendEntriesArgs, reply *Ap
 	return ok
 }
 
+func (rf *Raft) sendInstallSnapshot(server int, args *InstallSnapshotArgs, reply *InstallSnapshotReply) bool {
+    ok := rf.peers[server].Call("Raft.InstallSnapshot", args, reply)
+    // only the leader could send InstallSnapshot RPC.
+    return ok
+}
+
 //
 // the service using Raft (e.g. a k/v server) wants to start
 // agreement on the next command to be appended to Raft's log. if this
@@ -612,85 +655,24 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 					log_copy := make([]LogEntry, len(rf.log)) // during the agreement, log could grow.
 					copy(log_copy, rf.log)
 					firstLogIndex_copy := rf.firstLogIndex
+                    lastIncludedIndex_copy := rf.lastIncludedIndex
+                    lastIncludedTerm_copy := rf.lastIncludedTerm
+                    snapshot_copy:= make([]byte, len(rf.persister.ReadSnapshot()))
+                    copy(snapshot_copy, rf.persister.ReadSnapshot())
 					rf.mu.Unlock()
 
-					var args AppendEntriesArgs
-					var reply AppendEntriesReply
-					args.Term = term
-					args.LeaderId = rf.me
-					args.LeaderCommit = commitIndex_copy
-					// If last log index >= nextIndex for a follower: send AppendEntries RPC with log entries starting at nextIndex
-					// NOTE: nextIndex is just a predication. not a precise value.
-					args.PrevLogIndex = nextIndex_copy[i] - 1
-					// args.PrevLogIndex could be 0, and at very beginning, this case will happen.
-					if args.PrevLogIndex > 0 {
-						//if args.PrevLogIndex > len(log_copy) {
-						if args.PrevLogIndex > len(log_copy)+firstLogIndex_copy-1 {
-							//args.PrevLogIndex = len(log_copy)
-							args.PrevLogIndex = len(log_copy) + firstLogIndex_copy - 1
-						} else if args.PrevLogIndex < firstLogIndex_copy {
-							// now the leader should send an InstallSnapshot RPC to this raft peer.
-							//args.PrevLogIndex = firstLogIndex_copy
-						}
-						//args.PrevLogTerm = log_copy[args.PrevLogIndex-1].Term
-						args.PrevLogTerm = log_copy[args.PrevLogIndex-firstLogIndex_copy].Term
-					}
-                    // the log entry that should be sent to the follower is snapshotted.
-                    /*if nextIndex_copy[i] <= rf.lastIncludedIndex {
-                        // send an InstallSnapshot RPC to the peer.
-                    } else {
-                        // send an AppendEntries RPC to the peer.
-                        if args.PrevLogIndex > 0 {
-                            if args.PrevLogIndex > len(log_copy) + firstLogIndex_copy - 1 {
-                                args.PrevLogIndex = len(log_copy) + firstLogIndex_copy - 1
-                            }
-                        }
-                        args.PrevLogTerm = log_copy[args.PrevLogIndex-firstLogIndex_copy].Term
-                        // OK
-                    }*/
-					//args.Entries = make([]LogEntry, len(log_copy) - args.PrevLogIndex)
-					//copy(args.Entries, log_copy[args.PrevLogIndex:len(log_copy)])
-					args.Entries = make([]LogEntry, len(log_copy)-args.PrevLogIndex+firstLogIndex_copy-1)
-					copy(args.Entries, log_copy[args.PrevLogIndex-firstLogIndex_copy+1:])
-					ok := rf.sendAppendEntries(i, &args, &reply)
-					// handle RPC reply in the same goroutine.
-					if ok == true {
-						if reply.Success == true {
-							// this case means that the log entry is replicated successfully.
-							DPrintf("peer-%d AppendEntries success!", rf.me)
-							// re-establish the assumption.
-							rf.mu.Lock()
-							if rf.state != Leader || rf.currentTerm != term {
-								//Figure-8 and p-8~9: never commits log entries from previous terms by counting replicas!
-								rf.mu.Unlock()
-								return
-							}
-							// NOTE: TA's QA: nextIndex[i] should not decrease, so check and set.
-							if index >= rf.nextIndex[i] {
-								rf.nextIndex[i] = index + 1
-								// TA's QA
-								rf.matchIndex[i] = args.PrevLogIndex + len(args.Entries) // matchIndex is not used in my implementation.
-							}
-							// test whether we can update the leader's commitIndex.
-							rf.repCount[index]++
-							// update leader's commitIndex! We can determine that Figure-8's case will not occur now,
-							// because we have test rf.currentTerm == term_copy before, so we will never commit log entries from previous terms.
-							if rf.commitIndex < index && rf.repCount[index] > len(rf.peers)/2 {
-								// apply the command.
-								DPrintf("peer-%d Leader moves its commitIndex from %d to %d.", rf.me, rf.commitIndex, index)
-								// NOTE: the Leader should commit one by one.
-								rf.commitIndex = index
-								rf.mu.Unlock()
-								// now the command at commitIndex is committed.
-								go func() {
-									rf.canApplyCh <- true
-								}()
-							} else {
-								rf.mu.Unlock()
-							}
-							return // jump out of the loop.
-						} else {
-							// AppendEntries RPC fails because of log inconsistency: Decrement nextIndex and retry
+					// the log entry that should be sent to the follower is snapshotted.
+					if nextIndex_copy[i] <= rf.lastIncludedIndex {
+						// send an InstallSnapshot RPC to the peer.
+                        var args InstallSnapshotArgs
+                        var reply InstallSnapshotReply
+                        args.Term = term
+                        args.LeaderId = rf.me
+                        args.LastIncludedIndex = lastIncludedIndex_copy
+                        args.LastIncludedTerm = lastIncludedTerm_copy
+                        args.Data = snapshot_copy
+                        ok := rf.sendInstallSnapshot(i, &args, &reply)
+                        if ok {
 							rf.mu.Lock()
 							// re-establish the assumption.
 							if rf.state != Leader || rf.currentTerm != term {
@@ -707,37 +689,124 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 								rf.nonleaderCh <- true
 								// don't try to send AppendEntries RPC to others then, rf is not the leader.
 								return
+                            }
+                            // now the follower accept the InstallSnapshot RPC.
+                            // FIXME: update the nextIndex_copy[i], is this right?
+                            if nextIndex_copy[i] < lastIncludedIndex_copy + 1 {
+                                nextIndex_copy[i] = lastIncludedIndex_copy + 1
+                            }
+                        } else {
+							time.Sleep(time.Millisecond * time.Duration(100))
+                        }
+					} else {
+						// send an AppendEntries RPC to the peer.
+						var args AppendEntriesArgs
+						var reply AppendEntriesReply
+						args.Term = term
+						args.LeaderId = rf.me
+						args.LeaderCommit = commitIndex_copy
+						// If last log index >= nextIndex for a follower: send AppendEntries RPC with log entries starting at nextIndex
+						// NOTE: nextIndex is just a predication. not a precise value.
+						args.PrevLogIndex = nextIndex_copy[i] - 1
+
+						// args.PrevLogIndex could be 0, and at very beginning, this case will happen.
+						if args.PrevLogIndex > 0 {
+							if args.PrevLogIndex > len(log_copy)+firstLogIndex_copy-1 {
+								args.PrevLogIndex = len(log_copy) + firstLogIndex_copy - 1
+							}
+							args.PrevLogTerm = log_copy[args.PrevLogIndex-firstLogIndex_copy].Term
+						}
+						//args.Entries = make([]LogEntry, len(log_copy) - args.PrevLogIndex)
+						//copy(args.Entries, log_copy[args.PrevLogIndex:len(log_copy)])
+						args.Entries = make([]LogEntry, len(log_copy)-args.PrevLogIndex+firstLogIndex_copy-1)
+						copy(args.Entries, log_copy[args.PrevLogIndex-firstLogIndex_copy+1:])
+						ok := rf.sendAppendEntries(i, &args, &reply)
+						// handle RPC reply in the same goroutine.
+						if ok == true {
+							if reply.Success == true {
+								// this case means that the log entry is replicated successfully.
+								DPrintf("peer-%d AppendEntries success!", rf.me)
+								// re-establish the assumption.
+								rf.mu.Lock()
+								if rf.state != Leader || rf.currentTerm != term {
+									//Figure-8 and p-8~9: never commits log entries from previous terms by counting replicas!
+									rf.mu.Unlock()
+									return
+								}
+								// NOTE: TA's QA: nextIndex[i] should not decrease, so check and set.
+								if index >= rf.nextIndex[i] {
+									rf.nextIndex[i] = index + 1
+									// TA's QA
+									rf.matchIndex[i] = args.PrevLogIndex + len(args.Entries) // matchIndex is not used in my implementation.
+								}
+								// test whether we can update the leader's commitIndex.
+								rf.repCount[index]++
+								// update leader's commitIndex! We can determine that Figure-8's case will not occur now,
+								// because we have test rf.currentTerm == term_copy before, so we will never commit log entries from previous terms.
+								if rf.commitIndex < index && rf.repCount[index] > len(rf.peers)/2 {
+									// apply the command.
+									DPrintf("peer-%d Leader moves its commitIndex from %d to %d.", rf.me, rf.commitIndex, index)
+									// NOTE: the Leader should commit one by one.
+									rf.commitIndex = index
+									rf.mu.Unlock()
+									// now the command at commitIndex is committed.
+									go func() {
+										rf.canApplyCh <- true
+									}()
+								} else {
+									rf.mu.Unlock()
+								}
+								return // jump out of the loop.
 							} else {
-								// NOTE: the nextIndex[i] should never < 1
-								conflict_term := reply.ConflictTerm
-								conflict_index := reply.ConflictIndex
-								// refer to TA's guide blog.
-								// first, try to find the first index of conflict_term in leader's log.
-								found := false
-								new_next_index := conflict_index // at least 1
-								// FIXME: take care!
-								for j := 0; j < len(rf.log); j++ {
-									if rf.log[j].Term == conflict_term {
-										found = true
-									} else if rf.log[j].Term > conflict_term {
-										if found {
-											//new_next_index = j + 1
-											new_next_index = j + rf.firstLogIndex
-											break
-										} else {
-											break
+								// AppendEntries RPC fails because of log inconsistency: Decrement nextIndex and retry
+								rf.mu.Lock()
+								// re-establish the assumption.
+								if rf.state != Leader || rf.currentTerm != term {
+									rf.mu.Unlock()
+									return
+								}
+								if reply.Term > rf.currentTerm {
+									rf.state = Follower
+									rf.currentTerm = reply.Term
+									rf.persist()
+									rf.resetElectionTimeout()
+									DPrintf("peer-%d degenerate from Leader into Follower!!!", rf.me)
+									rf.mu.Unlock()
+									rf.nonleaderCh <- true
+									// don't try to send AppendEntries RPC to others then, rf is not the leader.
+									return
+								} else {
+									// NOTE: the nextIndex[i] should never < 1
+									conflict_term := reply.ConflictTerm
+									conflict_index := reply.ConflictIndex
+									// refer to TA's guide blog.
+									// first, try to find the first index of conflict_term in leader's log.
+									found := false
+									new_next_index := conflict_index // at least 1
+									// FIXME: take care!
+									for j := 0; j < len(rf.log); j++ {
+										if rf.log[j].Term == conflict_term {
+											found = true
+										} else if rf.log[j].Term > conflict_term {
+											if found {
+												//new_next_index = j + 1
+												new_next_index = j + rf.firstLogIndex
+												break
+											} else {
+												break
+											}
 										}
 									}
+									nextIndex_copy[i] = new_next_index
+									rf.mu.Unlock()
+									// now retry to send AppendEntries RPC to peer-i.
 								}
-								nextIndex_copy[i] = new_next_index
-								rf.mu.Unlock()
-								// now retry to send AppendEntries RPC to peer-i.
 							}
+						} else {
+							// RPC fails. Retry!
+							// when network partition
+							time.Sleep(time.Millisecond * time.Duration(100))
 						}
-					} else {
-						// RPC fails. Retry!
-						// when network partition
-						time.Sleep(time.Millisecond * time.Duration(100))
 					}
 				}
 			}(peer_index)
