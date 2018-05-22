@@ -198,8 +198,10 @@ func (rf *Raft) SaveSnapshotAndTrimLog(snapshot []byte) {
 	rf.mu.Lock()
 	defer rf.mu.Unlock()
 	// first, trim the log to rf.commitIndex, we don't need log entries before rf.commitIndex (excluding rf.commitIndex).
-	rf.truncateLog(rf.commitIndex, rf.getLogLastIndex()+1)
-	rf.firstLogIndex = rf.commitIndex
+	//rf.truncateLog(rf.commitIndex, rf.getLogLastIndex()+1)
+	//rf.firstLogIndex = rf.commitIndex
+    rf.truncateLog(rf.lastApplied+1, rf.getLogLastIndex() + 1)
+    rf.firstLogIndex = rf.lastApplied+1
 	// then save the raft state and snapshot in an atomic step.
 	w := new(bytes.Buffer)
 	e := labgob.NewEncoder(w)
@@ -285,7 +287,7 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 		return
 	}
 
-	stepdown := false
+	stepdown := false   // Does this raft peer need to step down to a follower? It could be Follower/Candidate/Leader at first.
 	// step down and convert to follower, adopt the args.Term
 	if args.Term > rf.currentTerm {
 		rf.currentTerm = args.Term
@@ -405,8 +407,9 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 	// now rf.log's last index >= args.PrevLogIndex
 	// This means that the consistent check is OK because the log entries dropped are all committed and must be consistent.
 	if args.PrevLogIndex < rf.firstLogIndex {
-		args.PrevLogIndex = rf.firstLogIndex // skip over (rf.firstLogIndex - args.PrevLogIndex) entries.
-		args.Entries = args.Entries[(rf.firstLogIndex - args.PrevLogIndex):]
+        // NOTE: skip over (rf.firstLogIndex - args.PrevLogIndex - 1) entries.
+		args.PrevLogIndex = rf.firstLogIndex - 1
+		args.Entries = args.Entries[(rf.firstLogIndex - args.PrevLogIndex) - 1 : ]
 	} else {
 		//if args.PrevLogIndex > 0 && rf.log[args.PrevLogIndex-1].Term != args.PrevLogTerm {
 		if args.PrevLogIndex > 0 && rf.getLogEntry(args.PrevLogIndex).Term != args.PrevLogTerm {
@@ -421,7 +424,7 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 			//reply.ConflictTerm = rf.log[args.PrevLogIndex-2].Term
 			reply.ConflictTerm = rf.getLogEntry(args.PrevLogIndex - 1).Term
 			// fill the reply.FirstIndexOfThatTerm
-			i := 1
+			var i int
 			//for i = args.PrevLogIndex - 1; i >= 1; i-- {
 			for i = args.PrevLogIndex - 1; i >= rf.firstLogIndex; i-- { // log before rf.firstLogIndex is committed, will not conflict.
 				//if rf.log[i-1].Term == reply.ConflictTerm {
@@ -599,6 +602,7 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 					commitIndex_copy := rf.commitIndex        // during the agreement, commitIndex may increase.
 					log_copy := make([]LogEntry, len(rf.log)) // during the agreement, log could grow.
 					copy(log_copy, rf.log)
+                    firstLogIndex_copy := rf.firstLogIndex
 					rf.mu.Unlock()
 
 					var args AppendEntriesArgs
@@ -611,16 +615,22 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 					args.PrevLogIndex = nextIndex_copy[i] - 1
 					if args.PrevLogIndex > 0 {
 						// FIXME: when will this case happen??
-						if args.PrevLogIndex > len(log_copy) {
+						//if args.PrevLogIndex > len(log_copy) {
+						if args.PrevLogIndex > len(log_copy) + firstLogIndex_copy - 1 {
 							// TDPrintf("adjust PrevLogIndex.")
 							//return
-							args.PrevLogIndex = len(log_copy)
+							//args.PrevLogIndex = len(log_copy)
+							args.PrevLogIndex = len(log_copy) + firstLogIndex_copy - 1
 						}
-						args.PrevLogTerm = log_copy[args.PrevLogIndex-1].Term
+						//args.PrevLogTerm = log_copy[args.PrevLogIndex-1].Term
+						args.PrevLogTerm = log_copy[args.PrevLogIndex-firstLogIndex_copy].Term
 					}
-					args.Entries = make([]LogEntry, len(log_copy)-args.PrevLogIndex)
-					// FIXME
-					copy(args.Entries, log_copy[args.PrevLogIndex:len(log_copy)])
+                    // NOTE: log entry at args.PrevLogIndex will not be included in args.Entries.
+					// FIXME: need more consideration.
+					//args.Entries = make([]LogEntry, len(log_copy) - args.PrevLogIndex)
+					//copy(args.Entries, log_copy[args.PrevLogIndex:len(log_copy)])
+					args.Entries = make([]LogEntry, len(log_copy) - args.PrevLogIndex + firstLogIndex_copy - 1)
+					copy(args.Entries, log_copy[args.PrevLogIndex - firstLogIndex_copy + 1 :])
 					ok := rf.sendAppendEntries(i, &args, &reply)
 					// handle RPC reply in the same goroutine.
 					if ok == true {
@@ -684,13 +694,14 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 								// first, try to find the first index of conflict_term in leader's log.
 								found := false
 								new_next_index := conflict_index // at least 1
-								// FIXME:
+								// FIXME: take care!
 								for j := 0; j < len(rf.log); j++ {
 									if rf.log[j].Term == conflict_term {
 										found = true
 									} else if rf.log[j].Term > conflict_term {
 										if found {
-											new_next_index = j + 1
+											//new_next_index = j + 1
+											new_next_index = j + rf.firstLogIndex
 											break
 										} else {
 											break
@@ -790,6 +801,7 @@ func Make(peers []*labrpc.ClientEnd, me int,
 				rf.applyCh <- curr_command
 				rf.lastApplied = curr_index
 			}
+		    //rf.mu.Unlock()
 		}
 	}()
 
