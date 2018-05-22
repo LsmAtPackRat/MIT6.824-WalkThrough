@@ -193,10 +193,13 @@ func (kv *KVServer) readSnapshot(data []byte) {
     r := bytes.NewBuffer(data)
     d := labgob.NewDecoder(r)
     var mappings map[string]string
-    if d.Decode(&mappings) != nil {
+    var served_request map[int64]interface{}
+    if d.Decode(&mappings) != nil ||
+        d.Decode(&served_request) != nil {
         DPrintf("server.go-readSnapshot()-Decode error!")
     } else {
         kv.kvmappings = mappings
+        kv.servedRequest = served_request
     }
 }
 //
@@ -257,6 +260,7 @@ func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persiste
                         w := new(bytes.Buffer)
                         e := labgob.NewEncoder(w)
                         e.Encode(kv.kvmappings)
+                        e.Encode(kv.servedRequest)
                         snapshot := w.Bytes()
                         kv.rf.SaveSnapshotAndTrimLog(snapshot)
                     }
