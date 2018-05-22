@@ -352,12 +352,13 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 	//if len(rf.log) > 0 { // At first, there's no log entry in rf.log
 	if rf.getLogLen() > 0 { // At first, there's no log entry in rf.log
 		//if rf.log[len(rf.log)-1].Term > args.LastLogTerm {
-        last_term := 0
+        /*last_term := 0
         if len(rf.log) == 0 {
             last_term = rf.lastIncludedTerm
         } else {
             last_term = rf.getLogEntry(rf.getLogLastIndex()).Term
-        }
+        }*/
+        last_term := rf.getLogTerm(rf.getLogLastIndex())
 		if last_term > args.LastLogTerm {
 			// this peer's log is more up-to-date than requester's.
 			reply.VoteGranted = false
@@ -452,6 +453,9 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 	//if rf.firstLogIndex + len(rf.log) - 1 < args.PrevLogIndex {
 	if rf.getLogLastIndex() < args.PrevLogIndex {
 		// Then the leader will learn this situation and adjust this follower's matchIndex/nextIndex in its state, and AppendEntries RPC again.
+        // FIXME: reply.ConflictIndex = rf.getLogLastIndex()??
+        //reply.ConflictIndex = rf.getLogLastIndex()
+        //reply.ConflictTerm = rf.getLogTerm(reply.ConflictIndex)
 		reply.Success = false
 		return
 	}
@@ -462,10 +466,11 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 		// NOTE: skip over (rf.firstLogIndex - args.PrevLogIndex - 1) entries.
 		args.PrevLogIndex = rf.firstLogIndex - 1
 		args.Entries = args.Entries[(rf.firstLogIndex-args.PrevLogIndex)-1:]
-	} else {
+	} else {  // args.PrevLogIndex >= rf.firstLogIndex
 		//if args.PrevLogIndex > 0 && rf.log[args.PrevLogIndex-1].Term != args.PrevLogTerm {
+		//if args.PrevLogIndex > 0 && rf.getLogEntry(args.PrevLogIndex).Term != args.PrevLogTerm {
+		if args.PrevLogIndex > 0 && rf.getLogTerm(args.PrevLogIndex) != args.PrevLogTerm {
         // FIXME
-		if args.PrevLogIndex > 0 && rf.getLogEntry(args.PrevLogIndex).Term != args.PrevLogTerm {
 			// 3. If an existing entry conflicts with a new one(same index but different terms), delete the existing entry and all that follow it.
 			// delete the log entries from PrevLogIndex to end(including PrevLogIndex).
 			DPrintf("peer-%d fail to pass the consistency check, truncate the log", rf.me)
@@ -1145,8 +1150,19 @@ func (rf *Raft) getLogLastIndex() (index int) {
 	return rf.getLogLen()
 }
 
-func (rf *Raft) getLogTerm(index int) {
-
+func (rf *Raft) getLogTerm(index int) (term int){
+    if index > rf.getLogLastIndex() {
+        return -1
+    } else if index < rf.lastIncludedIndex {
+        return -1
+    } else {
+        // rf.lastIncludedIndex <= index <= rf.getLogLastIndex()
+        if index == rf.lastIncludedIndex {
+            return rf.lastIncludedTerm
+        } else {
+            return rf.getLogEntry(index).Term
+        }
+    }
 }
 
 // log will be adjust to [first_index, last_index)
