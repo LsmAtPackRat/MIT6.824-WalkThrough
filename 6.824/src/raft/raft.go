@@ -635,12 +635,19 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 						//args.PrevLogTerm = log_copy[args.PrevLogIndex-1].Term
 						args.PrevLogTerm = log_copy[args.PrevLogIndex-firstLogIndex_copy].Term
 					}
-					// NOTE: log entry at args.PrevLogIndex will not be included in args.Entries.
-					// FIXME: need more consideration.
-					/* Here are 2 cases:
-					   1. leader send an InstallSnapshot RPC to follower.
-					   2. leader send an AppendEntries RPC to follower.
-					*/
+                    // the log entry that should be sent to the follower is snapshotted.
+                    /*if nextIndex_copy[i] <= rf.lastIncludedIndex {
+                        // send an InstallSnapshot RPC to the peer.
+                    } else {
+                        // send an AppendEntries RPC to the peer.
+                        if args.PrevLogIndex > 0 {
+                            if args.PrevLogIndex > len(log_copy) + firstLogIndex_copy - 1 {
+                                args.PrevLogIndex = len(log_copy) + firstLogIndex_copy - 1
+                            }
+                        }
+                        args.PrevLogTerm = log_copy[args.PrevLogIndex-firstLogIndex_copy].Term
+                        // OK
+                    }*/
 					//args.Entries = make([]LogEntry, len(log_copy) - args.PrevLogIndex)
 					//copy(args.Entries, log_copy[args.PrevLogIndex:len(log_copy)])
 					args.Entries = make([]LogEntry, len(log_copy)-args.PrevLogIndex+firstLogIndex_copy-1)
