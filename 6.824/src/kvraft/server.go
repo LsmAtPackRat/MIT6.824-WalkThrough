@@ -244,8 +244,8 @@ func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persiste
 		for msg := range kv.applyCh {
 			// m is an object of type ApplyMsg.
 			if msg.CommandValid == false {
-				// ignore other types of ApplyMsg
-				DPrintf("server.go - ignore other types of ApplyMsg!")
+				// get a snapshot from Raft.
+				kv.installSnapshot(msg.Snapshot)
 			} else {
 				// cmd is the type interface{}
 				command := msg.Command
@@ -270,6 +270,11 @@ func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persiste
 	}()
 
 	return kv
+}
+
+// install a snapshot.
+func (kv *KVServer) installSnapshot(snapshot []byte) {
+    kv.readSnapshot(snapshot)
 }
 
 // apply the cmd to the service.

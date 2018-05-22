@@ -23,7 +23,6 @@ import "time"
 import "math/rand"
 
 //import "fmt"
-//import "strconv"
 import "bytes"
 import "labgob"
 
@@ -81,6 +80,9 @@ type Raft struct {
 	votedFor      int        // candidateId that received vote in current term (or null if none)
 	log           []LogEntry // log entries, each entry contains command for state machine, and term when entry was received by leader (first index is 1)
 	firstLogIndex int        // Lab3B, the index of the first element in log.
+	// just take a try.
+	lastIncludedIndex int
+	lastIncludedTerm  int
 
 	// Volatile state on all servers:
 	commitIndex int // index of highest log entry known to be committed (initialized to 0, increases monotonically)
@@ -100,9 +102,6 @@ type Raft struct {
 	leaderCh                 chan bool     // block/unblock leader's heartbeat long-running goroutine.
 	applyCh                  chan ApplyMsg
 	canApplyCh               chan bool // if can apply command, write to this channel to notify the goroutine.
-	// just take a try.
-	lastIncludedIndex int
-	lastIncludedTerm  int
 }
 
 // return currentTerm and whether this server
@@ -205,7 +204,7 @@ func (rf *Raft) StateOversize(threshold int) (result bool) {
 	}
 }
 
-// Raft must store each snapshot in the persister object using SaveStateAndSnapshot().
+// called by KVServer, Raft must store each snapshot in the persister object using SaveStateAndSnapshot().
 // argument snapshot is passed by KVserver.
 func (rf *Raft) SaveSnapshotAndTrimLog(snapshot []byte) {
 	rf.mu.Lock()
@@ -217,12 +216,12 @@ func (rf *Raft) SaveSnapshotAndTrimLog(snapshot []byte) {
 	}
 
 	// first, trim the log to rf.lastApplied, we don't need log entries before rf.lastApplied (including rf.lastApplied).
-	//if rf.lastApplied > 0 {
-	rf.lastIncludedIndex = rf.lastApplied
-	rf.lastIncludedTerm = rf.getLogEntry(rf.lastIncludedIndex).Term
-	rf.truncateLog(rf.lastApplied+1, rf.getLogLastIndex()+1)
-	rf.firstLogIndex = rf.lastApplied + 1
-	//}
+	if rf.lastApplied > 0 {
+	    rf.lastIncludedIndex = rf.lastApplied
+	    rf.lastIncludedTerm = rf.getLogEntry(rf.lastIncludedIndex).Term
+	    rf.truncateLog(rf.lastApplied+1, rf.getLogLastIndex()+1)
+	    rf.firstLogIndex = rf.lastApplied + 1
+	}
 	// then save the raft state and snapshot in an atomic step.
 	w := new(bytes.Buffer)
 	e := labgob.NewEncoder(w)
@@ -353,13 +352,19 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 	//if len(rf.log) > 0 { // At first, there's no log entry in rf.log
 	if rf.getLogLen() > 0 { // At first, there's no log entry in rf.log
 		//if rf.log[len(rf.log)-1].Term > args.LastLogTerm {
-		if rf.getLogEntry(rf.getLogLastIndex()).Term > args.LastLogTerm {
+        last_term := 0
+        if len(rf.log) == 0 {
+            last_term = rf.lastIncludedTerm
+        } else {
+            last_term = rf.getLogEntry(rf.getLogLastIndex()).Term
+        }
+		if last_term > args.LastLogTerm {
 			// this peer's log is more up-to-date than requester's.
 			reply.VoteGranted = false
 			reply.Term = rf.currentTerm
 			return
 			//} else if rf.log[len(rf.log)-1].Term == args.LastLogTerm {
-		} else if rf.getLogEntry(rf.getLogLastIndex()).Term == args.LastLogTerm {
+		} else if last_term == args.LastLogTerm {
 			if rf.getLogLastIndex() > args.LastLogIndex {
 				// this peer's log is more up-to-date than requester's.
 				reply.VoteGranted = false
@@ -459,6 +464,7 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 		args.Entries = args.Entries[(rf.firstLogIndex-args.PrevLogIndex)-1:]
 	} else {
 		//if args.PrevLogIndex > 0 && rf.log[args.PrevLogIndex-1].Term != args.PrevLogTerm {
+        // FIXME
 		if args.PrevLogIndex > 0 && rf.getLogEntry(args.PrevLogIndex).Term != args.PrevLogTerm {
 			// 3. If an existing entry conflicts with a new one(same index but different terms), delete the existing entry and all that follow it.
 			// delete the log entries from PrevLogIndex to end(including PrevLogIndex).
@@ -698,7 +704,7 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
                         } else {
 							time.Sleep(time.Millisecond * time.Duration(100))
                         }
-					} else {
+					} else { // assumption:     nextIndex_copy[i] > rf.lastIncludedIndex
 						// send an AppendEntries RPC to the peer.
 						var args AppendEntriesArgs
 						var reply AppendEntriesReply
@@ -707,14 +713,22 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 						args.LeaderCommit = commitIndex_copy
 						// If last log index >= nextIndex for a follower: send AppendEntries RPC with log entries starting at nextIndex
 						// NOTE: nextIndex is just a predication. not a precise value.
-						args.PrevLogIndex = nextIndex_copy[i] - 1
+						args.PrevLogIndex = nextIndex_copy[i] - 1  // invariant: args.PrevLogIndex >= rf.lastIncludedIndex
 
 						// args.PrevLogIndex could be 0, and at very beginning, this case will happen.
+                        //FIXME: bugs!!!!!
 						if args.PrevLogIndex > 0 {
-							if args.PrevLogIndex > len(log_copy)+firstLogIndex_copy-1 {
+							if args.PrevLogIndex > len(log_copy) + firstLogIndex_copy - 1 {
 								args.PrevLogIndex = len(log_copy) + firstLogIndex_copy - 1
-							}
-							args.PrevLogTerm = log_copy[args.PrevLogIndex-firstLogIndex_copy].Term
+							} else if args.PrevLogIndex < firstLogIndex_copy {
+                                args.PrevLogIndex = lastIncludedIndex_copy
+                            }
+                            if 0 <= args.PrevLogIndex - firstLogIndex_copy && args.PrevLogIndex - firstLogIndex_copy < len(log_copy) {
+                                args.PrevLogTerm = log_copy[args.PrevLogIndex - firstLogIndex_copy].Term
+                            } else {
+                                // is not in the log.
+                                args.PrevLogTerm = lastIncludedTerm_copy
+                            }
 						}
 						//args.Entries = make([]LogEntry, len(log_copy) - args.PrevLogIndex)
 						//copy(args.Entries, log_copy[args.PrevLogIndex:len(log_copy)])
@@ -937,8 +951,12 @@ func Make(peers []*labrpc.ClientEnd, me int,
 					//last_log_index_copy := len(rf.log)
 					last_log_index_copy := rf.getLogLastIndex()
 					last_log_term_copy := -1
-					if last_log_index_copy > 0 {
-						last_log_term_copy = rf.getLogEntry(last_log_index_copy).Term
+					if last_log_index_copy > 0 && rf.lastIncludedIndex < last_log_index_copy {
+                        if last_log_index_copy > rf.lastIncludedIndex {
+						    last_log_term_copy = rf.getLogEntry(last_log_index_copy).Term
+                        } else {
+                            last_log_term_copy = rf.lastIncludedTerm
+                        }
 					}
 					rf.mu.Unlock()
 					for peer_index, _ := range rf.peers {
@@ -1072,7 +1090,7 @@ func (rf *Raft) broadcastHeartbeats() {
 			// NOTE: This is a key point.
 			//args.PrevLogIndex = len(log_copy)
 			args.PrevLogIndex = firstLogIndex_copy + len(log_copy) - 1
-			if args.PrevLogIndex > 0 {
+			if args.PrevLogIndex > 0 && len(log_copy) > 0 {
 				//args.PrevLogTerm = log_copy[args.PrevLogIndex-1].Term
 				args.PrevLogTerm = log_copy[args.PrevLogIndex-firstLogIndex_copy].Term
 			}
@@ -1125,6 +1143,10 @@ func (rf *Raft) getLogLen() (length int) {
 
 func (rf *Raft) getLogLastIndex() (index int) {
 	return rf.getLogLen()
+}
+
+func (rf *Raft) getLogTerm(index int) {
+
 }
 
 // log will be adjust to [first_index, last_index)
