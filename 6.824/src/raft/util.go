@@ -8,7 +8,8 @@ var AE_RPCS int
 var RPC_REPORTED bool
 
 // Debugging
-const Debug = 0
+const Debug = 1
+const Sebug = 1
 
 func DPrintf(format string, a ...interface{}) (n int, err error) {
 	if Debug > 0 {
@@ -16,6 +17,14 @@ func DPrintf(format string, a ...interface{}) (n int, err error) {
 	}
 	return
 }
+
+func SPrintf(format string, a ...interface{}) (n int, err error) {
+	if Sebug > 0 {
+		log.Printf(format, a...)
+	}
+	return
+}
+
 
 func ResetStatistics() {
 	RV_RPCS = 0

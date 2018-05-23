@@ -259,10 +259,12 @@ func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persiste
                     if kv.rf.StateOversize(maxraftstate) {
                         w := new(bytes.Buffer)
                         e := labgob.NewEncoder(w)
-                        e.Encode(kv.kvmappings)
-                        e.Encode(kv.servedRequest)
-                        snapshot := w.Bytes()
-                        kv.rf.SaveSnapshotAndTrimLog(snapshot)
+                        var snapshot Snapshot
+                        snapshot.Kvmappings = kv.kvmappings
+                        snapshot.ServedRequest = kv.servedRequest
+                        e.Encode(snapshot)
+                        snapshot_bytes := w.Bytes()
+                        kv.rf.SaveSnapshotAndTrimLog(snapshot_bytes, command_index, command_term)
                     }
                 }
 			}
@@ -271,6 +273,13 @@ func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persiste
 
 	return kv
 }
+
+// the Snapshot stucture
+type Snapshot struct {
+    Kvmappings map[string]string
+    ServedRequest map[int64]interface{}
+}
+
 
 // install a snapshot.
 func (kv *KVServer) installSnapshot(snapshot []byte) {

@@ -47,6 +47,7 @@ type ApplyMsg struct {
 	Snapshot []byte
 }
 
+
 // A Log Entry
 type LogEntry struct {
 	Term    int
@@ -205,23 +206,21 @@ func (rf *Raft) StateOversize(threshold int) (result bool) {
 }
 
 // called by KVServer, Raft must store each snapshot in the persister object using SaveStateAndSnapshot().
-// argument snapshot is passed by KVserver.
-func (rf *Raft) SaveSnapshotAndTrimLog(snapshot []byte) {
+// argument:
+//    snapshot is passed by KVserver.
+//    index is the last index included in the snapshot.
+//    term is the last term included in the snapshot.
+func (rf *Raft) SaveSnapshotAndTrimLog(snapshot []byte, index int, term int) {
+    SPrintf("peer-%d SaveSnapshotAndTrimLog(snapshot, index = %d, term = %d)", rf.me, index, term)
 	rf.mu.Lock()
+    defer SPrintf("peer-%d SaveSnapshotAndTrimLog return!", rf.me)
 	defer rf.mu.Unlock()
 
-	// it seems that nothing happened since last SaveSnapshotAndTrimLog()
-	if rf.lastApplied == rf.lastIncludedIndex {
-		return
-	}
+    rf.truncateLog(index, rf.getLogLastIndex() + 1)
+    rf.lastIncludedIndex = index
+    rf.lastIncludedTerm = term
+    rf.firstLogIndex = index + 1
 
-	// first, trim the log to rf.lastApplied, we don't need log entries before rf.lastApplied (including rf.lastApplied).
-	if rf.lastApplied > 0 {
-	    rf.lastIncludedIndex = rf.lastApplied
-	    rf.lastIncludedTerm = rf.getLogEntry(rf.lastIncludedIndex).Term
-	    rf.truncateLog(rf.lastApplied+1, rf.getLogLastIndex()+1)
-	    rf.firstLogIndex = rf.lastApplied + 1
-	}
 	// then save the raft state and snapshot in an atomic step.
 	w := new(bytes.Buffer)
 	e := labgob.NewEncoder(w)
@@ -290,7 +289,9 @@ type InstallSnapshotReply struct {
 
 // InstallSnapshot RPC handler.
 func (rf *Raft) InstallSnapshot(args *InstallSnapshotArgs, reply *InstallSnapshotReply) {
+    SPrintf("peer-%d InstallSnapshot()!", rf.me)
     rf.mu.Lock()
+    defer SPrintf("peer-%d InstallSnapshot() return!", rf.me)
     defer rf.mu.Unlock()
     if args.Term < rf.currentTerm {
         reply.Term = rf.currentTerm
@@ -309,12 +310,45 @@ func (rf *Raft) InstallSnapshot(args *InstallSnapshotArgs, reply *InstallSnapsho
         var msg ApplyMsg
         msg.CommandValid = false    // indicates that this ApplyMsg is a snapshot.
         msg.Snapshot = snapshot
-        rf.applyCh <- msg  // deadlock?
+        // persist!
+	    w := new(bytes.Buffer)
+	    e := labgob.NewEncoder(w)
+	    e.Encode(rf.currentTerm)
+	    e.Encode(rf.votedFor)
+	    e.Encode(rf.log)
+	    e.Encode(rf.firstLogIndex)
+	    e.Encode(rf.lastIncludedIndex)
+	    e.Encode(rf.lastIncludedTerm)
+	    raft_state := w.Bytes()
+	    rf.persister.SaveStateAndSnapshot(raft_state, snapshot)
+        //rf.applyCh <- msg  // deadlock?
         reply.Term = rf.currentTerm
         return
     } else {
         // instead the follower receives a snapshot that describes a prefix of its log.
-        
+        // discard log entries covered by the snapshot.
+        if args.LastIncludedIndex > rf.lastIncludedIndex {
+            rf.truncateLog(args.LastIncludedIndex + 1, rf.getLogLastIndex() + 1)
+            snapshot := args.Data
+            rf.lastIncludedIndex = args.LastIncludedIndex
+            rf.lastIncludedTerm = args.LastIncludedTerm
+            rf.firstLogIndex = rf.lastIncludedIndex + 1
+            var msg ApplyMsg
+            msg.CommandValid = false
+            msg.Snapshot = snapshot
+	        w := new(bytes.Buffer)
+	        e := labgob.NewEncoder(w)
+	        e.Encode(rf.currentTerm)
+	        e.Encode(rf.votedFor)
+	        e.Encode(rf.log)
+	        e.Encode(rf.firstLogIndex)
+	        e.Encode(rf.lastIncludedIndex)
+	        e.Encode(rf.lastIncludedTerm)
+	        raft_state := w.Bytes()
+	        rf.persister.SaveStateAndSnapshot(raft_state, snapshot)
+            reply.Term = rf.currentTerm
+            return
+        }
     }
 }
 
@@ -408,7 +442,7 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 	if len(args.Entries) > 0 {
 		DPrintf("peer-%d gets an AppendEntries RPC(args.LeaderId = %d, args.PrevLogIndex = %d, args.LeaderCommit = %d, args.Term = %d, rf.currentTerm = %d).", rf.me, args.LeaderId, args.PrevLogIndex, args.LeaderCommit, args.Term, rf.currentTerm)
 	} else {
-		DPrintf("peer-%d gets an heartbeat(args.LeaderId = %d, args.Term = %d, args.PrevLogIndex = %d, args.LeaderCommit = %d).", rf.me, args.LeaderId, args.Term, args.PrevLogIndex, args.LeaderCommit)
+		//DPrintf("peer-%d gets an heartbeat(args.LeaderId = %d, args.Term = %d, args.PrevLogIndex = %d, args.LeaderCommit = %d).", rf.me, args.LeaderId, args.Term, args.PrevLogIndex, args.LeaderCommit)
 	}
 
 	rf.mu.Lock()
@@ -674,6 +708,7 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 
 					// the log entry that should be sent to the follower is snapshotted.
 					if nextIndex_copy[i] <= rf.lastIncludedIndex {
+                        SPrintf("leader-%d need to send an InstallSnapshot RPC to follower-%d.", rf.me, i)
 						// send an InstallSnapshot RPC to the peer.
                         var args InstallSnapshotArgs
                         var reply InstallSnapshotReply
@@ -735,6 +770,7 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
                                 args.PrevLogTerm = lastIncludedTerm_copy
                             }
 						}
+                        SPrintf("leader-%d needs to send an AppendEntries RPC to follower-%d, PrevLogIndex = %d.", rf.me, i, args.PrevLogIndex)
 						//args.Entries = make([]LogEntry, len(log_copy) - args.PrevLogIndex)
 						//copy(args.Entries, log_copy[args.PrevLogIndex:len(log_copy)])
 						args.Entries = make([]LogEntry, len(log_copy)-args.PrevLogIndex+firstLogIndex_copy-1)
