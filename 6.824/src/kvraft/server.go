@@ -11,7 +11,7 @@ import (
     "bytes"
 )
 
-const Debug = 0
+const Debug = 1
 
 func DPrintf(format string, a ...interface{}) (n int, err error) {
 	if Debug > 0 {
@@ -192,14 +192,14 @@ func (kv *KVServer) readSnapshot(data []byte) {
     }
     r := bytes.NewBuffer(data)
     d := labgob.NewDecoder(r)
-    var mappings map[string]string
-    var served_request map[int64]interface{}
-    if d.Decode(&mappings) != nil ||
-        d.Decode(&served_request) != nil {
+    //var mappings map[string]string
+    //var served_request map[int64]interface{}
+    var snapshot Snapshot
+    if d.Decode(&snapshot) != nil {
         DPrintf("server.go-readSnapshot()-Decode error!")
     } else {
-        kv.kvmappings = mappings
-        kv.servedRequest = served_request
+        kv.kvmappings = snapshot.Kvmappings
+        kv.servedRequest = snapshot.ServedRequest
     }
 }
 //
@@ -245,6 +245,7 @@ func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persiste
 			// m is an object of type ApplyMsg.
 			if msg.CommandValid == false {
 				// get a snapshot from Raft.
+                DPrintf("kv-%d get a snapshot from kv.applyCh!", kv.me)
 				kv.installSnapshot(msg.Snapshot)
 			} else {
 				// cmd is the type interface{}
@@ -254,8 +255,9 @@ func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persiste
 				// apply this cmd.
 				kv.apply(command_index, command_term, command)
 
-                // check whether we need to produce a snapshot.
+                // snapshot switch.  maxraftstate == -1: off, otherwise: on.
                 if maxraftstate != -1 {
+                    // check whether we need to produce a snapshot.
                     if kv.rf.StateOversize(maxraftstate) {
                         w := new(bytes.Buffer)
                         e := labgob.NewEncoder(w)
@@ -284,12 +286,14 @@ type Snapshot struct {
 // install a snapshot.
 func (kv *KVServer) installSnapshot(snapshot []byte) {
     kv.readSnapshot(snapshot)
+    // FIXME: there may be a lot of client wait for the result.
+    // so help to unblock them.
 }
 
 // apply the cmd to the service.
 func (kv *KVServer) apply(command_index int, command_term int, command interface{}) {
-	DPrintf("apply()!")
 	kv.mu.Lock()
+	DPrintf("kv-%d apply()!", kv.me)
 	defer kv.mu.Unlock()
 
 	// cmd contains all the data to execute a command.

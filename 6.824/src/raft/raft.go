@@ -56,7 +56,6 @@ type LogEntry struct {
 
 // use RaftState to indicate the state of a raft peer
 type RaftState int
-
 const (
 	Follower RaftState = iota
 	Candidate
@@ -216,7 +215,13 @@ func (rf *Raft) SaveSnapshotAndTrimLog(snapshot []byte, index int, term int) {
     defer SPrintf("peer-%d SaveSnapshotAndTrimLog return!", rf.me)
 	defer rf.mu.Unlock()
 
-    rf.truncateLog(index, rf.getLogLastIndex() + 1)
+    // do a check, to confirm whether the snapshot is needed now?
+    if index <= rf.lastIncludedIndex {
+        SPrintf("peer-%d SaveSnapshotAndTrimLog got a out-of-date index-%d, just ignore it.", rf.me, index)
+        // this snapshot in argument is out of date, we have moved to a up-to-date snapshot. So ignore it.
+        return
+    }
+    rf.truncateLog(index + 1, rf.getLogLastIndex() + 1)  // index is included in the snapshot.
     rf.lastIncludedIndex = index
     rf.lastIncludedTerm = term
     rf.firstLogIndex = index + 1
@@ -298,8 +303,10 @@ func (rf *Raft) InstallSnapshot(args *InstallSnapshotArgs, reply *InstallSnapsho
         return
     }
 
+    // NOTE: don't forget update rf.lastApplied!
     // snapshot contains new information not already in the recipient's log.
     if rf.getLogLastIndex() < args.LastIncludedIndex {
+        SPrintf("peer-%d InstallSnapshot() branch1:snapshot contains new information not already in the recipient's log.", rf.me)
         // now discard the entire log.
         rf.log = make([]LogEntry, 0)
         // accept the snapshot.
@@ -321,13 +328,14 @@ func (rf *Raft) InstallSnapshot(args *InstallSnapshotArgs, reply *InstallSnapsho
 	    e.Encode(rf.lastIncludedTerm)
 	    raft_state := w.Bytes()
 	    rf.persister.SaveStateAndSnapshot(raft_state, snapshot)
-        //rf.applyCh <- msg  // deadlock?
+        rf.applyCh <- msg  // deadlock?
         reply.Term = rf.currentTerm
-        return
+        rf.lastApplied = rf.lastIncludedIndex
     } else {
         // instead the follower receives a snapshot that describes a prefix of its log.
         // discard log entries covered by the snapshot.
         if args.LastIncludedIndex > rf.lastIncludedIndex {
+            SPrintf("peer-%d InstallSnapshot() branch2:snapshot descibes a prefix of recipient's log.", rf.me)
             rf.truncateLog(args.LastIncludedIndex + 1, rf.getLogLastIndex() + 1)
             snapshot := args.Data
             rf.lastIncludedIndex = args.LastIncludedIndex
@@ -346,10 +354,14 @@ func (rf *Raft) InstallSnapshot(args *InstallSnapshotArgs, reply *InstallSnapsho
 	        e.Encode(rf.lastIncludedTerm)
 	        raft_state := w.Bytes()
 	        rf.persister.SaveStateAndSnapshot(raft_state, snapshot)
+            rf.applyCh <- msg  // deadlock?
             reply.Term = rf.currentTerm
-            return
+            if rf.lastApplied < rf.lastIncludedIndex {
+                rf.lastApplied = rf.lastIncludedIndex
+            }
         }
     }
+    return
 }
 
 //
@@ -503,6 +515,7 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 	} else {  // args.PrevLogIndex >= rf.firstLogIndex
 		//if args.PrevLogIndex > 0 && rf.log[args.PrevLogIndex-1].Term != args.PrevLogTerm {
 		//if args.PrevLogIndex > 0 && rf.getLogEntry(args.PrevLogIndex).Term != args.PrevLogTerm {
+        SPrintf("args.PrevLogIndex = %d, rf.firstLogIndex = %d.", args.PrevLogIndex, rf.firstLogIndex)
 		if args.PrevLogIndex > 0 && rf.getLogTerm(args.PrevLogIndex) != args.PrevLogTerm {
         // FIXME
 			// 3. If an existing entry conflicts with a new one(same index but different terms), delete the existing entry and all that follow it.
@@ -935,7 +948,8 @@ func Make(peers []*labrpc.ClientEnd, me int,
 			log_copy := make([]LogEntry, len(rf.log))
 			firstLogIndex_copy := rf.firstLogIndex
 			copy(log_copy, rf.log)
-			rf.mu.Unlock()
+//			rf.mu.Unlock()
+            // FIXME: if we got a snapshot and then update State Machine's state, then lastApplied will be out-of-date and refer to a snapshotted log entry.
 			for curr_index := lastApplied_copy + 1; curr_index <= commitIndex_copy; curr_index++ {
 				//DPrintf("peer-%d apply command-%d at index-%d.", rf.me, log_copy[curr_index-1].Command.(int), curr_index)
 				DPrintf("peer-%d apply command-xx at index-%d.", rf.me, curr_index)
@@ -948,7 +962,7 @@ func Make(peers []*labrpc.ClientEnd, me int,
 				rf.applyCh <- curr_command
 				rf.lastApplied = curr_index
 			}
-			//rf.mu.Unlock()
+			rf.mu.Unlock()
 		}
 	}()
 
@@ -1183,7 +1197,11 @@ func (rf *Raft) getLogLen() (length int) {
 }
 
 func (rf *Raft) getLogLastIndex() (index int) {
-	return rf.getLogLen()
+    if len(rf.log) > 0 {
+	    return rf.getLogLen()
+    } else {
+        return rf.lastIncludedIndex
+    }
 }
 
 func (rf *Raft) getLogTerm(index int) (term int){
@@ -1203,7 +1221,7 @@ func (rf *Raft) getLogTerm(index int) (term int){
 
 // log will be adjust to [first_index, last_index)
 func (rf *Raft) truncateLog(first_index int, last_index int) {
-	if first_index > rf.getLogLastIndex() {
+	if first_index >= last_index {
 		rf.log = make([]LogEntry, 0)
 		return
 	}
@@ -1214,5 +1232,10 @@ func (rf *Raft) truncateLog(first_index int, last_index int) {
 	if last_index > rf.getLogLastIndex()+1 {
 		last_index = rf.getLogLastIndex() + 1
 	}
-	rf.log = rf.log[first_index-rf.firstLogIndex : last_index-rf.firstLogIndex]
+    if last_index == first_index {
+        rf.log = make([]LogEntry, 0)
+    } else {
+	    rf.log = rf.log[first_index-rf.firstLogIndex : last_index-rf.firstLogIndex]
+    }
+    rf.firstLogIndex = first_index
 }
