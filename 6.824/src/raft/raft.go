@@ -517,7 +517,7 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 		//if args.PrevLogIndex > 0 && rf.getLogEntry(args.PrevLogIndex).Term != args.PrevLogTerm {
         SPrintf("args.PrevLogIndex = %d, rf.firstLogIndex = %d.", args.PrevLogIndex, rf.firstLogIndex)
 		if args.PrevLogIndex > 0 && rf.getLogTerm(args.PrevLogIndex) != args.PrevLogTerm {
-        // FIXME
+        // FIXME: It's a big big bug.
 			// 3. If an existing entry conflicts with a new one(same index but different terms), delete the existing entry and all that follow it.
 			// delete the log entries from PrevLogIndex to end(including PrevLogIndex).
 			DPrintf("peer-%d fail to pass the consistency check, truncate the log", rf.me)
@@ -754,6 +754,7 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
                             if nextIndex_copy[i] < lastIncludedIndex_copy + 1 {
                                 nextIndex_copy[i] = lastIncludedIndex_copy + 1
                             }
+                            rf.mu.Unlock()
                         } else {
 							time.Sleep(time.Millisecond * time.Duration(100))
                         }
@@ -948,7 +949,7 @@ func Make(peers []*labrpc.ClientEnd, me int,
 			log_copy := make([]LogEntry, len(rf.log))
 			firstLogIndex_copy := rf.firstLogIndex
 			copy(log_copy, rf.log)
-//			rf.mu.Unlock()
+			rf.mu.Unlock()
             // FIXME: if we got a snapshot and then update State Machine's state, then lastApplied will be out-of-date and refer to a snapshotted log entry.
 			for curr_index := lastApplied_copy + 1; curr_index <= commitIndex_copy; curr_index++ {
 				//DPrintf("peer-%d apply command-%d at index-%d.", rf.me, log_copy[curr_index-1].Command.(int), curr_index)
@@ -962,7 +963,7 @@ func Make(peers []*labrpc.ClientEnd, me int,
 				rf.applyCh <- curr_command
 				rf.lastApplied = curr_index
 			}
-			rf.mu.Unlock()
+			//rf.mu.Unlock()  // if Unlock() here will cause 3A deadlock.
 		}
 	}()
 
@@ -1193,7 +1194,7 @@ func (rf *Raft) getLogEntry(index int) (entry LogEntry) {
 }
 
 func (rf *Raft) getLogLen() (length int) {
-	return len(rf.log) + rf.firstLogIndex - 1
+	return len(rf.log) + rf.lastIncludedIndex
 }
 
 func (rf *Raft) getLogLastIndex() (index int) {
@@ -1221,11 +1222,6 @@ func (rf *Raft) getLogTerm(index int) (term int){
 
 // log will be adjust to [first_index, last_index)
 func (rf *Raft) truncateLog(first_index int, last_index int) {
-	if first_index >= last_index {
-		rf.log = make([]LogEntry, 0)
-		return
-	}
-
 	if first_index < rf.firstLogIndex {
 		first_index = rf.firstLogIndex
 	}
@@ -1237,5 +1233,5 @@ func (rf *Raft) truncateLog(first_index int, last_index int) {
     } else {
 	    rf.log = rf.log[first_index-rf.firstLogIndex : last_index-rf.firstLogIndex]
     }
-    rf.firstLogIndex = first_index
+    //rf.firstLogIndex = first_index
 }

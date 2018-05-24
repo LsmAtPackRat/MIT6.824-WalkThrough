@@ -78,6 +78,9 @@ func (kv *KVServer) Get(args *GetArgs, reply *GetReply) {
 		kv.mu.Unlock()
 		return
 	}
+
+    DPrintf("server.go - Get()-server-%d thinks he is the leader now!", kv.me)
+
 	// we need to update some data structures so that apply knows to poke us later.
 	wait_ch := make(chan ResultItem, 10)
 	kv.waitCh[index] = wait_ch
@@ -123,6 +126,8 @@ func (kv *KVServer) PutAppend(args *PutAppendArgs, reply *PutAppendReply) {
 		kv.mu.Unlock()
 		return
 	}
+
+    DPrintf("server.go - PutAppend()-server-%d thinks he is the leader now!", kv.me)
 
 	// we need to update some data structures so that apply knows to poke us later.
 	wait_ch := make(chan ResultItem, 10)
@@ -171,7 +176,6 @@ func (kv *KVServer) checkLeadership(index int, term int, done *int32) {
 		kv.mu.Unlock()
 		time.Sleep(time.Millisecond * time.Duration(50))
 	}
-
 }
 
 //
@@ -192,8 +196,6 @@ func (kv *KVServer) readSnapshot(data []byte) {
     }
     r := bytes.NewBuffer(data)
     d := labgob.NewDecoder(r)
-    //var mappings map[string]string
-    //var served_request map[int64]interface{}
     var snapshot Snapshot
     if d.Decode(&snapshot) != nil {
         DPrintf("server.go-readSnapshot()-Decode error!")
@@ -244,7 +246,7 @@ func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persiste
 		for msg := range kv.applyCh {
 			// m is an object of type ApplyMsg.
 			if msg.CommandValid == false {
-				// get a snapshot from Raft.
+				// get a snapshot from Raft. If receive a snapshot, the raft peer must not be the leader.
                 DPrintf("kv-%d get a snapshot from kv.applyCh!", kv.me)
 				kv.installSnapshot(msg.Snapshot)
 			} else {
@@ -259,6 +261,7 @@ func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persiste
                 if maxraftstate != -1 {
                     // check whether we need to produce a snapshot.
                     if kv.rf.StateOversize(maxraftstate) {
+                        DPrintf("server.go - server-%d's Raft state is too big, make a snapshot, command_index = %d.", kv.me, command_index)
                         w := new(bytes.Buffer)
                         e := labgob.NewEncoder(w)
                         var snapshot Snapshot
@@ -285,9 +288,9 @@ type Snapshot struct {
 
 // install a snapshot.
 func (kv *KVServer) installSnapshot(snapshot []byte) {
+    kv.mu.Lock()
+    defer kv.mu.Unlock()
     kv.readSnapshot(snapshot)
-    // FIXME: there may be a lot of client wait for the result.
-    // so help to unblock them.
 }
 
 // apply the cmd to the service.
