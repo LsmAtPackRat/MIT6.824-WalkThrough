@@ -39,9 +39,9 @@ type Op struct {
 }
 
 type ResultItem struct {
-	reply         interface{} // maybe GetReply or PutAppendReply
-	term          int         // the term in which the leader Start() this Op.
-	serial_number int64       // indicate which Op is the owner of this result.
+	Reply         interface{} // maybe GetReply or PutAppendReply
+	Term          int         // the term in which the leader Start() this Op.
+	Serial_number int64       // indicate which Op is the owner of this result.
 }
 
 type KVServer struct {
@@ -55,7 +55,8 @@ type KVServer struct {
 	// Your definitions here.
 	kvmappings    map[string]string       // the store is based on this map.
 	waitCh        map[int]chan ResultItem // index -> channel
-	servedRequest map[int64]interface{}   // record which command is served before, and the value is the reply.
+	servedRequest map[int64]ResultItem   // record which command is served before, and the value is the reply.
+    lastAppliedIndex int
 }
 
 // Get RPC handler. You should enter an Op in the Raft log using Start().
@@ -92,10 +93,10 @@ func (kv *KVServer) Get(args *GetArgs, reply *GetReply) {
 
 	// wait for apply() to poke us.
 	result_item := (<-wait_ch)
-	if result_item.serial_number != op.SerialNumber || result_item.term != term {
+	if result_item.Serial_number != op.SerialNumber || result_item.Term != term {
 		reply.WrongLeader = true
 	} else {
-		temp_reply := (result_item.reply).(GetReply)
+		temp_reply := (result_item.Reply).(GetReply)
 		reply.WrongLeader = false
 		reply.Err = temp_reply.Err
 		reply.Value = temp_reply.Value
@@ -140,10 +141,10 @@ func (kv *KVServer) PutAppend(args *PutAppendArgs, reply *PutAppendReply) {
 	// the leader could not be the leader any more.
 	// wait for apply() to poke us.
 	result_item := (<-wait_ch)
-	if result_item.serial_number != op.SerialNumber || result_item.term != term {
+	if result_item.Serial_number != op.SerialNumber || result_item.Term != term {
 		reply.WrongLeader = true
 	} else {
-		temp_reply := (result_item.reply).(PutAppendReply)
+		temp_reply := (result_item.Reply).(PutAppendReply)
 		reply.Err = temp_reply.Err
 		reply.WrongLeader = false
 	}
@@ -159,7 +160,7 @@ func (kv *KVServer) checkLeadership(index int, term int, done *int32) {
 			// notify the server to return.
 			// construct an error result and send to waitMap channel.
 			var result_item ResultItem
-			result_item.term = curr_term
+			result_item.Term = curr_term
 			if channel, ok := kv.waitCh[index]; ok {
 				// apply() haven't write to the channel.
 				delete(kv.waitCh, index) // apply will not write to this channel.
@@ -196,12 +197,24 @@ func (kv *KVServer) readSnapshot(data []byte) {
     }
     r := bytes.NewBuffer(data)
     d := labgob.NewDecoder(r)
-    var snapshot Snapshot
-    if d.Decode(&snapshot) != nil {
+
+    var kvmappings map[string]string
+    var servedRequest map[int64]ResultItem
+    var lastIncludedIndex int
+    var lastIncludedTerm int
+
+    if d.Decode(&lastIncludedIndex) != nil ||
+        d.Decode(&lastIncludedTerm) != nil ||
+        d.Decode(&kvmappings) != nil ||
+        d.Decode(&servedRequest) != nil {
         DPrintf("server.go-readSnapshot()-Decode error!")
     } else {
-        kv.kvmappings = snapshot.Kvmappings
-        kv.servedRequest = snapshot.ServedRequest
+        if kv.lastAppliedIndex >= lastIncludedIndex {
+            return
+        }
+        kv.kvmappings = kvmappings
+        kv.servedRequest = servedRequest
+        kv.lastAppliedIndex = lastIncludedIndex
     }
 }
 //
@@ -230,7 +243,7 @@ func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persiste
 	// You may need initialization code here.
 	kv.kvmappings = make(map[string]string)
 	kv.waitCh = make(map[int]chan ResultItem)
-	kv.servedRequest = make(map[int64]interface{})
+	kv.servedRequest = make(map[int64]ResultItem)
 
     // read snapshot.
     kv.readSnapshot(persister.ReadSnapshot())
@@ -254,8 +267,15 @@ func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persiste
 				command := msg.Command
 				command_index := msg.CommandIndex
 				command_term := msg.CommandTerm
-				// apply this cmd.
-				kv.apply(command_index, command_term, command)
+
+                if command_index > kv.lastAppliedIndex {
+				    // apply this cmd.
+				    kv.apply(command_index, command_term, command)
+                    kv.lastAppliedIndex = command_index
+                } else {
+                    // ignore the command
+                    continue
+                }
 
                 // snapshot switch.  maxraftstate == -1: off, otherwise: on.
                 if maxraftstate != -1 {
@@ -264,12 +284,12 @@ func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persiste
                         DPrintf("server.go - server-%d's Raft state is too big, make a snapshot, command_index = %d.", kv.me, command_index)
                         w := new(bytes.Buffer)
                         e := labgob.NewEncoder(w)
-                        var snapshot Snapshot
-                        snapshot.Kvmappings = kv.kvmappings
-                        snapshot.ServedRequest = kv.servedRequest
-                        e.Encode(snapshot)
+                        e.Encode(command_index)
+                        e.Encode(command_term)
+                        e.Encode(kv.kvmappings)
+                        e.Encode(kv.servedRequest)
                         snapshot_bytes := w.Bytes()
-                        kv.rf.SaveSnapshotAndTrimLog(snapshot_bytes, command_index, command_term)
+                        kv.rf.SaveSnapshotAndTrimLog(snapshot_bytes, command_index)
                     }
                 }
 			}
@@ -277,12 +297,6 @@ func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persiste
 	}()
 
 	return kv
-}
-
-// the Snapshot stucture
-type Snapshot struct {
-    Kvmappings map[string]string
-    ServedRequest map[int64]interface{}
 }
 
 
@@ -314,8 +328,8 @@ func (kv *KVServer) apply(command_index int, command_term int, command interface
 		// then it could block here with a lock held in hand. But Get() should get the lock and then unlock and then read the channel, so, deadlock!
 		// check whether to poke the Get().
 		var reply GetReply
-		if prev_reply, ok := kv.servedRequest[op.SerialNumber]; ok {
-			result_item.reply = prev_reply
+		if prev_result, ok := kv.servedRequest[op.SerialNumber]; ok {
+			result_item.Reply = prev_result.Reply
 		} else {
 			value, ok := kv.kvmappings[op.Key]
 			if ok {
@@ -325,20 +339,22 @@ func (kv *KVServer) apply(command_index int, command_term int, command interface
 				reply.Value = ""
 				reply.Err = ErrNoKey
 			}
-			kv.servedRequest[op.SerialNumber] = reply
-			result_item.reply = reply
+			result_item.Reply = reply
+			kv.servedRequest[op.SerialNumber] = result_item
 		}
 	case CmdPut:
+		var reply PutAppendReply
 		if _, ok := kv.servedRequest[op.SerialNumber]; !ok {
 			// we haven't serve for this command. apply this command.
 			// replace the value for a particular key
 			kv.kvmappings[op.Key] = op.Value
-			kv.servedRequest[op.SerialNumber] = true
+            var item ResultItem
+			kv.servedRequest[op.SerialNumber] = item
 		}
-		var reply PutAppendReply
 		reply.Err = OK
-		result_item.reply = reply
+		result_item.Reply = reply
 	case CmdAppend:
+		var reply PutAppendReply
 		if _, ok := kv.servedRequest[op.SerialNumber]; !ok {
 			// we haven't serve for this command. apply this command.
 			// replace the value for a particular key
@@ -348,15 +364,15 @@ func (kv *KVServer) apply(command_index int, command_term int, command interface
 			} else {
 				kv.kvmappings[op.Key] = op.Value
 			}
-			kv.servedRequest[op.SerialNumber] = true
+            var item ResultItem
+			kv.servedRequest[op.SerialNumber] = item
 		}
-		var reply PutAppendReply
 		reply.Err = OK
-		result_item.reply = reply
+		result_item.Reply = reply
 	}
 
-	result_item.term = command_term
-	result_item.serial_number = op.SerialNumber
+	result_item.Term = command_term
+	result_item.Serial_number = op.SerialNumber
 	if channel, ok := kv.waitCh[command_index]; ok {
 		channel <- result_item
 		delete(kv.waitCh, command_index)
