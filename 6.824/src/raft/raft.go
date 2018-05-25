@@ -294,7 +294,7 @@ type InstallSnapshotReply struct {
 
 // InstallSnapshot RPC handler.
 func (rf *Raft) InstallSnapshot(args *InstallSnapshotArgs, reply *InstallSnapshotReply) {
-    SPrintf("peer-%d InstallSnapshot()!", rf.me)
+    SPrintf("peer-%d InstallSnapshot()! args.LastIncludedIndex = %d.", rf.me, args.LastIncludedIndex)
     rf.mu.Lock()
     defer SPrintf("peer-%d InstallSnapshot() return!", rf.me)
     defer rf.mu.Unlock()
@@ -312,7 +312,7 @@ func (rf *Raft) InstallSnapshot(args *InstallSnapshotArgs, reply *InstallSnapsho
         // accept the snapshot.
         rf.lastIncludedIndex = args.LastIncludedIndex
         rf.lastIncludedTerm = args.LastIncludedTerm
-        rf.firstLogIndex = rf.lastIncludedIndex + 1
+        rf.firstLogIndex = rf.lastIncludedIndex + 1     // no problem!
         snapshot := args.Data
         var msg ApplyMsg
         msg.CommandValid = false    // indicates that this ApplyMsg is a snapshot.
@@ -331,6 +331,7 @@ func (rf *Raft) InstallSnapshot(args *InstallSnapshotArgs, reply *InstallSnapsho
         rf.applyCh <- msg  // deadlock?
         reply.Term = rf.currentTerm
         rf.lastApplied = rf.lastIncludedIndex
+        rf.commitIndex = rf.lastIncludedIndex  // right?
     } else {
         // instead the follower receives a snapshot that describes a prefix of its log.
         // discard log entries covered by the snapshot.
@@ -340,7 +341,7 @@ func (rf *Raft) InstallSnapshot(args *InstallSnapshotArgs, reply *InstallSnapsho
             snapshot := args.Data
             rf.lastIncludedIndex = args.LastIncludedIndex
             rf.lastIncludedTerm = args.LastIncludedTerm
-            rf.firstLogIndex = rf.lastIncludedIndex + 1
+            rf.firstLogIndex = rf.lastIncludedIndex + 1   // no problem!
             var msg ApplyMsg
             msg.CommandValid = false
             msg.Snapshot = snapshot
@@ -358,6 +359,9 @@ func (rf *Raft) InstallSnapshot(args *InstallSnapshotArgs, reply *InstallSnapsho
             reply.Term = rf.currentTerm
             if rf.lastApplied < rf.lastIncludedIndex {
                 rf.lastApplied = rf.lastIncludedIndex
+            }
+            if rf.commitIndex < rf.lastIncludedIndex {
+                rf.commitIndex = rf.lastIncludedIndex
             }
         }
     }
@@ -499,9 +503,6 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 	//if rf.firstLogIndex + len(rf.log) - 1 < args.PrevLogIndex {
 	if rf.getLogLastIndex() < args.PrevLogIndex {
 		// Then the leader will learn this situation and adjust this follower's matchIndex/nextIndex in its state, and AppendEntries RPC again.
-        // FIXME: reply.ConflictIndex = rf.getLogLastIndex()??
-        //reply.ConflictIndex = rf.getLogLastIndex()
-        //reply.ConflictTerm = rf.getLogTerm(reply.ConflictIndex)
 		reply.Success = false
 		return
 	}
@@ -510,12 +511,11 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 	// This means that the consistent check is OK because the log entries dropped are all committed and must be consistent.
 	if args.PrevLogIndex < rf.firstLogIndex {
 		// NOTE: skip over (rf.firstLogIndex - args.PrevLogIndex - 1) entries.
-		args.PrevLogIndex = rf.firstLogIndex - 1
 		args.Entries = args.Entries[(rf.firstLogIndex-args.PrevLogIndex)-1:]
+		args.PrevLogIndex = rf.firstLogIndex - 1
 	} else {  // args.PrevLogIndex >= rf.firstLogIndex
 		//if args.PrevLogIndex > 0 && rf.log[args.PrevLogIndex-1].Term != args.PrevLogTerm {
-		//if args.PrevLogIndex > 0 && rf.getLogEntry(args.PrevLogIndex).Term != args.PrevLogTerm {
-        SPrintf("args.PrevLogIndex = %d, rf.firstLogIndex = %d.", args.PrevLogIndex, rf.firstLogIndex)
+        SPrintf("peer-%d args.PrevLogIndex = %d, rf.firstLogIndex = %d.", rf.me, args.PrevLogIndex, rf.firstLogIndex)
 		if args.PrevLogIndex > 0 && rf.getLogTerm(args.PrevLogIndex) != args.PrevLogTerm {
         // FIXME: It's a big big bug.
 			// 3. If an existing entry conflicts with a new one(same index but different terms), delete the existing entry and all that follow it.
@@ -942,6 +942,7 @@ func Make(peers []*labrpc.ClientEnd, me int,
 		for {
 			<-rf.canApplyCh
 			// apply
+            // FIXME: need lock?
 			rf.mu.Lock()
 			commitIndex_copy := rf.commitIndex
 			lastApplied_copy := rf.lastApplied
@@ -950,9 +951,8 @@ func Make(peers []*labrpc.ClientEnd, me int,
 			firstLogIndex_copy := rf.firstLogIndex
 			copy(log_copy, rf.log)
 			rf.mu.Unlock()
-            // FIXME: if we got a snapshot and then update State Machine's state, then lastApplied will be out-of-date and refer to a snapshotted log entry.
 			for curr_index := lastApplied_copy + 1; curr_index <= commitIndex_copy; curr_index++ {
-				//DPrintf("peer-%d apply command-%d at index-%d.", rf.me, log_copy[curr_index-1].Command.(int), curr_index)
+                // the log may be snapshotted at any time.
 				DPrintf("peer-%d apply command-xx at index-%d.", rf.me, curr_index)
 				var curr_command ApplyMsg
 				curr_command.CommandValid = true
