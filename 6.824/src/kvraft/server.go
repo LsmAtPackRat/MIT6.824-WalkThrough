@@ -11,7 +11,7 @@ import (
     "bytes"
 )
 
-const Debug = 0
+const Debug = 1
 
 func DPrintf(format string, a ...interface{}) (n int, err error) {
 	if Debug > 0 {
@@ -56,7 +56,6 @@ type KVServer struct {
 	kvmappings    map[string]string       // the store is based on this map.
 	waitCh        map[int]chan ResultItem // index -> channel
 	servedRequest map[int64]ResultItem   // record which command is served before, and the value is the reply.
-    lastAppliedIndex int
 }
 
 // Get RPC handler. You should enter an Op in the Raft log using Start().
@@ -209,12 +208,8 @@ func (kv *KVServer) readSnapshot(data []byte) {
         d.Decode(&servedRequest) != nil {
         DPrintf("server.go-readSnapshot()-Decode error!")
     } else {
-        if kv.lastAppliedIndex >= lastIncludedIndex {
-            return
-        }
         kv.kvmappings = kvmappings
         kv.servedRequest = servedRequest
-        kv.lastAppliedIndex = lastIncludedIndex
     }
 }
 //
@@ -244,7 +239,6 @@ func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persiste
 	kv.kvmappings = make(map[string]string)
 	kv.waitCh = make(map[int]chan ResultItem)
 	kv.servedRequest = make(map[int64]ResultItem)
-
     // read snapshot.
     kv.readSnapshot(persister.ReadSnapshot())
 
@@ -268,14 +262,8 @@ func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persiste
 				command_index := msg.CommandIndex
 				command_term := msg.CommandTerm
 
-                if command_index > kv.lastAppliedIndex {
 				    // apply this cmd.
 				    kv.apply(command_index, command_term, command)
-                    kv.lastAppliedIndex = command_index
-                } else {
-                    // ignore the command
-                    continue
-                }
 
                 // snapshot switch.  maxraftstate == -1: off, otherwise: on.
                 if maxraftstate != -1 {
