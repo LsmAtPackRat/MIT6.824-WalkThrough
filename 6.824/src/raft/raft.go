@@ -210,16 +210,9 @@ func (rf *Raft) persistWithSnapshot(snapshot []byte) {
 func readSnapshot(data []byte) (snapshot Snapshot) {
 	r := bytes.NewBuffer(data)
 	d := labgob.NewDecoder(r)
-    var lastIncludedIndex int
-    var lastIncludedTerm int
 
-    if d.Decode(&lastIncludedIndex) != nil {
-        DPrintf("raft.go-readSnapshot()-Decode error! lastIncludedIndex!!")
-    } else if d.Decode(&lastIncludedTerm) != nil {
-        DPrintf("raft.go-readSnapshot()-Decode error! lastIncludedTerm!!")
-    } else {
-        snapshot.LastIncludedIndex = lastIncludedIndex
-        snapshot.LastIncludedTerm = lastIncludedTerm
+    if d.Decode(&snapshot) != nil {
+        DPrintf("raft.go-readSnapshot()-Decode error!")
     }
     return
 }
@@ -232,11 +225,10 @@ func (rf *Raft) StateOversize(threshold int) (result bool) {
 	}
 }
 
-// called by KVServer, Raft must store each snapshot in the persister object using SaveStateAndSnapshot().
-// argument:
-//    snapshot is passed by KVserver.
-//    index is the last index included in the snapshot.
-//    term is the last term included in the snapshot.
+// called by the associated KVServer, Raft must store each snapshot in the persister object using SaveStateAndSnapshot().
+// arguments:
+//    snapshot contains snapshot_info/kv.kvmappings/kv.servedRequest. The Raft is only interested for the first two items.
+//    last_included_index is the last index included in the snapshot.
 func (rf *Raft) SaveSnapshotAndTrimLog(snapshot []byte, last_included_index int) {
 	SPrintf("peer-%d SaveSnapshotAndTrimLog(snapshot, index = %d)", rf.me, last_included_index)
 	rf.mu.Lock()
@@ -324,7 +316,7 @@ func (rf *Raft) InstallSnapshot(args *InstallSnapshotArgs, reply *InstallSnapsho
 		return
 	}
 
-	// snapshot is old. ignore it.
+	// snapshot is out-of-date, ignore it.
 	if args.LastIncludedIndex < rf.firstLogIndex {
 		return
 	}
@@ -332,11 +324,13 @@ func (rf *Raft) InstallSnapshot(args *InstallSnapshotArgs, reply *InstallSnapsho
 	// NOTE: don't forget update rf.lastApplied!
 	// snapshot contains new information not already in the recipient's log.(including conflict case)
 	discard_all_logentries := false
-	if rf.getLogLastIndex() < args.LastIncludedIndex || len(rf.log) == 0 {
+	if rf.getLogLastIndex() <= args.LastIncludedIndex {
 		discard_all_logentries = true
 	} else {
 		// check whether conflict.
-		if rf.getLogEntry(args.LastIncludedIndex).Term != args.LastIncludedTerm { // conflict with the existing log!
+		if rf.indexIsInLog(args.LastIncludedIndex) &&
+            rf.getLogEntry(args.LastIncludedIndex).Term != args.LastIncludedTerm {
+            // conflict with the existing log!
 			discard_all_logentries = true
 		}
 	}
@@ -350,13 +344,12 @@ func (rf *Raft) InstallSnapshot(args *InstallSnapshotArgs, reply *InstallSnapsho
 		rf.commitIndex = args.LastIncludedIndex
 		rf.lastApplied = args.LastIncludedIndex
 		snapshot := args.Data
+		// persist!
 		rf.persistWithSnapshot(snapshot)
 		var msg ApplyMsg
 		msg.CommandValid = false // indicates that this ApplyMsg is a snapshot.
 		msg.Snapshot = snapshot
 		rf.applyCh <- msg // deadlock?
-		// persist!
-		reply.Term = rf.currentTerm
 	} else {
 		// instead the follower receives a snapshot that describes a prefix of its log.
 		// discard log entries covered by the snapshot.
@@ -364,19 +357,21 @@ func (rf *Raft) InstallSnapshot(args *InstallSnapshotArgs, reply *InstallSnapsho
 		rf.truncateLog(args.LastIncludedIndex+1, rf.getLogLastIndex()+1)
 		snapshot := args.Data
 		rf.firstLogIndex = args.LastIncludedIndex + 1 // no problem!
-		if args.LastIncludedIndex > rf.commitIndex {
-			rf.commitIndex = args.LastIncludedIndex
-		}
+		// persist!
+		rf.persistWithSnapshot(snapshot)
+        // Take care!
 		if args.LastIncludedIndex > rf.lastApplied {
 			rf.lastApplied = args.LastIncludedIndex
+            // invariant: rf.commitIndex >= rf.lastApplied
+		    if args.LastIncludedIndex > rf.commitIndex {
+			    rf.commitIndex = args.LastIncludedIndex
+            }
+            // need to notify the KVServer to update its state use the snapshot.
+		    var msg ApplyMsg
+		    msg.CommandValid = false
+		    msg.Snapshot = snapshot
+		    rf.applyCh <- msg // deadlock?
 		}
-		rf.persistWithSnapshot(snapshot)
-		var msg ApplyMsg
-		msg.CommandValid = false
-		msg.Snapshot = snapshot
-		rf.applyCh <- msg // deadlock?
-		// persist!
-		reply.Term = rf.currentTerm
 	}
 	return
 }
