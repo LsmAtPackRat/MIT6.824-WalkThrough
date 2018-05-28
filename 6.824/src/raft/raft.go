@@ -303,6 +303,12 @@ type InstallSnapshotReply struct {
 	Term int
 }
 
+
+// FIXME: a deadlock case:
+// KVServer call SaveSnapshotAndTrimLog() and try to hold the rf.mu, and this peer receive an InstallSnapshot RPC at the same time,
+// then InstallSnapshot RPC handler gets the rf.mu and send a snapshot to the rf.applyCh, it will block until the KVServer to read from applyCh,
+// so the deadlock occurs!
+
 // InstallSnapshot RPC handler.
 func (rf *Raft) InstallSnapshot(args *InstallSnapshotArgs, reply *InstallSnapshotReply) {
 	SPrintf("peer-%d InstallSnapshot()! args.LastIncludedIndex = %d.", rf.me, args.LastIncludedIndex)
@@ -405,24 +411,21 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 		stepdown = true
 	}
 
-	// 5.4.1 Election restriction : if the requester's log isn't more up-to-date than this peer's, don't vote for it.
+	// Election restriction : if the requester's log isn't more up-to-date than this peer's, don't vote for it.
 	// check whether the requester's log is more up-to-date.(5.4.1 last paragraph)
-	//if len(rf.log) > 0 { // At first, there's no log entry in rf.log
-	if rf.getLogLen() > 0 { // At first, there's no log entry in rf.log
-		//if rf.log[len(rf.log)-1].Term > args.LastLogTerm {
-		/*last_term := 0
-		  if len(rf.log) == 0 {
-		      last_term = rf.lastIncludedTerm
-		  } else {
-		      last_term = rf.getLogEntry(rf.getLogLastIndex()).Term
-		  }*/
-		last_term := rf.getLogEntry(rf.getLogLastIndex()).Term
+	if rf.getLogLen() > 0 { // If rf.getLogLen() == 0, the requester's log will be more up-to-date, at least as same as this raft peer.
+        last_term := -1
+        if len(rf.log) == 0 {
+            snapshot := readSnapshot(rf.persister.ReadSnapshot()) // snapshot is type Snapshot, snapshot_copy is []byte.
+            last_term = snapshot.LastIncludedTerm
+        } else {
+		    last_term = rf.getLogEntry(rf.getLogLastIndex()).Term
+        }
 		if last_term > args.LastLogTerm {
 			// this peer's log is more up-to-date than requester's.
 			reply.VoteGranted = false
 			reply.Term = rf.currentTerm
 			return
-			//} else if rf.log[len(rf.log)-1].Term == args.LastLogTerm {
 		} else if last_term == args.LastLogTerm {
 			if rf.getLogLastIndex() > args.LastLogIndex {
 				// this peer's log is more up-to-date than requester's.
@@ -519,7 +522,7 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
         // match! And truncate the args.Entries.
         if rf.firstLogIndex > args.PrevLogIndex + len(args.Entries) {
             // there's no need to do anything, But I don't think this will happen.
-            reply.Success = false  // if true, then will cause deplicated count.
+            reply.Success = true
             return
         }
 		args.Entries = args.Entries[rf.firstLogIndex - args.PrevLogIndex - 1 : ]
@@ -563,8 +566,7 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 	log_index := args.PrevLogIndex + 1 // pos is the index of the slice just after the element at PrevLogIndex.
 	entries_index := 0
 	mismatch := false
-	for log_index <= rf.getLogLen() && entries_index < len(args.Entries) {
-		//if rf.log[pos].Term == args.Entries[i].Term {
+	for log_index <= rf.getLogLastIndex() && entries_index < len(args.Entries) {
 		if rf.getLogEntry(log_index).Term == args.Entries[entries_index].Term {
 			entries_index++
 			log_index++
@@ -576,10 +578,8 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 	}
 
 	if mismatch {
-		// need adjustment. rf.log[pos].Term != args.Entries[i].Term
 		// truncate the rf.log and append entries.
-		//rf.log = rf.log[:pos]
-		rf.truncateLog(rf.firstLogIndex, log_index)
+		rf.truncateLog(rf.firstLogIndex, log_index)   // entries after log_index should be discarded, including log_index.
 		rf.log = append(rf.log, args.Entries[entries_index:]...)
 		rf.persist()
 	} else {
@@ -942,52 +942,55 @@ func Make(peers []*labrpc.ClientEnd, me int,
 	rf.resetElectionTimeout()
 
 	// Initialize volatile state on all servers.
-	rf.commitIndex = 0
-	rf.lastApplied = 0
 	rf.log = make([]LogEntry, 0)
 	rf.firstLogIndex = 1
 	// initialize from state persisted before a crash
 	rf.readPersist(persister.ReadRaftState())
+	rf.commitIndex = rf.firstLogIndex - 1
+	rf.lastApplied = 0
 
 	// seperate goroutine to apply command to statemachine.
+    // if the 
 	go func() {
 		for {
 			<-rf.canApplyCh
 			rf.mu.Lock()
-            if rf.commitIndex < rf.firstLogIndex - 1 {
-                rf.commitIndex = rf.firstLogIndex - 1
-            }
-            if rf.lastApplied < rf.firstLogIndex - 1 {
-                rf.lastApplied = rf.firstLogIndex - 1
-            }
-			commitIndex_copy := rf.commitIndex
-			lastApplied_copy := rf.lastApplied
-            firstLogIndex_copy := rf.firstLogIndex
+            // now the rf's state will not be modified.
+            // the command in the log can be applied to the SM later, but the snapshot should not be applied later.
+            // snapshot will cover the SM's state, and it will 'rollback' the SM's state if apply the snapshot too late.
+            // but the commands can be applied later, because the SM can detect the replicated operation use serial number id.
+			//commitIndex_copy := rf.commitIndex
 			term_copy := rf.currentTerm
-			log_copy := make([]LogEntry, len(rf.log))
-			copy(log_copy, rf.log)
-			rf.mu.Unlock()
-            curr_index := -1
-			for curr_index = lastApplied_copy + 1; curr_index <= commitIndex_copy; curr_index++ {
-				// the log may be snapshotted at any time.
-				DPrintf("peer-%d apply command-xx at index-%d.", rf.me, curr_index)
-				var curr_command ApplyMsg
-				curr_command.CommandValid = true
-                if curr_index - firstLogIndex_copy >= len(log_copy) || curr_index - firstLogIndex_copy < 0 {
-                    DPrintf("!!!!!!!!!!!!!!!index out of range, curr_index = %d, firstLogIndex_copy = %d, len(log_copy) = %d.", curr_index, firstLogIndex_copy, len(log_copy))
+            entries_to_apply := make([]LogEntry, 0)
+            curr_index := 0
+            first_index := -1
+            for curr_index = rf.lastApplied; curr_index <= rf.commitIndex; curr_index++ {
+                if curr_index - rf.firstLogIndex < 0 {
+                    continue
+                } else if curr_index - rf.firstLogIndex > len(rf.log) - 1 {
                     break
                 }
-				curr_command.Command = log_copy[curr_index-firstLogIndex_copy].Command
-				curr_command.CommandIndex = curr_index
+                if first_index == -1 {
+                    first_index = curr_index
+                }
+				entries_to_apply = append(entries_to_apply, rf.log[curr_index-rf.firstLogIndex])
+            }
+
+            if rf.commitIndex < rf.firstLogIndex {
+                rf.commitIndex = rf.firstLogIndex - 1
+            }
+            rf.lastApplied = rf.commitIndex
+            rf.mu.Unlock()
+            // apply the command.
+            for _, logentry := range(entries_to_apply) {
+				var curr_command ApplyMsg
+				curr_command.CommandValid = true
+				curr_command.Command = logentry.Command
+				curr_command.CommandIndex = first_index
+                first_index++
 				curr_command.CommandTerm = term_copy
 				rf.applyCh <- curr_command
-			//	rf.lastApplied = curr_index
-			}
-            rf.mu.Lock()
-            if curr_index - 1 > rf.lastApplied {
-                rf.lastApplied = curr_index - 1
             }
-			rf.mu.Unlock()  // if Unlock() here will cause 3A deadlock.
 		}
 	}()
 
@@ -1237,7 +1240,11 @@ func (rf *Raft) indexIsInLog(index int) (result bool) {
 // log will be adjust to [first_index, last_index)
 func (rf *Raft) truncateLog(first_index int, last_index int) {
     SPrintf("truncateLog() : before invocation, len(rf.log) = %d, first_index = %d, last_index = %d.", len(rf.log), first_index, last_index)
-
+    if first_index > rf.getLogLastIndex() {
+        // clear the rf.log
+        rf.log = make([]LogEntry, 0)
+        return
+    }
 	if first_index < rf.firstLogIndex {
 		first_index = rf.firstLogIndex
 	}

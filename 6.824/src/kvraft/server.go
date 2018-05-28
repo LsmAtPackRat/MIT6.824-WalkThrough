@@ -270,20 +270,24 @@ func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persiste
                 // snapshot switch.  maxraftstate == -1: off, otherwise: on.
                 if maxraftstate != -1 {
                     // check whether we need to produce a snapshot.
-                    if kv.rf.StateOversize(maxraftstate) {
-                        // we don't need to require the lock here. Because the next few lines to produce a snapshot will not be concurrent at any time.
-                        DPrintf("server.go - server-%d's Raft state is too big, make a snapshot, command_index = %d.", kv.me, command_index)
-                        var snapshot_info raft.Snapshot
-                        snapshot_info.LastIncludedIndex = command_index
-                        snapshot_info.LastIncludedTerm = command_term
-                        w := new(bytes.Buffer)
-                        e := labgob.NewEncoder(w)
-                        e.Encode(snapshot_info)
-                        e.Encode(kv.kvmappings)
-                        e.Encode(kv.servedRequest)
-                        snapshot := w.Bytes()
-                        kv.rf.SaveSnapshotAndTrimLog(snapshot, command_index)
-                    }
+                    go func() {
+                        kv.mu.Lock()
+                        if kv.rf.StateOversize(maxraftstate) {
+                            // we don't need to require the lock here. Because the next few lines to produce a snapshot will not be concurrent at any time.
+                            DPrintf("server.go - server-%d's Raft state is too big, make a snapshot, command_index = %d.", kv.me, command_index)
+                            var snapshot_info raft.Snapshot
+                            snapshot_info.LastIncludedIndex = command_index
+                            snapshot_info.LastIncludedTerm = command_term
+                            w := new(bytes.Buffer)
+                            e := labgob.NewEncoder(w)
+                            e.Encode(snapshot_info)
+                            e.Encode(kv.kvmappings)
+                            e.Encode(kv.servedRequest)
+                            snapshot := w.Bytes()
+                            kv.rf.SaveSnapshotAndTrimLog(snapshot, command_index)
+                        }
+                        kv.mu.Unlock()
+                    }()
                 }
 			}
 		}
