@@ -355,7 +355,9 @@ func (rf *Raft) InstallSnapshot(args *InstallSnapshotArgs, reply *InstallSnapsho
 		var msg ApplyMsg
 		msg.CommandValid = false // indicates that this ApplyMsg is a snapshot.
 		msg.Snapshot = snapshot
-		rf.applyCh <- msg // deadlock?
+        go func() {
+		    rf.applyCh <- msg // FIXME: deadlock!
+        }()
 	} else {
 		// instead the follower receives a snapshot that describes a prefix of its log.
 		// discard log entries covered by the snapshot.
@@ -376,7 +378,10 @@ func (rf *Raft) InstallSnapshot(args *InstallSnapshotArgs, reply *InstallSnapsho
 		    var msg ApplyMsg
 		    msg.CommandValid = false
 		    msg.Snapshot = snapshot
-		    rf.applyCh <- msg // deadlock?
+            go func() {
+		        rf.applyCh <- msg // FIXME: deadlock!
+            }()
+            //time.Sleep(time.Millisecond * time.Duration(10))
 		}
 	}
 	return
@@ -950,7 +955,6 @@ func Make(peers []*labrpc.ClientEnd, me int,
 	rf.lastApplied = 0
 
 	// seperate goroutine to apply command to statemachine.
-    // if the 
 	go func() {
 		for {
 			<-rf.canApplyCh
@@ -964,7 +968,7 @@ func Make(peers []*labrpc.ClientEnd, me int,
             entries_to_apply := make([]LogEntry, 0)
             curr_index := 0
             first_index := -1
-            for curr_index = rf.lastApplied; curr_index <= rf.commitIndex; curr_index++ {
+            for curr_index = rf.lastApplied + 1; curr_index <= rf.commitIndex; curr_index++ {
                 if curr_index - rf.firstLogIndex < 0 {
                     continue
                 } else if curr_index - rf.firstLogIndex > len(rf.log) - 1 {
@@ -982,6 +986,7 @@ func Make(peers []*labrpc.ClientEnd, me int,
             rf.lastApplied = rf.commitIndex
             rf.mu.Unlock()
             // apply the command.
+            // time.Sleep(time.Millisecond * time.Duration(30))
             for _, logentry := range(entries_to_apply) {
 				var curr_command ApplyMsg
 				curr_command.CommandValid = true
@@ -1245,15 +1250,24 @@ func (rf *Raft) truncateLog(first_index int, last_index int) {
         rf.log = make([]LogEntry, 0)
         return
     }
+
+    left_all := false
+    right_all := false
 	if first_index < rf.firstLogIndex {
 		first_index = rf.firstLogIndex
+        left_all = true
 	}
 	if last_index > rf.getLogLastIndex()+1 {
 		last_index = rf.getLogLastIndex() + 1
+        right_all = true
 	}
-	if last_index == first_index {
-		rf.log = make([]LogEntry, 0)
-	} else {
+	if left_all && right_all {
+        return // do nothing.
+    } else if left_all {
+        rf.log = rf.log[ : last_index-rf.firstLogIndex]
+    } else if right_all {
+        rf.log = rf.log[first_index-rf.firstLogIndex : ]
+    } else {
         log_copy := make([]LogEntry, last_index-first_index)
         copy(log_copy, rf.log[first_index-rf.firstLogIndex : last_index-rf.firstLogIndex])
         rf.log = log_copy

@@ -11,7 +11,7 @@ import (
     "bytes"
 )
 
-const Debug = 0
+const Debug = 1
 
 func DPrintf(format string, a ...interface{}) (n int, err error) {
 	if Debug > 0 {
@@ -35,7 +35,7 @@ type Op struct {
 	Type         CommandType // actually int type.
 	Key          string
 	Value        string
-	SerialNumber int64
+	SerialNumber int64    // identifier
 }
 
 type ResultItem struct {
@@ -53,9 +53,10 @@ type KVServer struct {
 	maxraftstate int // snapshot if log grows this big
 
 	// Your definitions here.
-	kvmappings    map[string]string       // the store is based on this map.
+	Kvmappings    map[string]string       // the store is based on this map.
+	ServedRequest map[int64]ResultItem    // record which command is served before, and the value is the reply.
 	waitCh        map[int]chan ResultItem // index -> channel
-	servedRequest map[int64]ResultItem   // record which command is served before, and the value is the reply.
+    maxIndex      int
 }
 
 
@@ -206,13 +207,27 @@ func (kv *KVServer) readSnapshot(data []byte) {
     var servedRequest map[int64]ResultItem
     var snapshot_info raft.Snapshot
 
-    if d.Decode(&snapshot_info) != nil ||
+    /*if d.Decode(&snapshot_info) != nil ||
         d.Decode(&kvmappings) != nil ||
         d.Decode(&servedRequest) != nil {
         DPrintf("server.go-readSnapshot()-Decode error!")
     } else {
-        kv.kvmappings = kvmappings
-        kv.servedRequest = servedRequest
+        kv.Kvmappings = kvmappings
+        kv.ServedRequest = servedRequest
+    }*/
+    if d.Decode(&snapshot_info) != nil {
+        DPrintf("server.go-readSnapshot()-Decode snapshot_info error!")
+    } else if d.Decode(&kvmappings) != nil {
+        DPrintf("server.go-readSnapshot()-Decode kvmappings error!")
+        //log.Fatal(err)
+    } else if err := d.Decode(&servedRequest); err != nil {
+        DPrintf("server.go-readSnapshot()-Decode servedRequest error!")
+    } else {
+        if kv.maxIndex >= snapshot_info.LastIncludedIndex {
+            return
+        }
+        kv.Kvmappings = kvmappings
+        kv.ServedRequest = servedRequest
     }
 }
 //
@@ -233,15 +248,19 @@ func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persiste
 	// call labgob.Register on structures you want
 	// Go's RPC library to marshall/unmarshall.
 	labgob.Register(Op{})
+    labgob.Register(ResultItem{})
+    labgob.Register(map[string]string{})
+    labgob.Register(map[int64]ResultItem{})
 
 	kv := new(KVServer)
 	kv.me = me
 	kv.maxraftstate = maxraftstate
 
 	// You may need initialization code here.
-	kv.kvmappings = make(map[string]string)
+	kv.Kvmappings = make(map[string]string)
 	kv.waitCh = make(map[int]chan ResultItem)
-	kv.servedRequest = make(map[int64]ResultItem)
+	kv.ServedRequest = make(map[int64]ResultItem)
+    kv.maxIndex = 0
     // read snapshot from the persisted state.
     kv.readSnapshot(persister.ReadSnapshot())
 
@@ -258,11 +277,12 @@ func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persiste
 			if msg.CommandValid == false {
 				// get a snapshot from Raft. If receive a snapshot, the raft peer must not be the leader.
                 DPrintf("kv-%d get a snapshot from kv.applyCh!", kv.me)
-				kv.applySnapshot(msg.Snapshot)
+				kv.applySnapshot(msg.Snapshot)   // leader will not receive a snapshot, right?
 			} else {
 				// cmd is the type interface{}
 				command := msg.Command
 				command_index := msg.CommandIndex
+                kv.maxIndex = command_index
 				command_term := msg.CommandTerm
 			    // apply this cmd.
 				kv.apply(command_index, command_term, command)
@@ -271,22 +291,23 @@ func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persiste
                 if maxraftstate != -1 {
                     // check whether we need to produce a snapshot.
                     go func() {
-                        kv.mu.Lock()
                         if kv.rf.StateOversize(maxraftstate) {
                             // we don't need to require the lock here. Because the next few lines to produce a snapshot will not be concurrent at any time.
-                            DPrintf("server.go - server-%d's Raft state is too big, make a snapshot, command_index = %d.", kv.me, command_index)
+                            DPrintf("server.go - kv-%d's Raft state is too big, make a snapshot, command_index = %d.", kv.me, command_index)
+                            kv.mu.Lock()
                             var snapshot_info raft.Snapshot
                             snapshot_info.LastIncludedIndex = command_index
                             snapshot_info.LastIncludedTerm = command_term
                             w := new(bytes.Buffer)
                             e := labgob.NewEncoder(w)
                             e.Encode(snapshot_info)
-                            e.Encode(kv.kvmappings)
-                            e.Encode(kv.servedRequest)
+                            e.Encode(kv.Kvmappings)
+                            e.Encode(kv.ServedRequest)
                             snapshot := w.Bytes()
+                            kv.mu.Unlock()
+                            DPrintf("kv-%d will call SaveSnapshotAndTrimLog()", kv.me)
                             kv.rf.SaveSnapshotAndTrimLog(snapshot, command_index)
                         }
-                        kv.mu.Unlock()
                     }()
                 }
 			}
@@ -301,6 +322,7 @@ func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persiste
 func (kv *KVServer) applySnapshot(snapshot []byte) {
     kv.mu.Lock()
     defer kv.mu.Unlock()
+    DPrintf("kv-%d applySnapshot()!", kv.me)
     kv.readSnapshot(snapshot)
 }
 
@@ -325,10 +347,10 @@ func (kv *KVServer) apply(command_index int, command_term int, command interface
 		// then it could block here with a lock held in hand. But Get() should get the lock and then unlock and then read the channel, so, deadlock!
 		// check whether to poke the Get().
 		var reply GetReply
-		if prev_result, ok := kv.servedRequest[op.SerialNumber]; ok {
+		if prev_result, ok := kv.ServedRequest[op.SerialNumber]; ok {
 			result_item.Reply = prev_result.Reply
 		} else {
-			value, ok := kv.kvmappings[op.Key]
+			value, ok := kv.Kvmappings[op.Key]
 			if ok {
 				reply.Value = value
 				reply.Err = OK
@@ -337,32 +359,32 @@ func (kv *KVServer) apply(command_index int, command_term int, command interface
 				reply.Err = ErrNoKey
 			}
 			result_item.Reply = reply
-			kv.servedRequest[op.SerialNumber] = result_item
+			kv.ServedRequest[op.SerialNumber] = result_item
 		}
 	case CmdPut:
 		var reply PutAppendReply
-		if _, ok := kv.servedRequest[op.SerialNumber]; !ok {
+		if _, ok := kv.ServedRequest[op.SerialNumber]; !ok {
 			// we haven't serve for this command. apply this command.
 			// replace the value for a particular key
-			kv.kvmappings[op.Key] = op.Value
+			kv.Kvmappings[op.Key] = op.Value
             var item ResultItem
-			kv.servedRequest[op.SerialNumber] = item
+			kv.ServedRequest[op.SerialNumber] = item
 		}
 		reply.Err = OK
 		result_item.Reply = reply
 	case CmdAppend:
 		var reply PutAppendReply
-		if _, ok := kv.servedRequest[op.SerialNumber]; !ok {
+		if _, ok := kv.ServedRequest[op.SerialNumber]; !ok {
 			// we haven't serve for this command. apply this command.
 			// replace the value for a particular key
-			value, ok := kv.kvmappings[op.Key]
+			value, ok := kv.Kvmappings[op.Key]
 			if ok {
-				kv.kvmappings[op.Key] = value + op.Value
+				kv.Kvmappings[op.Key] = value + op.Value
 			} else {
-				kv.kvmappings[op.Key] = op.Value
+				kv.Kvmappings[op.Key] = op.Value
 			}
             var item ResultItem
-			kv.servedRequest[op.SerialNumber] = item
+			kv.ServedRequest[op.SerialNumber] = item
 		}
 		reply.Err = OK
 		result_item.Reply = reply
