@@ -282,7 +282,9 @@ func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persiste
 				// cmd is the type interface{}
 				command := msg.Command
 				command_index := msg.CommandIndex
-                kv.maxIndex = command_index
+                if command_index > kv.maxIndex {
+                    kv.maxIndex = command_index
+                }
 				command_term := msg.CommandTerm
 			    // apply this cmd.
 				kv.apply(command_index, command_term, command)
@@ -290,9 +292,7 @@ func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persiste
                 // snapshot switch.  maxraftstate == -1: off, otherwise: on.
                 if maxraftstate != -1 {
                     // check whether we need to produce a snapshot.
-                    go func() {
                         if kv.rf.StateOversize(maxraftstate) {
-                            // we don't need to require the lock here. Because the next few lines to produce a snapshot will not be concurrent at any time.
                             DPrintf("server.go - kv-%d's Raft state is too big, make a snapshot, command_index = %d.", kv.me, command_index)
                             kv.mu.Lock()
                             var snapshot_info raft.Snapshot
@@ -308,7 +308,6 @@ func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persiste
                             DPrintf("kv-%d will call SaveSnapshotAndTrimLog()", kv.me)
                             kv.rf.SaveSnapshotAndTrimLog(snapshot, command_index)
                         }
-                    }()
                 }
 			}
 		}
@@ -348,6 +347,7 @@ func (kv *KVServer) apply(command_index int, command_term int, command interface
 		// check whether to poke the Get().
 		var reply GetReply
 		if prev_result, ok := kv.ServedRequest[op.SerialNumber]; ok {
+            DPrintf("kv-%d CmdGet served request!", kv.me)
 			result_item.Reply = prev_result.Reply
 		} else {
 			value, ok := kv.Kvmappings[op.Key]
@@ -355,6 +355,7 @@ func (kv *KVServer) apply(command_index int, command_term int, command interface
 				reply.Value = value
 				reply.Err = OK
 			} else {
+                DPrintf("kv-%d CmdGet ErrNoKey!", kv.me)
 				reply.Value = ""
 				reply.Err = ErrNoKey
 			}
@@ -374,6 +375,7 @@ func (kv *KVServer) apply(command_index int, command_term int, command interface
 		result_item.Reply = reply
 	case CmdAppend:
 		var reply PutAppendReply
+        DPrintf("PutAppend() Append : " + op.Value)
 		if _, ok := kv.ServedRequest[op.SerialNumber]; !ok {
 			// we haven't serve for this command. apply this command.
 			// replace the value for a particular key

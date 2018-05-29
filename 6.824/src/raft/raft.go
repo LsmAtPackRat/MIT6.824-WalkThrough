@@ -381,7 +381,6 @@ func (rf *Raft) InstallSnapshot(args *InstallSnapshotArgs, reply *InstallSnapsho
             go func() {
 		        rf.applyCh <- msg // FIXME: deadlock!
             }()
-            //time.Sleep(time.Millisecond * time.Duration(10))
 		}
 	}
 	return
@@ -530,7 +529,7 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
             reply.Success = true
             return
         }
-		args.Entries = args.Entries[rf.firstLogIndex - args.PrevLogIndex - 1 : ]
+		args.Entries = args.Entries[rf.firstLogIndex - args.PrevLogIndex - 1 : ]   // checked!
 		args.PrevLogIndex = rf.firstLogIndex - 1
 	} else {
         // now rf.firstLogIndex <= args.PrevLogIndex <= rf.getLogLastIndex(). So rf.getLogLastIndex() >= rf.firstLogIndex, so rf.log is not empty.
@@ -963,8 +962,6 @@ func Make(peers []*labrpc.ClientEnd, me int,
             // the command in the log can be applied to the SM later, but the snapshot should not be applied later.
             // snapshot will cover the SM's state, and it will 'rollback' the SM's state if apply the snapshot too late.
             // but the commands can be applied later, because the SM can detect the replicated operation use serial number id.
-			//commitIndex_copy := rf.commitIndex
-			term_copy := rf.currentTerm
             entries_to_apply := make([]LogEntry, 0)
             curr_index := 0
             first_index := -1
@@ -993,7 +990,7 @@ func Make(peers []*labrpc.ClientEnd, me int,
 				curr_command.Command = logentry.Command
 				curr_command.CommandIndex = first_index
                 first_index++
-				curr_command.CommandTerm = term_copy
+				curr_command.CommandTerm = logentry.Term
 				rf.applyCh <- curr_command
             }
 		}
@@ -1253,12 +1250,10 @@ func (rf *Raft) truncateLog(first_index int, last_index int) {
 
     left_all := false
     right_all := false
-	if first_index < rf.firstLogIndex {
-		first_index = rf.firstLogIndex
+	if first_index <= rf.firstLogIndex {
         left_all = true
 	}
-	if last_index > rf.getLogLastIndex()+1 {
-		last_index = rf.getLogLastIndex() + 1
+	if last_index >= rf.getLogLastIndex()+1 {
         right_all = true
 	}
 	if left_all && right_all {
