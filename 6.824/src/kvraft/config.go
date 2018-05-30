@@ -88,7 +88,7 @@ func (cfg *config) LogSize() int {
 		}
 	}
 	//return logsize
-    return 1
+	return 1
 }
 
 // Maximum snapshot size across all servers

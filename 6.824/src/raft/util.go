@@ -25,7 +25,6 @@ func SPrintf(format string, a ...interface{}) (n int, err error) {
 	return
 }
 
-
 func ResetStatistics() {
 	RV_RPCS = 0
 	AE_RPCS = 0
