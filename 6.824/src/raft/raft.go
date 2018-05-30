@@ -354,10 +354,10 @@ func (rf *Raft) InstallSnapshot(args *InstallSnapshotArgs, reply *InstallSnapsho
 		var msg ApplyMsg
 		msg.CommandValid = false // indicates that this ApplyMsg is a snapshot.
 		msg.Snapshot = snapshot
-		rf.wg.Add(1)
+		//rf.wg.Add(1)
 		go func() {
 			rf.applyCh <- msg
-			rf.wg.Done()
+			//rf.wg.Done()
 		}()
 	} else {
 		// instead the follower receives a snapshot that describes a prefix of its log.
@@ -379,10 +379,10 @@ func (rf *Raft) InstallSnapshot(args *InstallSnapshotArgs, reply *InstallSnapsho
 			var msg ApplyMsg
 			msg.CommandValid = false
 			msg.Snapshot = snapshot
-			rf.wg.Add(1)
+			//rf.wg.Add(1)
 			go func() {
 				rf.applyCh <- msg
-				rf.wg.Done()
+				//rf.wg.Done()
 			}()
 		}
 	}
@@ -984,7 +984,7 @@ func Make(peers []*labrpc.ClientEnd, me int,
 			rf.lastApplied = rf.commitIndex
 			rf.mu.Unlock()
 			// apply the command.
-			rf.wg.Wait() // if have snapshot to apply, wait for snapshot to apply first.
+			//rf.wg.Wait() // if have snapshot to apply, wait for snapshot to apply first.
 			for _, logentry := range entries_to_apply {
 				var curr_command ApplyMsg
 				curr_command.CommandValid = true
@@ -1243,7 +1243,7 @@ func (rf *Raft) indexIsInLog(index int) (result bool) {
 // log will be adjust to [first_index, last_index)
 func (rf *Raft) truncateLog(first_index int, last_index int) {
 	SPrintf("truncateLog() : before invocation, len(rf.log) = %d, first_index = %d, last_index = %d.", len(rf.log), first_index, last_index)
-	if first_index > rf.getLogLastIndex() || last_index <= rf.firstLogIndex {
+	if first_index > rf.getLogLastIndex() || last_index < rf.firstLogIndex {
 		// clear the rf.log
 		rf.log = make([]LogEntry, 0)
 		return
