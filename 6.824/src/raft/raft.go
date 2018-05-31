@@ -52,6 +52,7 @@ type ApplyMsg struct {
 
 	// if CommandValid == false, means that this ApplyMsg is a snapshot.
 	Snapshot []byte
+    ServedRequests  map[int64]bool     //Commands that are discarded.
 }
 
 // A Log Entry
@@ -107,6 +108,7 @@ type Raft struct {
 	applyCh                  chan ApplyMsg
 	canApplyCh               chan bool // if can apply command, write to this channel to notify the goroutine.
 	wg                       sync.WaitGroup
+    ServedRequests           map[int64]bool
 }
 
 // return currentTerm and whether this server
@@ -230,7 +232,7 @@ func (rf *Raft) StateOversize(threshold int) (result bool) {
 // arguments:
 //    snapshot contains snapshot_info/kv.kvmappings/kv.servedRequest. The Raft is only interested for the first two items.
 //    last_included_index is the last index included in the snapshot.
-func (rf *Raft) SaveSnapshotAndTrimLog(snapshot []byte, last_included_index int) {
+func (rf *Raft) SaveSnapshotAndTrimLog(snapshot []byte, last_included_index int, served_requests map[int64]bool) {
 	SPrintf("peer-%d SaveSnapshotAndTrimLog(snapshot, index = %d)", rf.me, last_included_index)
 	rf.mu.Lock()
 	defer SPrintf("peer-%d SaveSnapshotAndTrimLog return!", rf.me)
@@ -241,7 +243,7 @@ func (rf *Raft) SaveSnapshotAndTrimLog(snapshot []byte, last_included_index int)
 		SPrintf("peer-%d SaveSnapshotAndTrimLog got a out-of-date index-%d, just ignore it.", rf.me, last_included_index)
 		return
 	}
-
+    rf.ServedRequests = served_requests
 	// now last_included_index >= rf.firstLogIndex
 	rf.truncateLog(last_included_index+1, rf.getLogLastIndex()+1) // index is included in the snapshot.
 	rf.firstLogIndex = last_included_index + 1                    // rf.commitIndex and rf.lastApplied must be bigger than rf.firstLogIndex at this time.
@@ -297,6 +299,7 @@ type InstallSnapshotArgs struct {
 	//Offset int    // you do not have to implement the offset mechanism.
 	Data []byte // snapshot.
 	//Done bool     // used by the offset mechanism.
+    ServedRequests    map[int64]bool
 }
 
 type InstallSnapshotReply struct {
@@ -354,10 +357,12 @@ func (rf *Raft) InstallSnapshot(args *InstallSnapshotArgs, reply *InstallSnapsho
 		var msg ApplyMsg
 		msg.CommandValid = false // indicates that this ApplyMsg is a snapshot.
 		msg.Snapshot = snapshot
-		rf.wg.Add(1)
+        // FIXME: have a try.
+        msg.ServedRequests = args.ServedRequests
+		//rf.wg.Add(1)
 		go func() {
 			rf.applyCh <- msg
-			rf.wg.Done()
+			//rf.wg.Done()
 		}()
 	} else {
 		// instead the follower receives a snapshot that describes a prefix of its log.
@@ -379,10 +384,12 @@ func (rf *Raft) InstallSnapshot(args *InstallSnapshotArgs, reply *InstallSnapsho
 			var msg ApplyMsg
 			msg.CommandValid = false
 			msg.Snapshot = snapshot
-			rf.wg.Add(1)
+            // FIXME: have a try.
+            msg.ServedRequests = args.ServedRequests
+			//rf.wg.Add(1)
 			go func() {
 				rf.applyCh <- msg
-				rf.wg.Done()
+				//rf.wg.Done()
 			}()
 		}
 	}
@@ -731,6 +738,8 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 					//snapshot_copy := make([]byte, len(rf.persister.ReadSnapshot()))
 					//copy(snapshot_copy, rf.persister.ReadSnapshot())
 					snapshot_copy := rf.persister.ReadSnapshot()
+                    //var served_requests_copy map[int64]bool
+                    //served_requests_copy = rf.ServedRequests
 					rf.mu.Unlock()
 					snapshot := readSnapshot(snapshot_copy) // snapshot is type Snapshot, snapshot_copy is []byte.
 
@@ -746,6 +755,7 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 						args.LastIncludedIndex = snapshot.LastIncludedIndex
 						args.LastIncludedTerm = snapshot.LastIncludedTerm
 						args.Data = snapshot_copy
+                        //args.ServedRequests = served_requests_copy
 						ok := rf.sendInstallSnapshot(i, &args, &reply)
 						if ok {
 							rf.mu.Lock()
@@ -985,7 +995,7 @@ func Make(peers []*labrpc.ClientEnd, me int,
 			rf.lastApplied = rf.commitIndex
 			rf.mu.Unlock()
 			// apply the command.
-			rf.wg.Wait() // if have snapshot to apply, wait for snapshot to apply first.
+			//rf.wg.Wait() // if have snapshot to apply, wait for snapshot to apply first.
 			for _, logentry := range entries_to_apply {
 				var curr_command ApplyMsg
 				curr_command.CommandValid = true
