@@ -354,10 +354,10 @@ func (rf *Raft) InstallSnapshot(args *InstallSnapshotArgs, reply *InstallSnapsho
 		var msg ApplyMsg
 		msg.CommandValid = false // indicates that this ApplyMsg is a snapshot.
 		msg.Snapshot = snapshot
-		//rf.wg.Add(1)
+		rf.wg.Add(1)
 		go func() {
 			rf.applyCh <- msg
-			//rf.wg.Done()
+			rf.wg.Done()
 		}()
 	} else {
 		// instead the follower receives a snapshot that describes a prefix of its log.
@@ -379,10 +379,10 @@ func (rf *Raft) InstallSnapshot(args *InstallSnapshotArgs, reply *InstallSnapsho
 			var msg ApplyMsg
 			msg.CommandValid = false
 			msg.Snapshot = snapshot
-			//rf.wg.Add(1)
+			rf.wg.Add(1)
 			go func() {
 				rf.applyCh <- msg
-				//rf.wg.Done()
+				rf.wg.Done()
 			}()
 		}
 	}
@@ -966,6 +966,7 @@ func Make(peers []*labrpc.ClientEnd, me int,
 			entries_to_apply := make([]LogEntry, 0)
 			curr_index := 0
 			first_index := -1
+            // FIXME: is rf.lastApplied precise when use snapshot?
 			for curr_index = rf.lastApplied + 1; curr_index <= rf.commitIndex; curr_index++ {
 				if curr_index-rf.firstLogIndex < 0 {
 					continue
@@ -984,7 +985,7 @@ func Make(peers []*labrpc.ClientEnd, me int,
 			rf.lastApplied = rf.commitIndex
 			rf.mu.Unlock()
 			// apply the command.
-			//rf.wg.Wait() // if have snapshot to apply, wait for snapshot to apply first.
+			rf.wg.Wait() // if have snapshot to apply, wait for snapshot to apply first.
 			for _, logentry := range entries_to_apply {
 				var curr_command ApplyMsg
 				curr_command.CommandValid = true
@@ -1245,6 +1246,7 @@ func (rf *Raft) truncateLog(first_index int, last_index int) {
 	SPrintf("truncateLog() : before invocation, len(rf.log) = %d, first_index = %d, last_index = %d.", len(rf.log), first_index, last_index)
 	if first_index > rf.getLogLastIndex() || last_index < rf.firstLogIndex {
 		// clear the rf.log
+        rf.log = nil
 		rf.log = make([]LogEntry, 0)
 		return
 	}
@@ -1260,12 +1262,19 @@ func (rf *Raft) truncateLog(first_index int, last_index int) {
 	if left_all && right_all {
 		return // do nothing.
 	} else if left_all {
-		rf.log = rf.log[:last_index-rf.firstLogIndex]
+		log_copy := make([]LogEntry, len(rf.log[:last_index-rf.firstLogIndex]))
+        copy(log_copy, rf.log[:last_index-rf.firstLogIndex])
+        rf.log = nil
+        rf.log = log_copy
 	} else if right_all {
-		rf.log = rf.log[first_index-rf.firstLogIndex:]
+        log_copy := make([]LogEntry, len(rf.log[first_index-rf.firstLogIndex:]))
+        copy(log_copy, rf.log[first_index-rf.firstLogIndex:])
+        rf.log = nil
+		rf.log = log_copy
 	} else {
 		log_copy := make([]LogEntry, last_index-first_index)
 		copy(log_copy, rf.log[first_index-rf.firstLogIndex:last_index-rf.firstLogIndex])
+        rf.log = nil
 		rf.log = log_copy
 	}
 	SPrintf("truncateLog() : after invocation, len(rf.log) = %d.", len(rf.log))

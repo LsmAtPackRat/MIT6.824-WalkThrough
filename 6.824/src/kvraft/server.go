@@ -204,7 +204,7 @@ func (kv *KVServer) readSnapshot(data []byte) {
 	d := labgob.NewDecoder(r)
 
 	var kvmappings map[string]string
-    var getServedResults map[int64]string
+    //var getServedResults map[int64]string
     var putAppendServedResults map[int64]bool
 	var snapshot_info raft.Snapshot
 
@@ -213,8 +213,8 @@ func (kv *KVServer) readSnapshot(data []byte) {
 	} else if d.Decode(&kvmappings) != nil {
 		DPrintf("server.go-readSnapshot()-Decode kvmappings error!")
 		//log.Fatal(err)
-	} else if err := d.Decode(&getServedResults); err != nil {
-		DPrintf("server.go-readSnapshot()-Decode getServedResults error!")
+	//} else if err := d.Decode(&getServedResults); err != nil {
+	//	DPrintf("server.go-readSnapshot()-Decode getServedResults error!")
 	} else if err := d.Decode(&putAppendServedResults); err != nil {
 		DPrintf("server.go-readSnapshot()-Decode putAppendServedResults error!")
 	} else {
@@ -223,7 +223,7 @@ func (kv *KVServer) readSnapshot(data []byte) {
 		    return
 	    }
 	    kv.Kvmappings = kvmappings
-        kv.GetServedResults = getServedResults
+        //kv.GetServedResults = getServedResults
         kv.PutAppendServedResults = putAppendServedResults
 	}
 }
@@ -292,7 +292,7 @@ func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persiste
 				if maxraftstate != -1 {
 					// check whether we need to produce a snapshot.
 					if kv.rf.StateOversize(maxraftstate) {
-						DPrintf("server.go - kv-%d's Raft state is too big, make a snapshot, command_index = %d.", kv.me, command_index)
+						DPrintf("server.go - kv-%d's Raft state is too big, make a snapshot, command_index = %d. state's size = %d", kv.me, command_index, persister.RaftStateSize())
 						kv.mu.Lock()
 						var snapshot_info raft.Snapshot
 						snapshot_info.LastIncludedIndex = command_index
@@ -301,7 +301,7 @@ func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persiste
 						e := labgob.NewEncoder(w)
 						e.Encode(snapshot_info)
 						e.Encode(kv.Kvmappings)
-                        e.Encode(kv.GetServedResults)
+                        //e.Encode(kv.GetServedResults)
                         e.Encode(kv.PutAppendServedResults)
 						snapshot := w.Bytes()
 						kv.mu.Unlock()
@@ -345,12 +345,14 @@ func (kv *KVServer) apply(command_index int, command_term int, command interface
 		// then it could block here with a lock held in hand. But Get() should get the lock and then unlock and then read the channel, so, deadlock!
 		// check whether to poke the Get().
 		var reply GetReply
-		if prev_result, ok := kv.GetServedResults[op.SerialNumber]; ok {
+		//if prev_result, ok := kv.GetServedResults[op.SerialNumber]; ok {
+		/*if _, ok := kv.GetServedResults[op.SerialNumber]; ok {
 			DPrintf("kv-%d CmdGet served request!", kv.me)
-            reply.Value = prev_result
+            //reply.Value = prev_result
+            reply.Value = kv.Kvmappings[op.Key]
             reply.Err = OK
 			result_item.Reply = reply
-		} else {
+		} else {*/
 			value, ok := kv.Kvmappings[op.Key]
 			if ok {
 				reply.Value = value
@@ -361,8 +363,8 @@ func (kv *KVServer) apply(command_index int, command_term int, command interface
 				reply.Err = ErrNoKey
 			}
 			result_item.Reply = reply
-			kv.GetServedResults[op.SerialNumber] = value
-		}
+		//	kv.GetServedResults[op.SerialNumber] = value
+		//}
 	case CmdPut:
 		var reply PutAppendReply
 		if _, ok := kv.PutAppendServedResults[op.SerialNumber]; !ok {
