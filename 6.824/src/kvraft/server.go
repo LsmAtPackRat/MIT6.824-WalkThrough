@@ -54,7 +54,8 @@ type KVServer struct {
 
 	// Your definitions here.
 	Kvmappings    map[string]string       // the store is based on this map.
-	ServedRequest map[int64]ResultItem    // record which command is served before, and the value is the reply.
+    GetServedResults map[int64]string     // serialnumber : value
+    PutAppendServedResults map[int64]bool // bool just be true, isn't used.
 	waitCh        map[int]chan ResultItem // index -> channel
 	maxIndex      int
 }
@@ -203,33 +204,28 @@ func (kv *KVServer) readSnapshot(data []byte) {
 	d := labgob.NewDecoder(r)
 
 	var kvmappings map[string]string
-	var servedRequest map[int64]ResultItem
+    var getServedResults map[int64]string
+    var putAppendServedResults map[int64]bool
 	var snapshot_info raft.Snapshot
 
-	/*if d.Decode(&snapshot_info) != nil ||
-	      d.Decode(&kvmappings) != nil ||
-	      d.Decode(&servedRequest) != nil {
-	      DPrintf("server.go-readSnapshot()-Decode error!")
-	  } else {
-	      kv.Kvmappings = kvmappings
-	      kv.ServedRequest = servedRequest
-	  }*/
 	if d.Decode(&snapshot_info) != nil {
 		DPrintf("server.go-readSnapshot()-Decode snapshot_info error!")
 	} else if d.Decode(&kvmappings) != nil {
 		DPrintf("server.go-readSnapshot()-Decode kvmappings error!")
 		//log.Fatal(err)
-	} else if err := d.Decode(&servedRequest); err != nil {
-		DPrintf("server.go-readSnapshot()-Decode servedRequest error!")
+	} else if err := d.Decode(&getServedResults); err != nil {
+		DPrintf("server.go-readSnapshot()-Decode getServedResults error!")
+	} else if err := d.Decode(&putAppendServedResults); err != nil {
+		DPrintf("server.go-readSnapshot()-Decode putAppendServedResults error!")
+	} else {
+	    DPrintf("kv-%d readSnapshot() LastIncludedIndex = %d", kv.me, snapshot_info.LastIncludedIndex)
+	    if kv.maxIndex >= snapshot_info.LastIncludedIndex {
+		    return
+	    }
+	    kv.Kvmappings = kvmappings
+        kv.GetServedResults = getServedResults
+        kv.PutAppendServedResults = putAppendServedResults
 	}
-	//{
-	DPrintf("kv-%d readSnapshot() LastIncludedIndex = %d", kv.me, snapshot_info.LastIncludedIndex)
-	if kv.maxIndex >= snapshot_info.LastIncludedIndex {
-		return
-	}
-	kv.Kvmappings = kvmappings
-	//kv.ServedRequest = servedRequest
-	//}
 }
 
 //
@@ -261,7 +257,8 @@ func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persiste
 	// You may need initialization code here.
 	kv.Kvmappings = make(map[string]string)
 	kv.waitCh = make(map[int]chan ResultItem)
-	kv.ServedRequest = make(map[int64]ResultItem)
+    kv.GetServedResults = make(map[int64]string)
+    kv.PutAppendServedResults = make(map[int64]bool)
 	kv.maxIndex = 0
 	// read snapshot from the persisted state.
 	kv.readSnapshot(persister.ReadSnapshot())
@@ -304,7 +301,8 @@ func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persiste
 						e := labgob.NewEncoder(w)
 						e.Encode(snapshot_info)
 						e.Encode(kv.Kvmappings)
-						e.Encode(kv.ServedRequest)
+                        e.Encode(kv.GetServedResults)
+                        e.Encode(kv.PutAppendServedResults)
 						snapshot := w.Bytes()
 						kv.mu.Unlock()
 						DPrintf("kv-%d will call SaveSnapshotAndTrimLog()", kv.me)
@@ -347,9 +345,11 @@ func (kv *KVServer) apply(command_index int, command_term int, command interface
 		// then it could block here with a lock held in hand. But Get() should get the lock and then unlock and then read the channel, so, deadlock!
 		// check whether to poke the Get().
 		var reply GetReply
-		if prev_result, ok := kv.ServedRequest[op.SerialNumber]; ok {
+		if prev_result, ok := kv.GetServedResults[op.SerialNumber]; ok {
 			DPrintf("kv-%d CmdGet served request!", kv.me)
-			result_item.Reply = prev_result.Reply
+            reply.Value = prev_result
+            reply.Err = OK
+			result_item.Reply = reply
 		} else {
 			value, ok := kv.Kvmappings[op.Key]
 			if ok {
@@ -361,23 +361,22 @@ func (kv *KVServer) apply(command_index int, command_term int, command interface
 				reply.Err = ErrNoKey
 			}
 			result_item.Reply = reply
-			kv.ServedRequest[op.SerialNumber] = result_item
+			kv.GetServedResults[op.SerialNumber] = value
 		}
 	case CmdPut:
 		var reply PutAppendReply
-		if _, ok := kv.ServedRequest[op.SerialNumber]; !ok {
+		if _, ok := kv.PutAppendServedResults[op.SerialNumber]; !ok {
 			// we haven't serve for this command. apply this command.
 			// replace the value for a particular key
 			kv.Kvmappings[op.Key] = op.Value
-			var item ResultItem
-			kv.ServedRequest[op.SerialNumber] = item
+			kv.PutAppendServedResults[op.SerialNumber] = true
 		}
 		reply.Err = OK
 		result_item.Reply = reply
 	case CmdAppend:
 		var reply PutAppendReply
 		DPrintf("PutAppend() Append : " + op.Value)
-		if _, ok := kv.ServedRequest[op.SerialNumber]; !ok {
+		if _, ok := kv.PutAppendServedResults[op.SerialNumber]; !ok {
 			// we haven't serve for this command. apply this command.
 			// replace the value for a particular key
 			value, ok := kv.Kvmappings[op.Key]
@@ -386,8 +385,7 @@ func (kv *KVServer) apply(command_index int, command_term int, command interface
 			} else {
 				kv.Kvmappings[op.Key] = op.Value
 			}
-			var item ResultItem
-			kv.ServedRequest[op.SerialNumber] = item
+			kv.PutAppendServedResults[op.SerialNumber] = true
 		}
 		reply.Err = OK
 		result_item.Reply = reply
