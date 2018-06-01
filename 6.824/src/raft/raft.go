@@ -368,13 +368,14 @@ func (rf *Raft) InstallSnapshot(args *InstallSnapshotArgs, reply *InstallSnapsho
 		// instead the follower receives a snapshot that describes a prefix of its log.
 		// discard log entries covered by the snapshot.
 		SPrintf("peer-%d InstallSnapshot() branch2:snapshot descibes a prefix of recipient's log.", rf.me)
-		rf.truncateLog(args.LastIncludedIndex+1, rf.getLogLastIndex()+1)
+		rf.truncateLog(args.LastIncludedIndex + 1, rf.getLogLastIndex() + 1)
 		snapshot := args.Data
 		rf.firstLogIndex = args.LastIncludedIndex + 1 // no problem!
 		// persist!
 		rf.persistWithSnapshot(snapshot)
 		// Take care!
 		if args.LastIncludedIndex > rf.lastApplied {
+		    SPrintf("peer-%d InstallSnapshot() branch3.", rf.me)
 			rf.lastApplied = args.LastIncludedIndex
 			// invariant: rf.commitIndex >= rf.lastApplied
 			if args.LastIncludedIndex > rf.commitIndex {
@@ -462,7 +463,7 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 		return
 	}
 
-	/* Section 5.5 :
+	/* 
 	 * The server may crash after it completing an RPC but before responsing, then it will receive the same RPC again after it restarts.
 	 * Raft RPCs are idempotent, so this causes no harm.
 	 */
@@ -803,7 +804,6 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 							args.PrevLogTerm = snapshot.LastIncludedTerm
 							args.Entries = log_copy
 						} else if args.PrevLogIndex >= firstLogIndex_copy+len(log_copy) { //out of range
-							DPrintf("??????????????????????????")
 							// make an adjustment
 							args.PrevLogIndex = firstLogIndex_copy - 1
 							args.PrevLogTerm = snapshot.LastIncludedTerm
@@ -812,6 +812,7 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 							// args.PrevLogIndex is in the log.
 							args.PrevLogTerm = log_copy[args.PrevLogIndex-firstLogIndex_copy].Term
 							if args.PrevLogIndex == firstLogIndex_copy+len(log_copy)-1 {
+							    SPrintf("??????????????????????????")
 								args.Entries = make([]LogEntry, 0)
 							} else {
 								args.Entries = log_copy[args.PrevLogIndex-firstLogIndex_copy+1:]
@@ -976,12 +977,9 @@ func Make(peers []*labrpc.ClientEnd, me int,
 			entries_to_apply := make([]LogEntry, 0)
 			curr_index := 0
 			first_index := -1
-            // FIXME: is rf.lastApplied precise when use snapshot?
 			for curr_index = rf.lastApplied + 1; curr_index <= rf.commitIndex; curr_index++ {
 				if curr_index-rf.firstLogIndex < 0 {
 					continue
-				} else if curr_index-rf.firstLogIndex > len(rf.log)-1 {
-					break
 				}
 				if first_index == -1 {
 					first_index = curr_index
@@ -1001,8 +999,8 @@ func Make(peers []*labrpc.ClientEnd, me int,
 				curr_command.CommandValid = true
 				curr_command.Command = logentry.Command
 				curr_command.CommandIndex = first_index
-				first_index++
 				curr_command.CommandTerm = logentry.Term
+				first_index++
 				rf.applyCh <- curr_command
 			}
 		}
@@ -1254,7 +1252,7 @@ func (rf *Raft) indexIsInLog(index int) (result bool) {
 // log will be adjust to [first_index, last_index)
 func (rf *Raft) truncateLog(first_index int, last_index int) {
 	SPrintf("truncateLog() : before invocation, len(rf.log) = %d, first_index = %d, last_index = %d.", len(rf.log), first_index, last_index)
-	if first_index > rf.getLogLastIndex() || last_index < rf.firstLogIndex {
+	if first_index > rf.getLogLastIndex() || last_index <= rf.firstLogIndex {
 		// clear the rf.log
         rf.log = nil
 		rf.log = make([]LogEntry, 0)
@@ -1272,20 +1270,22 @@ func (rf *Raft) truncateLog(first_index int, last_index int) {
 	if left_all && right_all {
 		return // do nothing.
 	} else if left_all {
-		log_copy := make([]LogEntry, len(rf.log[:last_index-rf.firstLogIndex]))
-        copy(log_copy, rf.log[:last_index-rf.firstLogIndex])
+		log_copy := make([]LogEntry, len(rf.log[ : last_index-rf.firstLogIndex]))
+        copy(log_copy, rf.log[ : last_index-rf.firstLogIndex])
         rf.log = nil
         rf.log = log_copy
 	} else if right_all {
-        log_copy := make([]LogEntry, len(rf.log[first_index-rf.firstLogIndex:]))
-        copy(log_copy, rf.log[first_index-rf.firstLogIndex:])
+        log_copy := make([]LogEntry, len(rf.log[first_index-rf.firstLogIndex : ]))
+        copy(log_copy, rf.log[first_index-rf.firstLogIndex : ])
         rf.log = nil
 		rf.log = log_copy
 	} else {
 		log_copy := make([]LogEntry, last_index-first_index)
-		copy(log_copy, rf.log[first_index-rf.firstLogIndex:last_index-rf.firstLogIndex])
+		copy(log_copy, rf.log[first_index-rf.firstLogIndex : last_index-rf.firstLogIndex])
         rf.log = nil
 		rf.log = log_copy
 	}
 	SPrintf("truncateLog() : after invocation, len(rf.log) = %d.", len(rf.log))
 }
+
+//func (rf *Raft) truncateLogFromPosToEnd()

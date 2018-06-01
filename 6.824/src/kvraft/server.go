@@ -216,6 +216,7 @@ func (kv *KVServer) readSnapshot(data []byte, served_requests map[int64]bool) {
 		    return
 	    }
 	    kv.Kvmappings = kvmappings
+        kv.maxIndex = snapshot_info.LastIncludedIndex
         //kv.PutAppendServedResults = served_requests
 	}
 }
