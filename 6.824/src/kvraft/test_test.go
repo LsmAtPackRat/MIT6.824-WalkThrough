@@ -152,7 +152,7 @@ func partitioner(t *testing.T, cfg *config, ch chan bool, done *int32) {
 // size) shouldn't exceed 2*maxraftstate.
 func GenericTest(t *testing.T, part string, nclients int, unreliable bool, crash bool, partitions bool, maxraftstate int) {
 	// FIXME: just test 3A with trimmed log!
-	maxraftstate = 1
+    maxraftstate = 1
 	title := "Test: "
 	if unreliable {
 		// the network drops RPC requests and replies.
