@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-const Debug = 0
+const Debug = 1
 
 func DPrintf(format string, a ...interface{}) (n int, err error) {
 	if Debug > 0 {
@@ -196,7 +196,7 @@ func (kv *KVServer) Kill() {
 }
 
 // unserialize the data(byte array) and cover the KVServer's state with it.
-func (kv *KVServer) readSnapshot(data []byte, served_requests map[int64]bool) {
+func (kv *KVServer) readSnapshot(data []byte, served_requests []byte) {
 	if data == nil || len(data) < 1 { // bootstrap without any state?
 		return
 	}
@@ -217,7 +217,17 @@ func (kv *KVServer) readSnapshot(data []byte, served_requests map[int64]bool) {
 	    }
 	    kv.Kvmappings = kvmappings
         kv.maxIndex = snapshot_info.LastIncludedIndex
-        //kv.PutAppendServedResults = served_requests
+        // deserialize the served_requests
+        rs := bytes.NewBuffer(served_requests)
+        ds := labgob.NewDecoder(rs)
+        var putAppendServedResults map[int64]bool
+        err := ds.Decode(&putAppendServedResults)
+
+        if err != nil {
+            DPrintf("server.go-readSnapshot()-Decode putAppendServedResults error!")
+        }
+        //FIXME
+        kv.PutAppendServedResults = putAppendServedResults
 	}
 }
 
@@ -295,10 +305,14 @@ func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persiste
 						e.Encode(snapshot_info)
 						e.Encode(kv.Kvmappings)
 						snapshot := w.Bytes()
-                        served_requests := kv.PutAppendServedResults
+                        // serialize the served requests map.
+                        ws := new(bytes.Buffer)
+                        we := labgob.NewEncoder(ws)
+                        we.Encode(kv.PutAppendServedResults)
+                        served_results_bytes := ws.Bytes()
 						kv.mu.Unlock()
 						DPrintf("kv-%d will call SaveSnapshotAndTrimLog()", kv.me)
-						kv.rf.SaveSnapshotAndTrimLog(snapshot, command_index, served_requests)
+						kv.rf.SaveSnapshotAndTrimLog(snapshot, command_index, served_results_bytes)
 					}
 				}
 			}
@@ -309,7 +323,7 @@ func StartKVServer(servers []*labrpc.ClientEnd, me int, persister *raft.Persiste
 }
 
 // apply a snapshot.
-func (kv *KVServer) applySnapshot(snapshot []byte, served_requests map[int64]bool) {
+func (kv *KVServer) applySnapshot(snapshot []byte, served_requests []byte) {
 	kv.mu.Lock()
 	defer kv.mu.Unlock()
 	DPrintf("kv-%d applySnapshot()!", kv.me)

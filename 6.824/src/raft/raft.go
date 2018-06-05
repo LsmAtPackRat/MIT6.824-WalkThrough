@@ -52,7 +52,7 @@ type ApplyMsg struct {
 
 	// if CommandValid == false, means that this ApplyMsg is a snapshot.
 	Snapshot []byte
-    ServedRequests  map[int64]bool     //Commands that are discarded.
+    ServedRequests  []byte     //Commands that are discarded.
 }
 
 // A Log Entry
@@ -108,7 +108,7 @@ type Raft struct {
 	applyCh                  chan ApplyMsg
 	canApplyCh               chan bool // if can apply command, write to this channel to notify the goroutine.
 	wg                       sync.WaitGroup
-    ServedRequests           map[int64]bool
+    ServedRequests           []byte
 }
 
 // return currentTerm and whether this server
@@ -232,7 +232,7 @@ func (rf *Raft) StateOversize(threshold int) (result bool) {
 // arguments:
 //    snapshot contains snapshot_info/kv.kvmappings/kv.servedRequest. The Raft is only interested for the first two items.
 //    last_included_index is the last index included in the snapshot.
-func (rf *Raft) SaveSnapshotAndTrimLog(snapshot []byte, last_included_index int, served_requests map[int64]bool) {
+func (rf *Raft) SaveSnapshotAndTrimLog(snapshot []byte, last_included_index int, served_requests_bytes []byte) {
 	SPrintf("peer-%d SaveSnapshotAndTrimLog(snapshot, index = %d)", rf.me, last_included_index)
 	rf.mu.Lock()
 	defer SPrintf("peer-%d SaveSnapshotAndTrimLog return!", rf.me)
@@ -243,7 +243,7 @@ func (rf *Raft) SaveSnapshotAndTrimLog(snapshot []byte, last_included_index int,
 		SPrintf("peer-%d SaveSnapshotAndTrimLog got a out-of-date index-%d, just ignore it.", rf.me, last_included_index)
 		return
 	}
-    rf.ServedRequests = served_requests
+    rf.ServedRequests = served_requests_bytes
 	// now last_included_index >= rf.firstLogIndex
 	rf.truncateLog(last_included_index+1, rf.getLogLastIndex()+1) // index is included in the snapshot.
 	rf.firstLogIndex = last_included_index + 1                    // rf.commitIndex and rf.lastApplied must be bigger than rf.firstLogIndex at this time.
@@ -299,7 +299,7 @@ type InstallSnapshotArgs struct {
 	//Offset int    // you do not have to implement the offset mechanism.
 	Data []byte // snapshot.
 	//Done bool     // used by the offset mechanism.
-    ServedRequests    map[int64]bool
+    ServedRequests    []byte
 }
 
 type InstallSnapshotReply struct {
@@ -733,11 +733,9 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 					log_copy := make([]LogEntry, len(rf.log)) // during the agreement, log could grow.
 					copy(log_copy, rf.log)
 					firstLogIndex_copy := rf.firstLogIndex
-					//snapshot_copy := make([]byte, len(rf.persister.ReadSnapshot()))
-					//copy(snapshot_copy, rf.persister.ReadSnapshot())
 					snapshot_copy := rf.persister.ReadSnapshot()
                     //var served_requests_copy map[int64]bool
-                    //served_requests_copy = rf.ServedRequests
+                    served_requests_copy := rf.ServedRequests
 					rf.mu.Unlock()
 					snapshot := readSnapshot(snapshot_copy) // snapshot is type Snapshot, snapshot_copy is []byte.
 
@@ -753,7 +751,7 @@ func (rf *Raft) Start(command interface{}) (int, int, bool) {
 						args.LastIncludedIndex = snapshot.LastIncludedIndex
 						args.LastIncludedTerm = snapshot.LastIncludedTerm
 						args.Data = snapshot_copy
-                        //args.ServedRequests = served_requests_copy
+                        args.ServedRequests = served_requests_copy
 						ok := rf.sendInstallSnapshot(i, &args, &reply)
 						if ok {
 							rf.mu.Lock()
